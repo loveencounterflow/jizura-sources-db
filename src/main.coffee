@@ -38,7 +38,7 @@ PATH                      = require 'node:path'
 
 #---------------------------------------------------------------------------------------------------------
 TMP_eq = ( fn, matcher ) ->
-  debug 'Ωjdsdb___1', fn()
+  debug 'Ωjzrsdb___1', fn()
   ;null
 
 #---------------------------------------------------------------------------------------------------------
@@ -110,7 +110,7 @@ file_mirror_with_integrated_inserts = ->
         parameters:     [ 'line', ]
         rows: ( line ) ->
           keywords = line.split /(?:\p{Z}+)|((?:\p{L}+)|(?:\p{N}+)|(?:\p{S}+))/v
-          # debug 'Ωbbdbr___2', line_nr, rpr keywords
+          # debug 'Ωjzrsdb___2', line_nr, rpr keywords
           for keyword in keywords
             continue unless keyword?
             continue if keyword is ''
@@ -131,40 +131,40 @@ file_mirror_with_integrated_inserts = ->
   do =>
     db_path   = '/dev/shm/bricabrac.sqlite'
     phrases   = Dbric_phrases.open db_path
-    debug 'Ωbbdbr___3', phrases.teardown()
-    debug 'Ωbbdbr___4', phrases.rebuild()
-    TMP_eq ( Ωbbdbr___5 = -> ( phrases.prepare SQL"""pragma foreign_keys""" ).get() ), { foreign_keys: 1,      }
-    TMP_eq ( Ωbbdbr___6 = -> ( phrases.prepare SQL"""pragma journal_mode""" ).get() ), { journal_mode: 'wal',  }
-    TMP_eq ( Ωbbdbr___7 = -> phrases.db instanceof Bsql3     ), true
+    debug 'Ωjzrsdb___3', phrases.teardown()
+    debug 'Ωjzrsdb___4', phrases.rebuild()
+    TMP_eq ( Ωjzrsdb___5 = -> ( phrases.prepare SQL"""pragma foreign_keys""" ).get() ), { foreign_keys: 1,      }
+    TMP_eq ( Ωjzrsdb___6 = -> ( phrases.prepare SQL"""pragma journal_mode""" ).get() ), { journal_mode: 'wal',  }
+    TMP_eq ( Ωjzrsdb___7 = -> phrases.db instanceof Bsql3     ), true
     #.....................................................................................................
     do =>
       dskey = 'humdum'
       path  = PATH.resolve __dirname, '../../hengist-NG/assets/bricabrac/humpty-dumpty.md'
       phrases.statements.insert_datasource.run { dskey, path }
     #.....................................................................................................
-    debug 'Ωbbdbr___8', phrases.statements.populate_keywords.run()
+    debug 'Ωjzrsdb___8', phrases.statements.populate_keywords.run()
     #.....................................................................................................
     echo row for row from phrases.statements.locations_from_keyword.iterate { keyword: 'thought', }
     echo()
     rows = phrases.statements.locations_from_keyword.iterate { keyword: 'thought', }
-    TMP_eq ( Ωbbdbr___9 = -> rows.next().value ), { dskey: 'humdum', line_nr: 15, keyword: 'thought' }
-    TMP_eq ( Ωbbdbr__10 = -> rows.next().value ), { dskey: 'humdum', line_nr: 34, keyword: 'thought' }
-    TMP_eq ( Ωbbdbr__11 = -> rows.next().value ), undefined
+    TMP_eq ( Ωjzrsdb___9 = -> rows.next().value ), { dskey: 'humdum', line_nr: 15, keyword: 'thought' }
+    TMP_eq ( Ωjzrsdb__10 = -> rows.next().value ), { dskey: 'humdum', line_nr: 34, keyword: 'thought' }
+    TMP_eq ( Ωjzrsdb__11 = -> rows.next().value ), undefined
     #.....................................................................................................
     echo row for row from phrases.statements.locations_from_keyword.iterate { keyword: 'she', }
     echo()
     rows = phrases.statements.locations_from_keyword.iterate { keyword: 'she', }
-    TMP_eq ( Ωbbdbr__12 = -> rows.next().value ), { dskey: 'humdum', line_nr: 2, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__13 = -> rows.next().value ), { dskey: 'humdum', line_nr: 3, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__14 = -> rows.next().value ), { dskey: 'humdum', line_nr: 4, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__15 = -> rows.next().value ), { dskey: 'humdum', line_nr: 5, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__16 = -> rows.next().value ), { dskey: 'humdum', line_nr: 15, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__17 = -> rows.next().value ), { dskey: 'humdum', line_nr: 17, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__18 = -> rows.next().value ), { dskey: 'humdum', line_nr: 18, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__19 = -> rows.next().value ), { dskey: 'humdum', line_nr: 26, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__20 = -> rows.next().value ), { dskey: 'humdum', line_nr: 34, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__21 = -> rows.next().value ), { dskey: 'humdum', line_nr: 36, keyword: 'she' }
-    TMP_eq ( Ωbbdbr__22 = -> rows.next().value ), undefined
+    TMP_eq ( Ωjzrsdb__12 = -> rows.next().value ), { dskey: 'humdum', line_nr: 2, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__13 = -> rows.next().value ), { dskey: 'humdum', line_nr: 3, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__14 = -> rows.next().value ), { dskey: 'humdum', line_nr: 4, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__15 = -> rows.next().value ), { dskey: 'humdum', line_nr: 5, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__16 = -> rows.next().value ), { dskey: 'humdum', line_nr: 15, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__17 = -> rows.next().value ), { dskey: 'humdum', line_nr: 17, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__18 = -> rows.next().value ), { dskey: 'humdum', line_nr: 18, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__19 = -> rows.next().value ), { dskey: 'humdum', line_nr: 26, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__20 = -> rows.next().value ), { dskey: 'humdum', line_nr: 34, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__21 = -> rows.next().value ), { dskey: 'humdum', line_nr: 36, keyword: 'she' }
+    TMP_eq ( Ωjzrsdb__22 = -> rows.next().value ), undefined
     #.....................................................................................................
     ;null
   #.......................................................................................................
