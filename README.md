@@ -41,3 +41,6 @@
 * verify characters getting selected by `/\p{Script=Han}/v`, esp. punctuation, CJK x-F and higher,
   compatibility codepoints &c.
 
+* does BVFS / `narumatt/sqlitefs` use `journal_mode = WAL`?
+
+
