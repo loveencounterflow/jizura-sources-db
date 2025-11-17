@@ -38,4 +38,6 @@
   u-cjk/5ea6  度 gloss:degree, system; manner; to consider
   ```
 
+* verify characters getting selected by `/\p{Script=Han}/v`, esp. punctuation, CJK x-F and higher,
+  compatibility codepoints &c.
 
