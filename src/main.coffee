@@ -215,8 +215,20 @@ write_line_data_to_sqlitefs = ->
 
 
 #===========================================================================================================
+demo_read_lines_from_buffers = ->
+  { walk_buffers_with_positions,
+    walk_lines_with_positions, } = SFMODULES.unstable.require_fast_linereader()
+  path = PATH.resolve __dirname, '../package.json'
+  for d from walk_buffers_with_positions path
+    debug 'Ωjzrsdb__10', d
+  for d from walk_lines_with_positions path, { chunk_size: 10, }
+    debug 'Ωjzrsdb__10', d
+  ;null
+
+#===========================================================================================================
 if module is require.main then do =>
   # materialized_file_mirror()
-  write_line_data_to_sqlitefs()
+  # write_line_data_to_sqlitefs()
+  demo_read_lines_from_buffers()
   ;null
 
