@@ -191,22 +191,6 @@ write_line_data_to_sqlitefs = ->
   block_num
   data
   """
-  SQL"""create table bb_line_byte_offsets (
-    -- .....................................................................................................
-    dskey     text    not null,
-    line_nr   integer not null,
-    chunk_nr  integer not null,
-    -- .....................................................................................................
-    file_id   integer not null,
-    block_num integer not null,
-    -- .....................................................................................................
-    d0        integer not null, -- 0-based (?) index to first byte (in this block)
-    d1        integer not null, -- 0-based (?) index to last  byte (in this block)
-    -- .....................................................................................................
-    foreign key ( dskey               ) references datasources ( dskey ),
-    foreign key ( file_id, block_num  ) references data ( file_id, block_num ),
-    primary key ( dskey, line_nr, chunk_nr )
-    );"""
   #.........................................................................................................
   statement = bvfs.prepare SQL"""select * from data;"""
   echo(); echo row for row from statement.iterate()
