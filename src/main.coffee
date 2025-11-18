@@ -50,6 +50,7 @@ class Dbric_phrases extends Dbric
     SQL"""create table datasources (
         dskey text unique not null primary key,
         path text not null );"""
+
     #.......................................................................................................
     SQL"""create table mirror (
         dskey   text    not null,
@@ -57,6 +58,7 @@ class Dbric_phrases extends Dbric
         line    text    not null,
       foreign key ( dskey ) references datasources ( dskey ),
       primary key ( dskey, line_nr ) );"""
+
     #.......................................................................................................
     SQL"""create table keywords (
         dskey   text    not null,
@@ -65,24 +67,33 @@ class Dbric_phrases extends Dbric
       foreign key ( dskey ) references datasources ( dskey ),
       primary key ( dskey, line_nr, keyword ) );"""
     ]
+
   #---------------------------------------------------------------------------------------------------------
   @statements:
+
     #.......................................................................................................
     insert_datasource: SQL"""insert into datasources ( dskey, path ) values ( $dskey, $path )
       on conflict ( dskey ) do update set path = $path;"""
+
     #.......................................................................................................
     insert_keyword: SQL"""insert into keywords ( dskey, line_nr, keyword ) values ( $dskey, $line_nr, $keyword )
       on conflict ( dskey, line_nr, keyword ) do nothing;"""
+
     #.......................................................................................................
     select_from_datasources: SQL"""select * from datasources order by dskey;"""
     select_from_mirror:      SQL"""select * from mirror order by dskey, line_nr;"""
     count_datasources:       SQL"""select count(*) as datasource_count  from datasources;"""
     count_mirror_lines:      SQL"""select count(*) as mirror_line_count from mirror;"""
+
     #.......................................................................................................
     select_from_keywords: SQL"""select * from keywords order by keyword, dskey, line_nr;"""
+
+    #.......................................................................................................
     locations_from_keyword: SQL"""select * from keywords
       where keyword = $keyword
       order by keyword, dskey, line_nr;"""
+
+    #.......................................................................................................
     lines_from_keyword: SQL"""select
         kw.dskey    as dskey,
         kw.line_nr  as line_nr,
@@ -92,8 +103,10 @@ class Dbric_phrases extends Dbric
       join mirror   as mi using ( dskey, line_nr )
       where keyword = $keyword
       order by keyword, dskey, line_nr;"""
+
     #.......................................................................................................
     select_from_mirror: SQL"""select * from mirror order by dskey;"""
+
     #.......................................................................................................
     populate_file_mirror: SQL"""
       insert into mirror ( dskey, line_nr, line )
@@ -106,6 +119,7 @@ class Dbric_phrases extends Dbric
         file_lines( ds.path )   as fl
         where true -- where clause just a syntactic guard as per https://sqlite.org/lang_upsert.html
         on conflict do update set line = excluded.line;"""
+
     #.......................................................................................................
     populate_keywords: SQL"""
       insert into keywords ( dskey, line_nr, keyword )
@@ -118,6 +132,7 @@ class Dbric_phrases extends Dbric
         split_words( mi.line )  as sw
         where true -- where clause just a syntactic guard as per https://sqlite.org/lang_upsert.html
         on conflict do nothing;"""
+
   #---------------------------------------------------------------------------------------------------------
   initialize: ->
     super()
@@ -211,8 +226,8 @@ demo_read_lines_from_buffers = ->
 
 #===========================================================================================================
 if module is require.main then do =>
-  # materialized_file_mirror()
+  materialized_file_mirror()
   # write_line_data_to_sqlitefs()
-  demo_read_lines_from_buffers()
+  # demo_read_lines_from_buffers()
   ;null
 
