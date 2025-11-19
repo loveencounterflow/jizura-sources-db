@@ -143,7 +143,7 @@ class Dbric_phrases extends Dbric
       parameters:     [ 'line', ]
       rows: ( line ) ->
         keywords = line.split /(?:\p{Z}+)|((?:\p{Script=Han})|(?:\p{L}+)|(?:\p{N}+)|(?:\p{S}+))/v
-        # debug 'Ωjzrsdb___5', line_nr, rpr keywords
+        # debug 'Ωjzrsdb___1', line_nr, rpr keywords
         for keyword in keywords
           continue unless keyword?
           continue if keyword is ''
@@ -165,8 +165,8 @@ class Dbric_phrases extends Dbric
 materialized_file_mirror = ->
   db_path   = '/dev/shm/bricabrac.sqlite'
   phrases   = Dbric_phrases.open db_path
-  debug 'Ωjzrsdb___6', phrases.teardown()
-  debug 'Ωjzrsdb___7', phrases.rebuild()
+  debug 'Ωjzrsdb___2', phrases.teardown()
+  debug 'Ωjzrsdb___3', phrases.rebuild()
   #.........................................................................................................
   do =>
     dskey = 'humdum'
@@ -178,10 +178,10 @@ materialized_file_mirror = ->
     path  = PATH.resolve __dirname, '../../../io/mingkwai-rack/jzrds/meaning/meanings.txt'
     phrases.statements.insert_datasource.run { dskey, path }
   #.........................................................................................................
-  debug 'Ωjzrsdb___8', "populate_file_mirror: ", phrases.statements.populate_file_mirror.run()
-  debug 'Ωjzrsdb___9', "populate_keywords:    ", phrases.statements.populate_keywords.run()
-  debug 'Ωjzrsdb__10', "count_datasources:    ", phrases.statements.count_datasources.get()
-  debug 'Ωjzrsdb__11', "count_mirror_lines:   ", phrases.statements.count_mirror_lines.get()
+  debug 'Ωjzrsdb___4', "populate_file_mirror: ", phrases.statements.populate_file_mirror.run()
+  debug 'Ωjzrsdb___5', "populate_keywords:    ", phrases.statements.populate_keywords.run()
+  debug 'Ωjzrsdb___6', "count_datasources:    ", phrases.statements.count_datasources.get()
+  debug 'Ωjzrsdb___7', "count_mirror_lines:   ", phrases.statements.count_mirror_lines.get()
   # echo(); echo row for row from phrases.statements.select_from_mirror.iterate()
   #.........................................................................................................
   echo(); echo row for row from phrases.statements.locations_from_keyword.iterate { keyword: 'thought', }
@@ -219,9 +219,9 @@ demo_read_lines_from_buffers = ->
     walk_lines_with_positions, } = SFMODULES.unstable.require_fast_linereader()
   path = PATH.resolve __dirname, '../package.json'
   for d from walk_buffers_with_positions path
-    debug 'Ωjzrsdb__10', d
+    debug 'Ωjzrsdb__14', d
   for d from walk_lines_with_positions path, { chunk_size: 10, }
-    debug 'Ωjzrsdb__10', d
+    debug 'Ωjzrsdb__15', d
   ;null
 
 #===========================================================================================================
