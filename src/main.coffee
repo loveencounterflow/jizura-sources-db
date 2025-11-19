@@ -247,10 +247,49 @@ write_line_data_to_sqlitefs = ->
       where file_id = $file_id
       order by block_num;"""
     #.........................................................................................................
+    lf_cid = ( '\n' ).codePointAt 0
+    cr_cid = ( '\r' ).codePointAt 0
+    find_linebreaks = ( values ) ->
+      ### TAINT use Array::find() to iterate over all values in array and satisfy compound criterion" ###
+      R       = []
+      start   = 0
+      length  = 1 # could be two for CRLF
+      ### NOTE This test could be used once on each buffer; once it returns `true` a more complicated
+      algorithm to detect `/\r\n|\r|\n/` should be used for the rest of the file:
+
+        if use_crlf_algo = values.includes cr_cid
+      ###
+      loop
+        break if ( idx = values.indexOf lf_cid, start ) < 0
+        R.push [ idx, length, ]
+        start = idx + 1
+      return R
+    #.........................................................................................................
+    current_byte_count  = 0
+    file_finished       = false
     for d from read_blobs_for_file_id.iterate { file_id, }
-      text = ( ( Buffer.from d.data ).toString 'utf-8' )[ .. 100 ]
+      buffer  = Buffer.from d.data
+      text    = ( buffer.toString 'utf-8' )[ .. 100 ]
       # debug 'Ωjzrsdb__12', d.data
       debug 'Ωjzrsdb__13', 'file', 'block', d.block_num, ( rpr text )
+      linebreak_idxs  = find_linebreaks d.data
+      data_length     = d.data.length
+      debug 'Ωjzrsdb__14', linebreak_idxs
+      if linebreak_idxs.length is 0
+        ### TAINT deal with no line breaks ###
+        continue
+      last_entry_idx = linebreak_idxs.length - 1
+      for [ nl_idx, nl_length, ], entry_idx in linebreak_idxs
+        if entry_idx < last_entry_idx
+          linepart_length = linebreak_idxs[ entry_idx + 1 ][ 0 ] - nl_idx
+        else
+          delta = last_entry_idx - nl_idx
+          if ( remaining_bytes = size - current_byte_count ) < delta
+            linepart_length = remaining_bytes
+            file_finished   = true
+          else
+            linepart_length = delta
+        current_byte_count += linepart_length
   #.........................................................................................................
   paths = [
     '/〇一二三四五六七八九.txt'
@@ -269,9 +308,9 @@ demo_read_lines_from_buffers = ->
     walk_lines_with_positions, } = SFMODULES.unstable.require_fast_linereader()
   path = PATH.resolve __dirname, '../package.json'
   for d from walk_buffers_with_positions path
-    debug 'Ωjzrsdb__14', d
-  for d from walk_lines_with_positions path, { chunk_size: 10, }
     debug 'Ωjzrsdb__15', d
+  for d from walk_lines_with_positions path, { chunk_size: 10, }
+    debug 'Ωjzrsdb__16', d
   ;null
 
 #===========================================================================================================
