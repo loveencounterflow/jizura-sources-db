@@ -201,14 +201,64 @@ write_line_data_to_sqlitefs = ->
   db_path   = PATH.resolve __dirname, '../../bvfs/bvfs.db'
   bvfs      = Dbric.open db_path
   #.........................................................................................................
-  SQL"""
-  where ( file_id = 2 )
-  block_num
-  data
-  """
+  file_id_and_size_from_path = bvfs.prepare SQL"""
+    select
+        p.file_id as file_id,
+        m.size    as size
+      from bb_paths as p
+      join metadata as m on ( p.file_id = m.id )
+      where p.path = $path;"""
   #.........................................................................................................
-  statement = bvfs.prepare SQL"""select * from data;"""
-  echo(); echo row for row from statement.iterate()
+  insert_line_byte_offset = bvfs.prepare SQL"""
+    insert into bb_line_byte_offsets ( file_id,   line_nr,  block_num,  start,  stop )
+      values                         ( $file_id, $line_nr, $block_num, $start, $stop );"""
+  #.........................................................................................................
+  ### NOTE must know byte size of file ###
+  ### TAINT should become `Dbric::get_first_row()` ###
+  get_first_row = ( iterator ) ->
+    R             = null
+    { value: R,
+      done,     } = iterator.next()
+    if ( done ) or ( not R? )
+      throw new Error "Ωdbric___8 expected exactly one row, got none"
+    extra     = iterator.next()
+    throwaway = [ iterator..., ] ### NOTE alway exhaust iterator to keep it from blocking DB ###
+    if ( not extra.done ) or ( extra.value? )
+      throw new Error "Ωdbric___9 expected exactly one row, got more than one: #{rpr extra}"
+    return R
+  #.........................................................................................................
+  populate_line_byte_offsets = ({ path, }) ->
+    { file_id,
+      size,     } = get_first_row file_id_and_size_from_path.iterate { path, }
+    urge 'Ωjzrsdb__10', { file_id, size, path, }
+    #.........................................................................................................
+    ### NOTE Entries in table `bb_line_byte_offsets` require a foreign key to some data block, but empty
+    files do not get a data block. As a tentative solution, we do not represent empty files in
+    `bb_line_byte_offsets` at all, leaving it up to consumers (e.g. the view containing file lines)
+    to deal with the situation. ###
+    debug 'Ωjzrsdb__11', "file #{path} is empty" if size is 0
+    return 0 if size is 0
+    #.........................................................................................................
+    read_blobs_for_file_id = bvfs.prepare SQL"""
+      select
+        block_num,
+        data
+      from data
+      where file_id = $file_id
+      order by block_num;"""
+    #.........................................................................................................
+    for d from read_blobs_for_file_id.iterate { file_id, }
+      text = ( ( Buffer.from d.data ).toString 'utf-8' )[ .. 100 ]
+      # debug 'Ωjzrsdb__12', d.data
+      debug 'Ωjzrsdb__13', 'file', 'block', d.block_num, ( rpr text )
+  #.........................................................................................................
+  paths = [
+    '/〇一二三四五六七八九.txt'
+    '/nulls.txt'
+    '/empty.txt'
+    ]
+  for path in paths
+    populate_line_byte_offsets { path, }
   #.........................................................................................................
   ;null
 
@@ -226,8 +276,8 @@ demo_read_lines_from_buffers = ->
 
 #===========================================================================================================
 if module is require.main then do =>
-  materialized_file_mirror()
-  # write_line_data_to_sqlitefs()
+  # materialized_file_mirror()
+  write_line_data_to_sqlitefs()
   # demo_read_lines_from_buffers()
   ;null
 
