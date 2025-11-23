@@ -30,108 +30,124 @@ GUY                       = require 'guy'
 # { nfa }                   = require '../../hengist-NG/apps/normalize-function-arguments'
 # GTNG                      = require '../../hengist-NG/apps/guy-test-NG'
 # { Test                  } = GTNG
-SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
 # FS                        = require 'node:fs'
 PATH                      = require 'node:path'
 #-----------------------------------------------------------------------------------------------------------
-{ Dbric,
-  SQL,
-  internals,                } = SFMODULES.unstable.require_dbric()
-Bsql3                         = require 'better-sqlite3'
+Bsql3                     = require 'better-sqlite3'
 #-----------------------------------------------------------------------------------------------------------
+SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
+#...........................................................................................................
+{ Dbric,
+  SQL,                      } = SFMODULES.unstable.require_dbric()
+#...........................................................................................................
+{ Jetstream,
+  Async_jetstream,          } = SFMODULES.require_jetstream()
+#...........................................................................................................
+{ walk_lines_with_positions } = SFMODULES.unstable.require_fast_linereader()
 
 
 #===========================================================================================================
-class Dbric_phrases extends Dbric
+get_paths = ->
+  base      = PATH.resolve __dirname, '..'
+  db        = PATH.join base, 'jzr.db'
+  jzrds     = PATH.join base, 'jzrds'
+  meanings  = PATH.join jzrds, 'meaning/meanings.txt'
+  return {
+    base,
+    db,
+    jzrds,
+    meanings, }
+
+#-----------------------------------------------------------------------------------------------------------
+get_db = ->
+  paths = get_paths()
+  return Jzrbvfs.open paths.db
+
+
+#===========================================================================================================
+class Jzrbvfs extends Dbric
+
+  #---------------------------------------------------------------------------------------------------------
   @db_class: Bsql3
+
   #---------------------------------------------------------------------------------------------------------
   @build: [
-    #.......................................................................................................
-    SQL"""create table datasources (
-        dskey text unique not null primary key,
-        path text not null );"""
 
     #.......................................................................................................
-    SQL"""create table mirror (
-        dskey   text    not null,
-        line_nr integer not null,
-        line    text    not null,
-      foreign key ( dskey ) references datasources ( dskey ),
-      primary key ( dskey, line_nr ) );"""
+    SQL"""create table jzr_datasources (
+        dskey text unique not null,
+        path text not null,
+        primary key ( dskey ) );"""
 
     #.......................................................................................................
-    SQL"""create table keywords (
+    SQL"""create table jzr_filemirror (
+        dskey     text    not null,
+        line_nr   integer not null,
+        lcode     text    not null,
+        line      text    not null,
+        field_1   text        null,
+        field_2   text        null,
+        field_3   text        null,
+        field_4   text        null,
+        primary key ( dskey, line_nr ) );"""
+
+    #.......................................................................................................
+    SQL"""create table jzr_facets (
         dskey   text    not null,
         line_nr integer not null,
-        keyword text    not null,
-      foreign key ( dskey ) references datasources ( dskey ),
-      primary key ( dskey, line_nr, keyword ) );"""
+        fk      text    not null,
+        fv      json    not null,
+      foreign key ( dskey ) references jzr_datasources ( dskey ),
+      primary key ( dskey, line_nr, fk, fv ) );"""
+
+    #.......................................................................................................
     ]
 
   #---------------------------------------------------------------------------------------------------------
   @statements:
 
     #.......................................................................................................
-    insert_datasource: SQL"""insert into datasources ( dskey, path ) values ( $dskey, $path )
+    insert_jzr_datasource: SQL"""insert into jzr_datasources ( dskey, path ) values ( $dskey, $path )
       on conflict ( dskey ) do update set path = $path;"""
 
     #.......................................................................................................
-    insert_keyword: SQL"""insert into keywords ( dskey, line_nr, keyword ) values ( $dskey, $line_nr, $keyword )
-      on conflict ( dskey, line_nr, keyword ) do nothing;"""
+    populate_jzr_filemirror: SQL"""
+      insert into jzr_filemirror ( dskey, line_nr, lcode, line, field_1, field_2, field_3, field_4 )
+      select
+        ds.dskey    as dskey,
+        fl.line_nr  as line_nr,
+        fl.lcode       as lcode,
+        fl.line     as line,
+        fl.field_1  as field_1,
+        fl.field_2  as field_2,
+        fl.field_3  as field_3,
+        fl.field_4  as field_4
+      from jzr_datasources        as ds
+      join file_lines( ds.path )  as fl
+      where true
+      on conflict ( dskey, line_nr ) do update set line = excluded.line;
+      """
 
-    #.......................................................................................................
-    select_from_datasources: SQL"""select * from datasources order by dskey;"""
-    select_from_mirror:      SQL"""select * from mirror order by dskey, line_nr;"""
-    count_datasources:       SQL"""select count(*) as datasource_count  from datasources;"""
-    count_mirror_lines:      SQL"""select count(*) as mirror_line_count from mirror;"""
+  #---------------------------------------------------------------------------------------------------------
+  @open: ( P... ) ->
+    ### TAINT not a very nice solution ###
+    ### TAINT need more clarity about when statements, build, initialize... is performed ###
+    R = super P...
+    R._on_open_populate_jzr_datasources()
+    R._on_open_populate_jzr_filemirror()
+    return R
 
-    #.......................................................................................................
-    select_from_keywords: SQL"""select * from keywords order by keyword, dskey, line_nr;"""
+  #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_datasources: ->
+    paths = get_paths()
+    debug 'Ωjzrsdb___1', paths
+    @statements.insert_jzr_datasource.run { dskey: 'dict/meanings/1', path: paths.meanings, }
+    ;null
 
-    #.......................................................................................................
-    locations_from_keyword: SQL"""select * from keywords
-      where keyword = $keyword
-      order by keyword, dskey, line_nr;"""
-
-    #.......................................................................................................
-    lines_from_keyword: SQL"""select
-        kw.dskey    as dskey,
-        kw.line_nr  as line_nr,
-        kw.keyword  as keyword,
-        mi.line     as line
-      from keywords as kw
-      join mirror   as mi using ( dskey, line_nr )
-      where keyword = $keyword
-      order by keyword, dskey, line_nr;"""
-
-    #.......................................................................................................
-    select_from_mirror: SQL"""select * from mirror order by dskey;"""
-
-    #.......................................................................................................
-    populate_file_mirror: SQL"""
-      insert into mirror ( dskey, line_nr, line )
-        select
-          ds.dskey    as dskey,
-          fl.line_nr  as line_nr,
-          fl.line     as line
-        from datasources        as ds
-        left join mirror        as mi using ( dskey ),
-        file_lines( ds.path )   as fl
-        where true -- where clause just a syntactic guard as per https://sqlite.org/lang_upsert.html
-        on conflict do update set line = excluded.line;"""
-
-    #.......................................................................................................
-    populate_keywords: SQL"""
-      insert into keywords ( dskey, line_nr, keyword )
-        select
-          ds.dskey    as dskey,
-          mi.line_nr  as line_nr,
-          sw.keyword  as keyword
-        from datasources        as ds
-        join mirror             as mi using ( dskey ),
-        split_words( mi.line )  as sw
-        where true -- where clause just a syntactic guard as per https://sqlite.org/lang_upsert.html
-        on conflict do nothing;"""
+  #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_filemirror: ->
+    @statements.populate_jzr_filemirror.run()
+    ;null
 
   #---------------------------------------------------------------------------------------------------------
   initialize: ->
@@ -143,7 +159,7 @@ class Dbric_phrases extends Dbric
       parameters:     [ 'line', ]
       rows: ( line ) ->
         keywords = line.split /(?:\p{Z}+)|((?:\p{Script=Han})|(?:\p{L}+)|(?:\p{N}+)|(?:\p{S}+))/v
-        # debug 'Ωjzrsdb___1', line_nr, rpr keywords
+        # debug 'Ωjzrsdb___2', line_nr, rpr keywords
         for keyword in keywords
           continue unless keyword?
           continue if keyword is ''
@@ -152,171 +168,51 @@ class Dbric_phrases extends Dbric
     #.......................................................................................................
     @create_table_function
       name:         'file_lines'
-      columns:      [ 'line_nr', 'line', ]
+      columns:      [ 'line_nr', 'lcode', 'line', 'field_1', 'field_2', 'field_3', 'field_4', ]
       parameters:   [ 'path', ]
       rows: ( path ) ->
-        for { lnr: line_nr, line, eol, } from GUY.fs.walk_lines_with_positions path
-          yield { line_nr, line, }
+        for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
+          field_1 = field_2 = field_3 = field_4 = null
+          switch true
+            when /^\s*$/v.test line
+              lcode = 'E'
+            when /^\s*#/v.test line
+              lcode = 'C'
+            else
+              lcode = 'D'
+              [ field_1, field_2, field_3, field_4, ] = line.split '\t'
+              field_1 ?= null
+              field_2 ?= null
+              field_3 ?= null
+              field_4 ?= null
+          yield { line_nr, lcode, line, field_1, field_2, field_3, field_4, }
         ;null
     #.......................................................................................................
     ;null
 
 #===========================================================================================================
-materialized_file_mirror = ->
-  db_path   = '/dev/shm/bricabrac.sqlite'
-  phrases   = Dbric_phrases.open db_path
-  debug 'Ωjzrsdb___2', phrases.teardown()
-  debug 'Ωjzrsdb___3', phrases.rebuild()
+populate_meaning_facets = ->
+  db = get_db()
   #.........................................................................................................
-  do =>
-    dskey = 'humdum'
-    path  = PATH.resolve __dirname, '../../hengist-NG/assets/bricabrac/humpty-dumpty.md'
-    phrases.statements.insert_datasource.run { dskey, path }
+  ### TAINT a convoluted way to get a file path ###
+  ### TAINT make an API call ###
+  dskey = 'dict/meanings/1'
+  for row from db.walk SQL"select * from jzr_datasources where dskey = $dskey;", { dskey, }
+    meanings_path = row.path
+    break
   #.........................................................................................................
-  do =>
-    dskey = 'mng'
-    path  = PATH.resolve __dirname, '../../../io/mingkwai-rack/jzrds/meaning/meanings.txt'
-    phrases.statements.insert_datasource.run { dskey, path }
-  #.........................................................................................................
-  debug 'Ωjzrsdb___4', "populate_file_mirror: ", phrases.statements.populate_file_mirror.run()
-  debug 'Ωjzrsdb___5', "populate_keywords:    ", phrases.statements.populate_keywords.run()
-  debug 'Ωjzrsdb___6', "count_datasources:    ", phrases.statements.count_datasources.get()
-  debug 'Ωjzrsdb___7', "count_mirror_lines:   ", phrases.statements.count_mirror_lines.get()
-  # echo(); echo row for row from phrases.statements.select_from_mirror.iterate()
-  #.........................................................................................................
-  echo(); echo row for row from phrases.statements.locations_from_keyword.iterate { keyword: 'thought', }
-  echo(); echo row for row from phrases.statements.locations_from_keyword.iterate { keyword: 'she', }
-  echo(); echo row for row from phrases.statements.locations_from_keyword.iterate { keyword: '廓', }
-  echo(); echo row for row from phrases.statements.locations_from_keyword.iterate { keyword: '度', }
-  #.........................................................................................................
-  echo(); echo row for row from phrases.statements.lines_from_keyword.iterate { keyword: 'thought', }
-  echo(); echo row for row from phrases.statements.lines_from_keyword.iterate { keyword: 'she', }
-  echo(); echo row for row from phrases.statements.lines_from_keyword.iterate { keyword: '廓', }
-  echo(); echo row for row from phrases.statements.lines_from_keyword.iterate { keyword: '度', }
-  #.........................................................................................................
-  ;null
-
-#===========================================================================================================
-write_line_data_to_sqlitefs = ->
-  db_path   = PATH.resolve __dirname, '../../bvfs/bvfs.db'
-  bvfs      = Dbric.open db_path
-  #.........................................................................................................
-  file_id_and_size_from_path = bvfs.prepare SQL"""
-    select
-        p.file_id as file_id,
-        m.size    as size
-      from bb_paths as p
-      join metadata as m on ( p.file_id = m.id )
-      where p.path = $path;"""
-  #.........................................................................................................
-  insert_line_byte_offset = bvfs.prepare SQL"""
-    insert into bb_line_byte_offsets ( file_id,   line_nr,  block_num,  start,  stop )
-      values                         ( $file_id, $line_nr, $block_num, $start, $stop );"""
-  #.........................................................................................................
-  ### NOTE must know byte size of file ###
-  ### TAINT should become `Dbric::get_first_row()` ###
-  get_first_row = ( iterator ) ->
-    R             = null
-    { value: R,
-      done,     } = iterator.next()
-    if ( done ) or ( not R? )
-      throw new Error "Ωdbric___8 expected exactly one row, got none"
-    extra     = iterator.next()
-    throwaway = [ iterator..., ] ### NOTE alway exhaust iterator to keep it from blocking DB ###
-    if ( not extra.done ) or ( extra.value? )
-      throw new Error "Ωdbric___9 expected exactly one row, got more than one: #{rpr extra}"
-    return R
-  #.........................................................................................................
-  populate_line_byte_offsets = ({ path, }) ->
-    { file_id,
-      size,     } = get_first_row file_id_and_size_from_path.iterate { path, }
-    urge 'Ωjzrsdb__10', { file_id, size, path, }
-    #.........................................................................................................
-    ### NOTE Entries in table `bb_line_byte_offsets` require a foreign key to some data block, but empty
-    files do not get a data block. As a tentative solution, we do not represent empty files in
-    `bb_line_byte_offsets` at all, leaving it up to consumers (e.g. the view containing file lines)
-    to deal with the situation. ###
-    debug 'Ωjzrsdb__11', "file #{path} is empty" if size is 0
-    return 0 if size is 0
-    #.........................................................................................................
-    read_blobs_for_file_id = bvfs.prepare SQL"""
-      select
-        block_num,
-        data
-      from data
-      where file_id = $file_id
-      order by block_num;"""
-    #.........................................................................................................
-    lf_cid = ( '\n' ).codePointAt 0
-    cr_cid = ( '\r' ).codePointAt 0
-    find_linebreaks = ( values ) ->
-      ### TAINT use Array::find() to iterate over all values in array and satisfy compound criterion" ###
-      R       = []
-      start   = 0
-      length  = 1 # could be two for CRLF
-      ### NOTE This test could be used once on each buffer; once it returns `true` a more complicated
-      algorithm to detect `/\r\n|\r|\n/` should be used for the rest of the file:
-
-        if use_crlf_algo = values.includes cr_cid
-      ###
-      loop
-        break if ( idx = values.indexOf lf_cid, start ) < 0
-        R.push [ idx, length, ]
-        start = idx + 1
-      return R
-    #.........................................................................................................
-    current_byte_count  = 0
-    file_finished       = false
-    for d from read_blobs_for_file_id.iterate { file_id, }
-      buffer  = Buffer.from d.data
-      text    = ( buffer.toString 'utf-8' )[ .. 100 ]
-      # debug 'Ωjzrsdb__12', d.data
-      debug 'Ωjzrsdb__13', 'file', 'block', d.block_num, ( rpr text )
-      linebreak_idxs  = find_linebreaks d.data
-      data_length     = d.data.length
-      debug 'Ωjzrsdb__14', linebreak_idxs
-      if linebreak_idxs.length is 0
-        ### TAINT deal with no line breaks ###
-        continue
-      last_entry_idx = linebreak_idxs.length - 1
-      for [ nl_idx, nl_length, ], entry_idx in linebreak_idxs
-        if entry_idx < last_entry_idx
-          linepart_length = linebreak_idxs[ entry_idx + 1 ][ 0 ] - nl_idx
-        else
-          delta = last_entry_idx - nl_idx
-          if ( remaining_bytes = size - current_byte_count ) < delta
-            linepart_length = remaining_bytes
-            file_finished   = true
-          else
-            linepart_length = delta
-        current_byte_count += linepart_length
-  #.........................................................................................................
-  paths = [
-    '/〇一二三四五六七八九.txt'
-    '/nulls.txt'
-    '/empty.txt'
-    ]
-  for path in paths
-    populate_line_byte_offsets { path, }
+  count = 0
+  for { lnr: line_nr, line, } from walk_lines_with_positions meanings_path
+    debug 'Ωjzrsdb___3', line_nr, rpr line
+    count++
+    break if count > 10
   #.........................................................................................................
   ;null
 
 
-#===========================================================================================================
-demo_read_lines_from_buffers = ->
-  { walk_buffers_with_positions,
-    walk_lines_with_positions, } = SFMODULES.unstable.require_fast_linereader()
-  path = PATH.resolve __dirname, '../package.json'
-  for d from walk_buffers_with_positions path
-    debug 'Ωjzrsdb__15', d
-  for d from walk_lines_with_positions path, { chunk_size: 10, }
-    debug 'Ωjzrsdb__16', d
-  ;null
 
 #===========================================================================================================
 if module is require.main then do =>
-  # materialized_file_mirror()
-  write_line_data_to_sqlitefs()
-  # demo_read_lines_from_buffers()
+  populate_meaning_facets()
   ;null
 
