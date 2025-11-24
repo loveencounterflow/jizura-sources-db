@@ -98,9 +98,19 @@ class Jzrbvfs extends Dbric
       check ( rowid regexp '^t:ds:R=\\d+$'));"""
 
     #.......................................................................................................
-    SQL"""create table jzr_filemirror (
+    SQL"""create table jzr_mirror_lcodes (
+        rowid     text    unique  not null,
+        lcode     text    unique  not null,
+        comment   text            not null,
+      primary key ( rowid ),
+      check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
+      check ( rowid = 't:lc:V=' || lcode ) );"""
+
+    #.......................................................................................................
+    SQL"""create table jzr_mirror_lines (
         -- 't:jfm:'
         rowid     text    unique  not null,
+        ref       text    unique  not null generated always as ( dskey || ':L=' || line_nr ) virtual,
         dskey     text            not null,
         line_nr   integer         not null,
         lcode     text            not null,
@@ -110,20 +120,28 @@ class Jzrbvfs extends Dbric
         field_3   text                null,
         field_4   text                null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:fm:R=\\d+$'),
-      unique ( dskey, line_nr ) );"""
+      check ( rowid regexp '^t:mr:ln:R=\\d+$'),
+      unique ( dskey, line_nr ),
+      foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
 
     #.......................................................................................................
-    SQL"""create table jzr_facets (
+    SQL"""create table jzr_mirror_triples (
         rowid     text    unique  not null,
+        ref       text    unique  not null generated always as ( dskey || ':L=' || line_nr ) virtual,
         dskey     text            not null,
         line_nr   integer         not null,
-        fk        text            not null,
-        fv        json            not null,
+        -- ### TAINT use refs, rowids to identify subjects?
+        s         text            not null,
+        v         text            not null,
+        o         json            not null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:fct:R=\\d+$' ),
-      unique ( dskey, line_nr, fk, fv ),
-      foreign key ( dskey ) references jzr_datasources ( dskey ) );"""
+      check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
+      unique ( dskey, line_nr, s, v, o ),
+      foreign key ( dskey, line_nr ) references jzr_mirror_lines ( dskey, line_nr )
+      );"""
+
+    #.......................................................................................................
+    ### aggregate table for all rowids goes here ###
 
     #.......................................................................................................
     ]
@@ -137,10 +155,20 @@ class Jzrbvfs extends Dbric
         on conflict ( dskey ) do update set path = $path;"""
 
     #.......................................................................................................
-    populate_jzr_filemirror: SQL"""
-      insert into jzr_filemirror ( rowid, dskey, line_nr, lcode, line, field_1, field_2, field_3, field_4 )
+    insert_jzr_mirror_lcode: SQL"""
+      insert into jzr_mirror_lcodes ( rowid, lcode, comment ) values ( $rowid, $lcode, $comment )
+        on conflict ( rowid ) do update set lcode = $lcode, comment = $comment;"""
+
+    #.......................................................................................................
+    insert_jzr_mirror_triple: SQL"""
+      insert into jzr_mirror_triples ( rowid, dskey, line_nr, s, v, o ) values ( $rowid, $dskey, $line_nr, $s, $v, $o )
+        on conflict ( dskey, line_nr, s, v, o ) do nothing;"""
+
+    #.......................................................................................................
+    populate_jzr_mirror_lines: SQL"""
+      insert into jzr_mirror_lines ( rowid, dskey, line_nr, lcode, line, field_1, field_2, field_3, field_4 )
       select
-        't:fm:R=' || row_number() over ()          as rowid,
+        't:mr:ln:R=' || row_number() over ()          as rowid,
         -- ds.dskey || ':L=' || fl.line_nr   as rowid,
         ds.dskey                          as dskey,
         fl.line_nr                        as line_nr,
@@ -162,7 +190,8 @@ class Jzrbvfs extends Dbric
     ### TAINT need more clarity about when statements, build, initialize... is performed ###
     R = super P...
     R._on_open_populate_jzr_datasources()
-    R._on_open_populate_jzr_filemirror()
+    R._on_open_populate_jzr_mirror_lcodes()
+    R._on_open_populate_jzr_mirror_lines()
     return R
 
   #---------------------------------------------------------------------------------------------------------
@@ -173,8 +202,20 @@ class Jzrbvfs extends Dbric
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  _on_open_populate_jzr_filemirror: ->
-    @statements.populate_jzr_filemirror.run()
+  _on_open_populate_jzr_mirror_lcodes: ->
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:lc:V=B', lcode: 'B', comment: 'blank line',   }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:lc:V=C', lcode: 'C', comment: 'comment line', }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:lc:V=D', lcode: 'D', comment: 'data line',    }
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_mirror_lines: ->
+    @statements.populate_jzr_mirror_lines.run()
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_mirror_triples_for_meanings: ->
+    @statements.insert_jzr_mirror_triple.run
     ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -209,7 +250,7 @@ class Jzrbvfs extends Dbric
           field_1 = field_2 = field_3 = field_4 = null
           switch true
             when /^\s*$/v.test line
-              lcode = 'E'
+              lcode = 'B'
             when /^\s*#/v.test line
               lcode = 'C'
             else
@@ -225,7 +266,7 @@ class Jzrbvfs extends Dbric
     ;null
 
 #===========================================================================================================
-populate_meaning_facets = ->
+populate_meaning_mirror_triples = ->
   db = get_db()
   #.........................................................................................................
   ### TAINT a convoluted way to get a file path ###
@@ -247,7 +288,7 @@ populate_meaning_facets = ->
 
 #===========================================================================================================
 if module is require.main then do =>
-  populate_meaning_facets()
+  populate_meaning_mirror_triples()
   # demo_source_identifiers()
 
   # debug 'Ωjzrsdb___4', db = new Bsql3 ':memory:'
