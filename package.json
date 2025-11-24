@@ -11,7 +11,7 @@
   "license": "ISC",
   "packageManager": "pnpm@10.17.1",
   "dependencies": {
-    "better-sqlite3": "^12.4.1",
+    "better-sqlite3": "^12.4.6",
     "bricabrac-sfmodules": "^0.20.0",
     "guy": "^14.2.0"
   }
