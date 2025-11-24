@@ -59,19 +59,19 @@ demo_source_identifiers = ->
   # aref: labels this proximal point in the data set as an origin
   # mref: identifies both the proximal and the distal end
   # zref: identifies the distal source of a piece of data
-  {
-    'dict:meanings':          '$jzrds/meaning/meanings.txt'
-    'dict:ucd:v140.0:uhdidx': '$jzrds/unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-    }
+  # {
+  #   'dict:meanings':          '$jzrds/meaning/meanings.txt'
+  #   'dict:ucd:v14.0:uhdidx' : '$jzrds/unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  #   }
 
 #===========================================================================================================
 get_paths = ->
-  R               = {}
-  R.base          = PATH.resolve __dirname, '..'
-  R.db            = PATH.join R.base, 'jzr.db'
-  R.jzrds         = PATH.join R.base, 'jzrds'
-  R.meanings      = PATH.join R.jzrds, 'meaning/meanings.txt'
-  R.ucd140_index  = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  R                               = {}
+  R.base                          = PATH.resolve __dirname, '..'
+  R.db                            = PATH.join R.base, 'jzr.db'
+  R.jzrds                         = PATH.join R.base, 'jzrds'
+  R[ 'dict:meanings'          ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
+  R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
   return R
 
 #-----------------------------------------------------------------------------------------------------------
@@ -95,7 +95,7 @@ class Jzrbvfs extends Dbric
         dskey text        unique  not null,
         path  text                not null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:ds:\d+$'));"""
+      check ( rowid regexp '^t:ds:R=\\d+$'));"""
 
     #.......................................................................................................
     SQL"""create table jzr_filemirror (
@@ -110,7 +110,7 @@ class Jzrbvfs extends Dbric
         field_3   text                null,
         field_4   text                null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:fm:\d+$'),
+      check ( rowid regexp '^t:fm:R=\\d+$'),
       unique ( dskey, line_nr ) );"""
 
     #.......................................................................................................
@@ -121,7 +121,7 @@ class Jzrbvfs extends Dbric
         fk        text            not null,
         fv        json            not null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:fct:\d+$'),
+      check ( rowid regexp '^t:fct:R=\\d+$' ),
       unique ( dskey, line_nr, fk, fv ),
       foreign key ( dskey ) references jzr_datasources ( dskey ) );"""
 
@@ -132,21 +132,24 @@ class Jzrbvfs extends Dbric
   @statements:
 
     #.......................................................................................................
-    insert_jzr_datasource: SQL"""insert into jzr_datasources ( dskey, path ) values ( $dskey, $path )
-      on conflict ( dskey ) do update set path = $path;"""
+    insert_jzr_datasource: SQL"""
+      insert into jzr_datasources ( rowid, dskey, path ) values ( $rowid, $dskey, $path )
+        on conflict ( dskey ) do update set path = $path;"""
 
     #.......................................................................................................
     populate_jzr_filemirror: SQL"""
-      insert into jzr_filemirror ( dskey, line_nr, lcode, line, field_1, field_2, field_3, field_4 )
+      insert into jzr_filemirror ( rowid, dskey, line_nr, lcode, line, field_1, field_2, field_3, field_4 )
       select
-        ds.dskey    as dskey,
-        fl.line_nr  as line_nr,
-        fl.lcode       as lcode,
-        fl.line     as line,
-        fl.field_1  as field_1,
-        fl.field_2  as field_2,
-        fl.field_3  as field_3,
-        fl.field_4  as field_4
+        't:fm:R=' || row_number() over ()          as rowid,
+        -- ds.dskey || ':L=' || fl.line_nr   as rowid,
+        ds.dskey                          as dskey,
+        fl.line_nr                        as line_nr,
+        fl.lcode                          as lcode,
+        fl.line                           as line,
+        fl.field_1                        as field_1,
+        fl.field_2                        as field_2,
+        fl.field_3                        as field_3,
+        fl.field_4                        as field_4
       from jzr_datasources        as ds
       join file_lines( ds.path )  as fl
       where true
@@ -165,8 +168,8 @@ class Jzrbvfs extends Dbric
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
     paths = get_paths()
-    @statements.insert_jzr_datasource.run { dskey: 'dict/meanings/1',     path: paths.meanings, }
-    @statements.insert_jzr_datasource.run { dskey: 'dict/ucd140/index/1', path: paths.ucd140_index, }
+    dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -227,7 +230,7 @@ populate_meaning_facets = ->
   #.........................................................................................................
   ### TAINT a convoluted way to get a file path ###
   ### TAINT make an API call ###
-  dskey = 'dict/meanings/1'
+  dskey = 'dict:meanings'
   for row from db.walk SQL"select * from jzr_datasources where dskey = $dskey;", { dskey, }
     meanings_path = row.path
     break
