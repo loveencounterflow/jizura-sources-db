@@ -43,4 +43,6 @@
 
 * does BVFS / `narumatt/sqlitefs` use `journal_mode = WAL`?
 
-
+* use URNs / URLs / URIs / IRIs / [XRIs](https://en.wikipedia.org/wiki/Extensible_Resource_Identifier) to
+  identify provenance of data
+  * example: https://example.com/jzr:foo:bar a URN in a URL
