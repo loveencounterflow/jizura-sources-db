@@ -47,16 +47,32 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
 
 
 #===========================================================================================================
+demo_source_identifiers = ->
+  { expand_dictionary,      } = SFMODULES.require_dictionary_tools()
+  { get_local_destinations, } = SFMODULES.require_get_local_destinations()
+  for key, value of get_local_destinations()
+    debug 'Ωjzrsdb___1', key, value
+  # can append line numbers to files as in:
+  # 'dict:meanings.1:L=13332'
+  # 'dict:ucd140.1:uhdidx:L=1234'
+  # rowids: 't:jfm:R=1'
+  # aref: labels this proximal point in the data set as an origin
+  # mref: identifies both the proximal and the distal end
+  # zref: identifies the distal source of a piece of data
+  {
+    'dict:meanings':          '$jzrds/meaning/meanings.txt'
+    'dict:ucd:v140.0:uhdidx': '$jzrds/unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+    }
+
+#===========================================================================================================
 get_paths = ->
-  base      = PATH.resolve __dirname, '..'
-  db        = PATH.join base, 'jzr.db'
-  jzrds     = PATH.join base, 'jzrds'
-  meanings  = PATH.join jzrds, 'meaning/meanings.txt'
-  return {
-    base,
-    db,
-    jzrds,
-    meanings, }
+  R               = {}
+  R.base          = PATH.resolve __dirname, '..'
+  R.db            = PATH.join R.base, 'jzr.db'
+  R.jzrds         = PATH.join R.base, 'jzrds'
+  R.meanings      = PATH.join R.jzrds, 'meaning/meanings.txt'
+  R.ucd140_index  = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  return R
 
 #-----------------------------------------------------------------------------------------------------------
 get_db = ->
@@ -75,30 +91,39 @@ class Jzrbvfs extends Dbric
 
     #.......................................................................................................
     SQL"""create table jzr_datasources (
-        dskey text unique not null,
-        path text not null,
-        primary key ( dskey ) );"""
+        rowid text        unique  not null,
+        dskey text        unique  not null,
+        path  text                not null,
+      primary key ( rowid ),
+      check ( rowid regexp '^t:ds:\d+$'));"""
 
     #.......................................................................................................
     SQL"""create table jzr_filemirror (
-        dskey     text    not null,
-        line_nr   integer not null,
-        lcode     text    not null,
-        line      text    not null,
-        field_1   text        null,
-        field_2   text        null,
-        field_3   text        null,
-        field_4   text        null,
-        primary key ( dskey, line_nr ) );"""
+        -- 't:jfm:'
+        rowid     text    unique  not null,
+        dskey     text            not null,
+        line_nr   integer         not null,
+        lcode     text            not null,
+        line      text            not null,
+        field_1   text                null,
+        field_2   text                null,
+        field_3   text                null,
+        field_4   text                null,
+      primary key ( rowid ),
+      check ( rowid regexp '^t:fm:\d+$'),
+      unique ( dskey, line_nr ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_facets (
-        dskey   text    not null,
-        line_nr integer not null,
-        fk      text    not null,
-        fv      json    not null,
-      foreign key ( dskey ) references jzr_datasources ( dskey ),
-      primary key ( dskey, line_nr, fk, fv ) );"""
+        rowid     text    unique  not null,
+        dskey     text            not null,
+        line_nr   integer         not null,
+        fk        text            not null,
+        fv        json            not null,
+      primary key ( rowid ),
+      check ( rowid regexp '^t:fct:\d+$'),
+      unique ( dskey, line_nr, fk, fv ),
+      foreign key ( dskey ) references jzr_datasources ( dskey ) );"""
 
     #.......................................................................................................
     ]
@@ -140,8 +165,8 @@ class Jzrbvfs extends Dbric
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
     paths = get_paths()
-    debug 'Ωjzrsdb___1', paths
-    @statements.insert_jzr_datasource.run { dskey: 'dict/meanings/1', path: paths.meanings, }
+    @statements.insert_jzr_datasource.run { dskey: 'dict/meanings/1',     path: paths.meanings, }
+    @statements.insert_jzr_datasource.run { dskey: 'dict/ucd140/index/1', path: paths.ucd140_index, }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -152,6 +177,12 @@ class Jzrbvfs extends Dbric
   #---------------------------------------------------------------------------------------------------------
   initialize: ->
     super()
+    #.......................................................................................................
+    @create_function
+      name:           'regexp'
+      deterministic:  true
+      call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
+
     #.......................................................................................................
     @create_table_function
       name:           'split_words'
@@ -214,5 +245,11 @@ populate_meaning_facets = ->
 #===========================================================================================================
 if module is require.main then do =>
   populate_meaning_facets()
+  # demo_source_identifiers()
+
+  # debug 'Ωjzrsdb___4', db = new Bsql3 ':memory:'
+  # help 'Ωjzrsdb___5', row for row from ( db.prepare SQL"select 45 * 88;" ).iterate()
+  # help 'Ωjzrsdb___6', row for row from ( db.prepare SQL"select 'abc' like 'a%';" ).iterate()
+  # help 'Ωjzrsdb___7', row for row from ( db.prepare SQL"select 'abc' regexp '^a';" ).iterate()
   ;null
 
