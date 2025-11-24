@@ -234,7 +234,7 @@ class Jzrbvfs extends Dbric
       parameters:     [ 'line', ]
       rows: ( line ) ->
         keywords = line.split /(?:\p{Z}+)|((?:\p{Script=Han})|(?:\p{L}+)|(?:\p{N}+)|(?:\p{S}+))/v
-        # debug 'Ωjzrsdb___2', line_nr, rpr keywords
+        # debug 'Ωjzrsdb___5', line_nr, rpr keywords
         for keyword in keywords
           continue unless keyword?
           continue if keyword is ''
@@ -291,9 +291,9 @@ if module is require.main then do =>
   populate_meaning_mirror_triples()
   # demo_source_identifiers()
 
-  # debug 'Ωjzrsdb___4', db = new Bsql3 ':memory:'
-  # help 'Ωjzrsdb___5', row for row from ( db.prepare SQL"select 45 * 88;" ).iterate()
-  # help 'Ωjzrsdb___6', row for row from ( db.prepare SQL"select 'abc' like 'a%';" ).iterate()
-  # help 'Ωjzrsdb___7', row for row from ( db.prepare SQL"select 'abc' regexp '^a';" ).iterate()
+  # debug 'Ωjzrsdb__12', db = new Bsql3 ':memory:'
+  # help 'Ωjzrsdb__13', row for row from ( db.prepare SQL"select 45 * 88;" ).iterate()
+  # help 'Ωjzrsdb__14', row for row from ( db.prepare SQL"select 'abc' like 'a%';" ).iterate()
+  # help 'Ωjzrsdb__15', row for row from ( db.prepare SQL"select 'abc' regexp '^a';" ).iterate()
   ;null
 
