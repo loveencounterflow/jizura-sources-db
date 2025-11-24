@@ -127,17 +127,18 @@ class Jzrbvfs extends Dbric
     #.......................................................................................................
     SQL"""create table jzr_mirror_triples (
         rowid     text    unique  not null,
-        ref       text    unique  not null generated always as ( dskey || ':L=' || line_nr ) virtual,
-        dskey     text            not null,
-        line_nr   integer         not null,
+        ref       text            not null,
+        -- ref       text    unique  not null generated always as ( dskey || ':L=' || line_nr ) virtual,
+        -- dskey     text            not null,
+        -- line_nr   integer         not null,
         -- ### TAINT use refs, rowids to identify subjects?
         s         text            not null,
         v         text            not null,
         o         json            not null,
       primary key ( rowid ),
       check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
-      unique ( dskey, line_nr, s, v, o ),
-      foreign key ( dskey, line_nr ) references jzr_mirror_lines ( dskey, line_nr )
+      unique ( ref, s, v, o ),
+      foreign key ( ref ) references jzr_mirror_lines ( rowid )
       );"""
 
     #.......................................................................................................
@@ -161,8 +162,8 @@ class Jzrbvfs extends Dbric
 
     #.......................................................................................................
     insert_jzr_mirror_triple: SQL"""
-      insert into jzr_mirror_triples ( rowid, dskey, line_nr, s, v, o ) values ( $rowid, $dskey, $line_nr, $s, $v, $o )
-        on conflict ( dskey, line_nr, s, v, o ) do nothing;"""
+      insert into jzr_mirror_triples ( rowid, ref, s, v, o ) values ( $rowid, $ref, $s, $v, $o )
+        on conflict ( ref, s, v, o ) do nothing;"""
 
     #.......................................................................................................
     populate_jzr_mirror_lines: SQL"""
@@ -189,9 +190,15 @@ class Jzrbvfs extends Dbric
     ### TAINT not a very nice solution ###
     ### TAINT need more clarity about when statements, build, initialize... is performed ###
     R = super P...
-    R._on_open_populate_jzr_datasources()
-    R._on_open_populate_jzr_mirror_lcodes()
-    R._on_open_populate_jzr_mirror_lines()
+    if R.is_fresh
+      R._on_open_populate_jzr_datasources()
+      R._on_open_populate_jzr_mirror_lcodes()
+      R._on_open_populate_jzr_mirror_lines()
+      R._on_open_populate_jzr_mirror_triples_for_meanings()
+    else
+      warn 'Ωjzrsdb___2', "skipped data insertion"
+      debug 'Ωjzrsdb___3', R.is_ready
+      debug 'Ωjzrsdb___4', R.is_fresh
     return R
 
   #---------------------------------------------------------------------------------------------------------
@@ -215,8 +222,7 @@ class Jzrbvfs extends Dbric
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_triples_for_meanings: ->
-    @statements.insert_jzr_mirror_triple.run
-    ;null
+    # ;null
 
   #---------------------------------------------------------------------------------------------------------
   initialize: ->
@@ -268,19 +274,66 @@ class Jzrbvfs extends Dbric
 #===========================================================================================================
 populate_meaning_mirror_triples = ->
   db = get_db()
+  # #.........................................................................................................
+  # ### TAINT a convoluted way to get a file path ###
+  # ### TAINT make an API call ###
+  # dskey = 'dict:meanings'
+  # for row from db.walk SQL"select * from jzr_datasources where dskey = $dskey;", { dskey, }
+  #   meanings_path = row.path
+  #   break
+  # #.........................................................................................................
+  # count = 0
+  # for { lnr: line_nr, line, } from walk_lines_with_positions meanings_path
+  #   debug 'Ωjzrsdb___6', line_nr, rpr line
+  #   count++
+  #   break if count > 10
   #.........................................................................................................
-  ### TAINT a convoluted way to get a file path ###
-  ### TAINT make an API call ###
-  dskey = 'dict:meanings'
-  for row from db.walk SQL"select * from jzr_datasources where dskey = $dskey;", { dskey, }
-    meanings_path = row.path
-    break
+  remove_pinyin_diacritics = ( text ) -> ( text.normalize 'NFKD' ).replace /\P{L}/gv, ''
   #.........................................................................................................
-  count = 0
-  for { lnr: line_nr, line, } from walk_lines_with_positions meanings_path
-    debug 'Ωjzrsdb___3', line_nr, rpr line
-    count++
-    break if count > 10
+  extract_atonal_zh_readings = ( entry ) ->
+    # py:zhù, zhe, zhāo, zháo, zhǔ, zī
+    R = entry
+    R = entry.replace /^py:/v, ''
+    R = R.split /,\s*/v
+    R = new Set ( remove_pinyin_diacritics zh_reading for zh_reading in R )
+    return [ R..., ]
+  #.........................................................................................................
+  fn = ->
+    row_count = 0
+    #.......................................................................................................
+    query = SQL"""
+      select
+          rowid,
+          -- ref,
+          field_2 as chr,
+          field_3 as entry
+        from jzr_mirror_lines
+        where true
+          and ( dskey = 'dict:meanings' )
+          and ( field_1 is not null )
+          and ( field_1 not regexp '^@glyphs' )
+          and ( field_3 regexp '^py:' )
+        order by field_3;"""
+    #.......................................................................................................
+    for row from @walk query
+      zh_readings = extract_atonal_zh_readings row.entry
+      debug 'Ωjzrsdb___7', { row..., zh_readings, }
+      #.....................................................................................................
+      for zh_reading in zh_readings
+        row_count++
+        rowid = "t:mr:3pl:R=#{row_count}"
+        ref   = row.rowid
+        s     = row.chr
+        v     = 'zh_reading'
+        o     = zh_reading
+        @w.statements.insert_jzr_mirror_triple.run { rowid, ref, s, v, o, }
+    #.......................................................................................................
+    ;null
+  fn.call db
+  # debug 'Ωjzrsdb___8', Array.from 'zì'.normalize 'NFC'
+  # debug 'Ωjzrsdb___9', Array.from 'zì'.normalize 'NFKC'
+  # debug 'Ωjzrsdb__10', Array.from 'zì'.normalize 'NFD'
+  # debug 'Ωjzrsdb__11', Array.from 'zì'.normalize 'NFKD'
   #.........................................................................................................
   ;null
 
