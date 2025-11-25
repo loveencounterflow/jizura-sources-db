@@ -44,6 +44,10 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
   Async_jetstream,          } = SFMODULES.require_jetstream()
 #...........................................................................................................
 { walk_lines_with_positions } = SFMODULES.unstable.require_fast_linereader()
+#...........................................................................................................
+{ Benchmarker,              } = SFMODULES.unstable.require_benchmarking()
+benchmarker                   = new Benchmarker()
+timeit                        = ( P... ) -> benchmarker.timeit P...
 
 
 #===========================================================================================================
@@ -69,6 +73,7 @@ get_paths = ->
   R                               = {}
   R.base                          = PATH.resolve __dirname, '..'
   R.db                            = PATH.join R.base, 'jzr.db'
+  # R.db                            = '/dev/shm/jzr.db'
   R.jzrds                         = PATH.join R.base, 'jzrds'
   R[ 'dict:meanings'          ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
   R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
@@ -91,9 +96,9 @@ class Jzrbvfs extends Dbric
 
     #.......................................................................................................
     SQL"""create table jzr_datasources (
-        rowid text        unique  not null,
-        dskey text        unique  not null,
-        path  text                not null,
+        rowid     text    unique  not null,
+        dskey     text    unique  not null,
+        path      text            not null,
       primary key ( rowid ),
       check ( rowid regexp '^t:ds:R=\\d+$'));"""
 
@@ -128,10 +133,6 @@ class Jzrbvfs extends Dbric
     SQL"""create table jzr_mirror_triples (
         rowid     text    unique  not null,
         ref       text            not null,
-        -- ref       text    unique  not null generated always as ( dskey || ':L=' || line_nr ) virtual,
-        -- dskey     text            not null,
-        -- line_nr   integer         not null,
-        -- ### TAINT use refs, rowids to identify subjects?
         s         text            not null,
         v         text            not null,
         o         json            not null,
@@ -205,8 +206,15 @@ class Jzrbvfs extends Dbric
   _on_open_populate_jzr_datasources: ->
     paths = get_paths()
     dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
-    dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
+    # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
     ;null
+
+  # #---------------------------------------------------------------------------------------------------------
+  # _on_open_populate_verbs: ->
+  #   paths = get_paths()
+  #   dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
+  #   dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
+  #   ;null
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lcodes: ->
@@ -227,6 +235,9 @@ class Jzrbvfs extends Dbric
   #---------------------------------------------------------------------------------------------------------
   initialize: ->
     super()
+    @_TMP_state = { triple_count: 0, }
+    me = @
+
     #.......................................................................................................
     @create_function
       name:           'regexp'
@@ -246,6 +257,7 @@ class Jzrbvfs extends Dbric
           continue if keyword is ''
           yield { keyword, }
         ;null
+
     #.......................................................................................................
     @create_table_function
       name:         'file_lines'
@@ -269,12 +281,96 @@ class Jzrbvfs extends Dbric
           yield { line_nr, lcode, line, field_1, field_2, field_3, field_4, }
         ;null
     #.......................................................................................................
+    @create_table_function
+      name:         'get_triples'
+      parameters:   [ 'rowid_in', 'field_1', 'field_2', 'field_3', 'field_4', ]
+      columns:      [ 'rowid_out', 'ref', 's', 'v', 'o', ]
+      rows: ( rowid_in, field_1, field_2, field_3, field_4 ) ->
+        yield from me.get_triples rowid_in, field_1, field_2, field_3, field_4
+        ;null
+    #.......................................................................................................
     ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  get_triples: ( rowid_in, field_1, field_2, field_3, field_4 ) ->
+    ref           = rowid_in
+    s             = field_2
+    v             = null
+    o             = null
+    entry         = field_3
+    #.......................................................................................................
+    switch true
+      #...................................................................................................
+      when entry.startsWith 'py:'
+        v         = 'zh_reading'
+        readings  = tmp_language_services.extract_atonal_zh_readings entry
+      #...................................................................................................
+      when ( entry.startsWith 'hi:' ) or ( entry.startsWith 'ka:' )
+        v         = 'ja_reading'
+        readings  = tmp_language_services.extract_ja_readings entry
+    #.....................................................................................................
+    if v?
+      for reading in readings
+        @_TMP_state.triple_count++
+        rowid_out = "t:mr:3pl:R=#{@_TMP_state.triple_count}"
+        o         = reading
+        yield { rowid_out, ref, s, v, o, }
+        @_TMP_state.timeit_progress?()
+        # @w.statements.insert_jzr_mirror_triple.run { rowid, ref, s, v, o, }
+        # progress()
+    # rowid_out = "t:mr:3pl:R=#{triple_count}"
+    # s         = "s.#{triple_count}"
+    # v         = "v.#{triple_count}"
+    # o         = "o.#{triple_count}"
+    # yield { rowid_out, ref, s, v, o, }
+    #.......................................................................................................
+    return null
+
+#===========================================================================================================
+class TMP_language_services
+  #.........................................................................................................
+  remove_pinyin_diacritics: ( text ) -> ( text.normalize 'NFKD' ).replace /\P{L}/gv, ''
+  #.........................................................................................................
+  extract_atonal_zh_readings: ( entry ) ->
+    # py:zhù, zhe, zhāo, zháo, zhǔ, zī
+    R = entry
+    R = R.replace /^py:/v, ''
+    R = R.split /,\s*/v
+    R = ( ( @remove_pinyin_diacritics zh_reading ) for zh_reading in R )
+    R = new Set R
+    R.delete 'null'
+    R.delete '@null'
+    return [ R..., ]
+  #.........................................................................................................
+  extract_ja_readings: ( entry ) ->
+    # 空      hi:そら, あ·(く|き|ける), から, す·(く|かす), むな·しい
+    R = entry
+    R = R.replace /^(?:hi|ka):/v, ''
+    R = R.replace /\s+/gv, ''
+    R = R.split /,\s*/v
+    ### NOTE remove no-readings marker `@null` and contextual readings like -ネン for 縁, -ノウ for 王 ###
+    R = ( reading for reading in R when not reading.startsWith '-' )
+    R = new Set R
+    R.delete 'null'
+    R.delete '@null'
+    return [ R..., ]
+tmp_language_services = new TMP_language_services()
 
 #===========================================================================================================
 populate_meaning_mirror_triples = ->
   db = get_db()
-  # #.........................................................................................................
+  { total_row_count, } = ( db.prepare SQL"""
+    select
+        count(*) as total_row_count
+      from jzr_mirror_lines
+      where true
+        and ( dskey = 'dict:meanings' )
+        and ( field_1 is not null )
+        and ( not field_1 regexp '^@glyphs' );""" ).get()
+  total = total_row_count * 2 ### NOTE estimate ###
+  # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+  help 'Ωjzrsdb___1', { total_row_count, total, }
+  #.........................................................................................................
   # ### TAINT a convoluted way to get a file path ###
   # ### TAINT make an API call ###
   # dskey = 'dict:meanings'
@@ -288,54 +384,114 @@ populate_meaning_mirror_triples = ->
   #   count++
   #   break if count > 10
   #.........................................................................................................
-  remove_pinyin_diacritics = ( text ) -> ( text.normalize 'NFKD' ).replace /\P{L}/gv, ''
+  # triple_count = 0
+  # get_triples = ( rowid_in, field_1, field_2, field_3, field_4 ) ->
+  #   triple_count++
+  #   rowid_out = "t:mr:3pl:R=#{triple_count}"
+  #   ref       = rowid_in
+  #   s         = "s.#{triple_count}"
+  #   v         = "v.#{triple_count}"
+  #   o         = "o.#{triple_count}"
+  #   yield { rowid_out, ref, s, v, o, }
+  #   return null
   #.........................................................................................................
-  extract_atonal_zh_readings = ( entry ) ->
-    # py:zhù, zhe, zhāo, zháo, zhǔ, zī
-    R = entry
-    R = entry.replace /^py:/v, ''
-    R = R.split /,\s*/v
-    R = new Set ( remove_pinyin_diacritics zh_reading for zh_reading in R )
-    return [ R..., ]
+  using_1_connection = ->
+    #.......................................................................................................
+    populate_jzr_mirror_triples = db.prepare SQL"""
+      insert into jzr_mirror_triples ( rowid, ref, s, v, o )
+        select
+            gt.rowid_out    as rowid,
+            gt.ref          as ref,
+            gt.s            as s,
+            gt.v            as v,
+            gt.o            as o
+          from jzr_mirror_lines       as ml
+          join get_triples( ml.rowid, ml.field_1, ml.field_2, ml.field_3 )  as gt
+          where true
+            and ( ml.dskey = 'dict:meanings' )
+            and ( ml.field_1 is not null )
+            and ( ml.field_1 not regexp '^@glyphs' )
+            and ( ml.field_3 regexp '^(?:py|hi|ka):' )
+        on conflict ( ref, s, v, o ) do nothing;
+      """
+    #.......................................................................................................
+    brand = 'BRAND'
+    timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
+      @_TMP_state.timeit_progress = progress
+      _begin db.db; db.execute SQL"begin transaction;"
+      populate_jzr_mirror_triples.run()
+      db.execute SQL"commit;"; _end db.db
+      @_TMP_state.timeit_progress = null
+    #.......................................................................................................
+    ;null
   #.........................................................................................................
-  fn = ->
+  using_2_connections = ->
     row_count = 0
     #.......................................................................................................
     query = SQL"""
       select
-          rowid,
-          -- ref,
-          field_2 as chr,
-          field_3 as entry
+          rowid     as rowid,
+          field_2   as chr,
+          field_3   as entry
         from jzr_mirror_lines
         where true
           and ( dskey = 'dict:meanings' )
           and ( field_1 is not null )
           and ( field_1 not regexp '^@glyphs' )
-          and ( field_3 regexp '^py:' )
-        order by field_3;"""
+          and ( field_3 regexp '^(?:py|hi|ka):' )
+        ;"""
     #.......................................................................................................
-    for row from @walk query
-      zh_readings = extract_atonal_zh_readings row.entry
-      debug 'Ωjzrsdb___7', { row..., zh_readings, }
-      #.....................................................................................................
-      for zh_reading in zh_readings
-        row_count++
-        rowid = "t:mr:3pl:R=#{row_count}"
+    brand = 'BRAND'
+    timeit { total, brand, }, populate_triples_2_connections = ({ progress, }) =>
+      _begin db.db; db.execute SQL"begin transaction;"
+      for row from @walk query
+        v = null
+        #.....................................................................................................
+        switch true
+          #...................................................................................................
+          when row.entry.startsWith 'py:'
+            v         = 'zh_reading'
+            readings  = extract_atonal_zh_readings row.entry
+          # #...................................................................................................
+          # when ( row.entry.startsWith 'hi:' ) or ( row.entry.startsWith 'ka:' )
+          #   v         = 'ja_reading'
+          #   readings  = extract_ja_readings row.entry
+        #.....................................................................................................
+        continue unless v?
+        #.....................................................................................................
         ref   = row.rowid
         s     = row.chr
-        v     = 'zh_reading'
-        o     = zh_reading
-        @w.statements.insert_jzr_mirror_triple.run { rowid, ref, s, v, o, }
+        #.....................................................................................................
+        for reading in readings
+          row_count++
+          rowid = "t:mr:3pl:R=#{row_count}"
+          o     = reading
+          @w.statements.insert_jzr_mirror_triple.run { rowid, ref, s, v, o, }
+          progress()
+      #.......................................................................................................
+      db.execute SQL"commit;"; _end db.db
     #.......................................................................................................
     ;null
-  fn.call db
-  # debug 'Ωjzrsdb___8', Array.from 'zì'.normalize 'NFC'
-  # debug 'Ωjzrsdb___9', Array.from 'zì'.normalize 'NFKC'
-  # debug 'Ωjzrsdb__10', Array.from 'zì'.normalize 'NFD'
-  # debug 'Ωjzrsdb__11', Array.from 'zì'.normalize 'NFKD'
+  #.........................................................................................................
+  # using_2_connections.call db
+  using_1_connection.call db
   #.........................................................................................................
   ;null
+
+_begin = ( db ) ->
+  # ( db.prepare SQL"pragma journal_mode = wal;"   ).run()
+  # ( db.prepare SQL"pragma synchronous  = off;"   ).run()
+  # ( db.prepare SQL"pragma foreign_keys = off;"    ).run()
+  # # ( db.prepare SQL"pragma busy_timeout = 60000;" ).run() ### time in ms ###
+  # ( db.prepare SQL"pragma strict       = off;"    ).run() ### time in ms ###
+  # ;null
+
+_end = ( db ) ->
+  # ( db.prepare SQL"pragma journal_mode = wal;"   ).run()
+  # ( db.prepare SQL"pragma foreign_keys = on;"    ).run()
+  # ( db.prepare SQL"pragma busy_timeout = 60000;" ).run() ### time in ms ###
+  # ( db.prepare SQL"pragma strict       = on;"    ).run() ### time in ms ###
+  # ;null
 
 
 
