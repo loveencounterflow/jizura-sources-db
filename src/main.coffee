@@ -60,9 +60,6 @@ demo_source_identifiers = ->
   # 'dict:meanings.1:L=13332'
   # 'dict:ucd140.1:uhdidx:L=1234'
   # rowids: 't:jfm:R=1'
-  # aref: labels this proximal point in the data set as an origin
-  # mref: identifies both the proximal and the distal end
-  # zref: identifies the distal source of a piece of data
   # {
   #   'dict:meanings':          '$jzrds/meaning/meanings.txt'
   #   'dict:ucd:v14.0:uhdidx' : '$jzrds/unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
@@ -79,14 +76,16 @@ get_paths = ->
   R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
   return R
 
-#-----------------------------------------------------------------------------------------------------------
-get_db = ->
-  paths = get_paths()
-  return Jzrbvfs.open paths.db
 
 
 #===========================================================================================================
-class Jzrbvfs extends Dbric
+class Jzr_db_adapter extends Dbric
+
+  # #---------------------------------------------------------------------------------------------------------
+  # constructor: ({ host, }={}) ->
+  #   super()
+  #   @host = host
+  #   ;undefined
 
   #---------------------------------------------------------------------------------------------------------
   @db_class: Bsql3
@@ -186,6 +185,26 @@ class Jzrbvfs extends Dbric
       on conflict ( dskey, line_nr ) do update set line = excluded.line;
       """
 
+    #.......................................................................................................
+    populate_jzr_mirror_triples: SQL"""
+      insert into jzr_mirror_triples ( rowid, ref, s, v, o )
+        select
+            gt.rowid_out    as rowid,
+            gt.ref          as ref,
+            gt.s            as s,
+            gt.v            as v,
+            gt.o            as o
+          from jzr_mirror_lines       as ml
+          join get_triples( ml.rowid, ml.field_1, ml.field_2, ml.field_3 )  as gt
+          where true
+            and ( ml.dskey = 'dict:meanings' )
+            and ( ml.field_1 is not null )
+            and ( ml.field_1 not regexp '^@glyphs' )
+            and ( ml.field_3 regexp '^(?:py|hi|ka):' )
+        on conflict ( ref, s, v, o ) do nothing
+        ;
+      """
+
   #---------------------------------------------------------------------------------------------------------
   @open: ( P... ) ->
     ### TAINT not a very nice solution ###
@@ -280,6 +299,7 @@ class Jzrbvfs extends Dbric
               field_4 ?= null
           yield { line_nr, lcode, line, field_1, field_2, field_3, field_4, }
         ;null
+
     #.......................................................................................................
     @create_table_function
       name:         'get_triples'
@@ -303,11 +323,11 @@ class Jzrbvfs extends Dbric
       #...................................................................................................
       when entry.startsWith 'py:'
         v         = 'zh_reading'
-        readings  = tmp_language_services.extract_atonal_zh_readings entry
+        readings  = language_services.extract_atonal_zh_readings entry
       #...................................................................................................
       when ( entry.startsWith 'hi:' ) or ( entry.startsWith 'ka:' )
         v         = 'ja_reading'
-        readings  = tmp_language_services.extract_ja_readings entry
+        readings  = language_services.extract_ja_readings entry
     #.....................................................................................................
     if v?
       for reading in readings
@@ -316,21 +336,17 @@ class Jzrbvfs extends Dbric
         o         = reading
         yield { rowid_out, ref, s, v, o, }
         @_TMP_state.timeit_progress?()
-        # @w.statements.insert_jzr_mirror_triple.run { rowid, ref, s, v, o, }
-        # progress()
-    # rowid_out = "t:mr:3pl:R=#{triple_count}"
-    # s         = "s.#{triple_count}"
-    # v         = "v.#{triple_count}"
-    # o         = "o.#{triple_count}"
-    # yield { rowid_out, ref, s, v, o, }
     #.......................................................................................................
     return null
 
+
 #===========================================================================================================
-class TMP_language_services
-  #.........................................................................................................
+class Language_services
+
+  #---------------------------------------------------------------------------------------------------------
   remove_pinyin_diacritics: ( text ) -> ( text.normalize 'NFKD' ).replace /\P{L}/gv, ''
-  #.........................................................................................................
+
+  #---------------------------------------------------------------------------------------------------------
   extract_atonal_zh_readings: ( entry ) ->
     # py:zhù, zhe, zhāo, zháo, zhǔ, zī
     R = entry
@@ -341,7 +357,8 @@ class TMP_language_services
     R.delete 'null'
     R.delete '@null'
     return [ R..., ]
-  #.........................................................................................................
+
+  #---------------------------------------------------------------------------------------------------------
   extract_ja_readings: ( entry ) ->
     # 空      hi:そら, あ·(く|き|ける), から, す·(く|かす), むな·しい
     R = entry
@@ -354,155 +371,54 @@ class TMP_language_services
     R.delete 'null'
     R.delete '@null'
     return [ R..., ]
-tmp_language_services = new TMP_language_services()
+
+#-----------------------------------------------------------------------------------------------------------
+### TAINT goes into constructor of Jzr class ###
+language_services = new Language_services()
 
 #===========================================================================================================
-populate_meaning_mirror_triples = ->
-  db = get_db()
-  { total_row_count, } = ( db.prepare SQL"""
-    select
-        count(*) as total_row_count
-      from jzr_mirror_lines
-      where true
-        and ( dskey = 'dict:meanings' )
-        and ( field_1 is not null )
-        and ( not field_1 regexp '^@glyphs' );""" ).get()
-  total = total_row_count * 2 ### NOTE estimate ###
-  # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-  help 'Ωjzrsdb___1', { total_row_count, total, }
-  #.........................................................................................................
-  # ### TAINT a convoluted way to get a file path ###
-  # ### TAINT make an API call ###
-  # dskey = 'dict:meanings'
-  # for row from db.walk SQL"select * from jzr_datasources where dskey = $dskey;", { dskey, }
-  #   meanings_path = row.path
-  #   break
-  # #.........................................................................................................
-  # count = 0
-  # for { lnr: line_nr, line, } from walk_lines_with_positions meanings_path
-  #   debug 'Ωjzrsdb___6', line_nr, rpr line
-  #   count++
-  #   break if count > 10
-  #.........................................................................................................
-  # triple_count = 0
-  # get_triples = ( rowid_in, field_1, field_2, field_3, field_4 ) ->
-  #   triple_count++
-  #   rowid_out = "t:mr:3pl:R=#{triple_count}"
-  #   ref       = rowid_in
-  #   s         = "s.#{triple_count}"
-  #   v         = "v.#{triple_count}"
-  #   o         = "o.#{triple_count}"
-  #   yield { rowid_out, ref, s, v, o, }
-  #   return null
-  #.........................................................................................................
-  using_1_connection = ->
-    #.......................................................................................................
-    populate_jzr_mirror_triples = db.prepare SQL"""
-      insert into jzr_mirror_triples ( rowid, ref, s, v, o )
-        select
-            gt.rowid_out    as rowid,
-            gt.ref          as ref,
-            gt.s            as s,
-            gt.v            as v,
-            gt.o            as o
-          from jzr_mirror_lines       as ml
-          join get_triples( ml.rowid, ml.field_1, ml.field_2, ml.field_3 )  as gt
-          where true
-            and ( ml.dskey = 'dict:meanings' )
-            and ( ml.field_1 is not null )
-            and ( ml.field_1 not regexp '^@glyphs' )
-            and ( ml.field_3 regexp '^(?:py|hi|ka):' )
-        on conflict ( ref, s, v, o ) do nothing;
-      """
-    #.......................................................................................................
-    brand = 'BRAND'
-    timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
-      @_TMP_state.timeit_progress = progress
-      _begin db.db; db.execute SQL"begin transaction;"
-      populate_jzr_mirror_triples.run()
-      db.execute SQL"commit;"; _end db.db
-      @_TMP_state.timeit_progress = null
-    #.......................................................................................................
-    ;null
-  #.........................................................................................................
-  using_2_connections = ->
-    row_count = 0
-    #.......................................................................................................
-    query = SQL"""
+class Jizura
+
+  #---------------------------------------------------------------------------------------------------------
+  constructor: ->
+    @paths  = get_paths()
+    @dba    = Jzr_db_adapter.open @paths.db
+    @populate_meaning_mirror_triples()
+    ;undefined
+
+  #---------------------------------------------------------------------------------------------------------
+  populate_meaning_mirror_triples: ->
+    { total_row_count, } = ( @dba.prepare SQL"""
       select
-          rowid     as rowid,
-          field_2   as chr,
-          field_3   as entry
+          count(*) as total_row_count
         from jzr_mirror_lines
         where true
           and ( dskey = 'dict:meanings' )
           and ( field_1 is not null )
-          and ( field_1 not regexp '^@glyphs' )
-          and ( field_3 regexp '^(?:py|hi|ka):' )
-        ;"""
+          and ( not field_1 regexp '^@glyphs' );""" ).get()
+    total = total_row_count * 2 ### NOTE estimate ###
+    # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    help 'Ωjzrsdb___1', { total_row_count, total, }
     #.......................................................................................................
-    brand = 'BRAND'
-    timeit { total, brand, }, populate_triples_2_connections = ({ progress, }) =>
-      _begin db.db; db.execute SQL"begin transaction;"
-      for row from @walk query
-        v = null
-        #.....................................................................................................
-        switch true
-          #...................................................................................................
-          when row.entry.startsWith 'py:'
-            v         = 'zh_reading'
-            readings  = extract_atonal_zh_readings row.entry
-          # #...................................................................................................
-          # when ( row.entry.startsWith 'hi:' ) or ( row.entry.startsWith 'ka:' )
-          #   v         = 'ja_reading'
-          #   readings  = extract_ja_readings row.entry
-        #.....................................................................................................
-        continue unless v?
-        #.....................................................................................................
-        ref   = row.rowid
-        s     = row.chr
-        #.....................................................................................................
-        for reading in readings
-          row_count++
-          rowid = "t:mr:3pl:R=#{row_count}"
-          o     = reading
-          @w.statements.insert_jzr_mirror_triple.run { rowid, ref, s, v, o, }
-          progress()
-      #.......................................................................................................
-      db.execute SQL"commit;"; _end db.db
+    # brand = 'BRAND'
+    # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
+    # @_TMP_state.timeit_progress = progress
+    @dba.statements.populate_jzr_mirror_triples.run()
+    # @_TMP_state.timeit_progress = null
+    # ;null
     #.......................................................................................................
     ;null
-  #.........................................................................................................
-  # using_2_connections.call db
-  using_1_connection.call db
+
+#===========================================================================================================
+demo = ->
+  jzr = new Jizura()
   #.........................................................................................................
   ;null
-
-_begin = ( db ) ->
-  # ( db.prepare SQL"pragma journal_mode = wal;"   ).run()
-  # ( db.prepare SQL"pragma synchronous  = off;"   ).run()
-  # ( db.prepare SQL"pragma foreign_keys = off;"    ).run()
-  # # ( db.prepare SQL"pragma busy_timeout = 60000;" ).run() ### time in ms ###
-  # ( db.prepare SQL"pragma strict       = off;"    ).run() ### time in ms ###
-  # ;null
-
-_end = ( db ) ->
-  # ( db.prepare SQL"pragma journal_mode = wal;"   ).run()
-  # ( db.prepare SQL"pragma foreign_keys = on;"    ).run()
-  # ( db.prepare SQL"pragma busy_timeout = 60000;" ).run() ### time in ms ###
-  # ( db.prepare SQL"pragma strict       = on;"    ).run() ### time in ms ###
-  # ;null
-
 
 
 #===========================================================================================================
 if module is require.main then do =>
-  populate_meaning_mirror_triples()
+  demo()
   # demo_source_identifiers()
-
-  # debug 'Ωjzrsdb__12', db = new Bsql3 ':memory:'
-  # help 'Ωjzrsdb__13', row for row from ( db.prepare SQL"select 45 * 88;" ).iterate()
-  # help 'Ωjzrsdb__14', row for row from ( db.prepare SQL"select 'abc' like 'a%';" ).iterate()
-  # help 'Ωjzrsdb__15', row for row from ( db.prepare SQL"select 'abc' regexp '^a';" ).iterate()
   ;null
 
