@@ -401,7 +401,7 @@ class Jizura
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
     # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb___6', { total_row_count, total, }
+    help 'Ωjzrsdb___8', { total_row_count, total, }
     #.......................................................................................................
     # brand = 'BRAND'
     # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
