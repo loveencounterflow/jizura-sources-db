@@ -254,19 +254,23 @@ class Jzr_db_adapter extends Dbric
   initialize: ->
     super()
     @_TMP_state = { triple_count: 0, }
-    me = @
+    # me = @
 
-    #.......................................................................................................
-    @create_function
-      name:           'regexp'
+  #=========================================================================================================
+  @functions:
+
+    #-------------------------------------------------------------------------------------------------------
+    regexp:
       deterministic:  true
       call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
 
-    #.......................................................................................................
-    @create_table_function
-      name:           'split_words'
-      columns:        [ 'keyword', ]
-      parameters:     [ 'line', ]
+  #=========================================================================================================
+  @table_functions:
+
+    #-------------------------------------------------------------------------------------------------------
+    split_words:
+      columns:      [ 'keyword', ]
+      parameters:   [ 'line', ]
       rows: ( line ) ->
         keywords = line.split /(?:\p{Z}+)|((?:\p{Script=Han})|(?:\p{L}+)|(?:\p{N}+)|(?:\p{S}+))/v
         for keyword in keywords
@@ -275,9 +279,8 @@ class Jzr_db_adapter extends Dbric
           yield { keyword, }
         ;null
 
-    #.......................................................................................................
-    @create_table_function
-      name:         'file_lines'
+    #-------------------------------------------------------------------------------------------------------
+    file_lines:
       columns:      [ 'line_nr', 'lcode', 'line', 'field_1', 'field_2', 'field_3', 'field_4', ]
       parameters:   [ 'path', ]
       rows: ( path ) ->
@@ -298,16 +301,13 @@ class Jzr_db_adapter extends Dbric
           yield { line_nr, lcode, line, field_1, field_2, field_3, field_4, }
         ;null
 
-    #.......................................................................................................
-    @create_table_function
-      name:         'get_triples'
+    #-------------------------------------------------------------------------------------------------------
+    get_triples:
       parameters:   [ 'rowid_in', 'field_1', 'field_2', 'field_3', 'field_4', ]
       columns:      [ 'rowid_out', 'ref', 's', 'v', 'o', ]
       rows: ( rowid_in, field_1, field_2, field_3, field_4 ) ->
-        yield from me.get_triples rowid_in, field_1, field_2, field_3, field_4
+        yield from @get_triples rowid_in, field_1, field_2, field_3, field_4
         ;null
-    #.......................................................................................................
-    ;null
 
   #---------------------------------------------------------------------------------------------------------
   get_triples: ( rowid_in, field_1, field_2, field_3, field_4 ) ->
