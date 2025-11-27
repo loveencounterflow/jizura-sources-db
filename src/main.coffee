@@ -40,6 +40,9 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
 { Dbric,
   SQL,                      } = SFMODULES.unstable.require_dbric()
 #...........................................................................................................
+{ lets,
+  freeze,                   } = SFMODULES.require_letsfreezethat_infra().simple
+#...........................................................................................................
 { Jetstream,
   Async_jetstream,          } = SFMODULES.require_jetstream()
 #...........................................................................................................
@@ -81,11 +84,28 @@ get_paths = ->
 #===========================================================================================================
 class Jzr_db_adapter extends Dbric
 
-  # #---------------------------------------------------------------------------------------------------------
-  # constructor: ({ host, }={}) ->
-  #   super()
-  #   @host = host
-  #   ;undefined
+  #---------------------------------------------------------------------------------------------------------
+  constructor: ( db_path, cfg = {} ) ->
+    ### TAINT need more clarity about when statements, build, initialize... is performed ###
+    { host, } = cfg
+    cfg       = lets cfg, ( cfg ) -> delete cfg.host
+    super db_path, cfg
+    @host     = host
+    #.......................................................................................................
+    debug 'Ωjzrsdb___2', { host, }
+    debug 'Ωjzrsdb___3', { cfg, }
+    debug 'Ωjzrsdb___4', { host: @host, }
+    debug 'Ωjzrsdb___5', @is_ready
+    debug 'Ωjzrsdb___6', @is_fresh
+    if @is_fresh
+      @_on_open_populate_jzr_datasources()
+      @_on_open_populate_jzr_mirror_lcodes()
+      @_on_open_populate_jzr_mirror_lines()
+      @_on_open_populate_jzr_mirror_triples_for_meanings()
+    else
+      warn 'Ωjzrsdb___7', "skipped data insertion"
+    #.......................................................................................................
+    ;undefined
 
   #---------------------------------------------------------------------------------------------------------
   @db_class: Bsql3
@@ -204,20 +224,6 @@ class Jzr_db_adapter extends Dbric
         on conflict ( ref, s, v, o ) do nothing
         ;
       """
-
-  #---------------------------------------------------------------------------------------------------------
-  @open: ( P... ) ->
-    ### TAINT not a very nice solution ###
-    ### TAINT need more clarity about when statements, build, initialize... is performed ###
-    R = super P...
-    if R.is_fresh
-      R._on_open_populate_jzr_datasources()
-      R._on_open_populate_jzr_mirror_lcodes()
-      R._on_open_populate_jzr_mirror_lines()
-      R._on_open_populate_jzr_mirror_triples_for_meanings()
-    else
-      warn 'Ωjzrsdb___5', "skipped data insertion"
-    return R
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
@@ -379,7 +385,7 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   constructor: ->
     @paths  = get_paths()
-    @dba    = Jzr_db_adapter.open @paths.db
+    @dba    = new Jzr_db_adapter @paths.db, { host: @, }
     @populate_meaning_mirror_triples()
     ;undefined
 
