@@ -216,9 +216,7 @@ class Jzr_db_adapter extends Dbric
       R._on_open_populate_jzr_mirror_lines()
       R._on_open_populate_jzr_mirror_triples_for_meanings()
     else
-      warn 'Ωjzrsdb___2', "skipped data insertion"
-      debug 'Ωjzrsdb___3', R.is_ready
-      debug 'Ωjzrsdb___4', R.is_fresh
+      warn 'Ωjzrsdb___5', "skipped data insertion"
     return R
 
   #---------------------------------------------------------------------------------------------------------
@@ -270,7 +268,6 @@ class Jzr_db_adapter extends Dbric
       parameters:     [ 'line', ]
       rows: ( line ) ->
         keywords = line.split /(?:\p{Z}+)|((?:\p{Script=Han})|(?:\p{L}+)|(?:\p{N}+)|(?:\p{S}+))/v
-        # debug 'Ωjzrsdb___5', line_nr, rpr keywords
         for keyword in keywords
           continue unless keyword?
           continue if keyword is ''
@@ -398,7 +395,7 @@ class Jizura
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
     # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb___1', { total_row_count, total, }
+    help 'Ωjzrsdb___6', { total_row_count, total, }
     #.......................................................................................................
     # brand = 'BRAND'
     # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
