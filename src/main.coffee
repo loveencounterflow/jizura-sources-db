@@ -95,11 +95,6 @@ class Jzr_db_adapter extends Dbric
     super db_path, cfg
     @host     = host
     #.......................................................................................................
-    debug 'Ωjzrsdb___2', { host, }
-    debug 'Ωjzrsdb___3', { cfg, }
-    debug 'Ωjzrsdb___4', { host: @host, }
-    debug 'Ωjzrsdb___5', @is_ready
-    debug 'Ωjzrsdb___6', @is_fresh
     if @is_fresh
       @_on_open_populate_jzr_datasources()
       @_on_open_populate_jzr_mirror_lcodes()
