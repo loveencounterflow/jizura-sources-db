@@ -93,8 +93,13 @@ class Jzr_db_adapter extends Dbric
     ### TAINT need more clarity about when statements, build, initialize... is performed ###
     { host, } = cfg
     cfg       = lets cfg, ( cfg ) -> delete cfg.host
+    #.......................................................................................................
     super db_path, cfg
+    #.......................................................................................................
     @host     = host
+    #.......................................................................................................
+    ### TAINT this is not well placed ###
+    debug 'Ωjzrsdb___4', ( @prepare SQL"select * from jzr_uc_normalization_faults where false;" ).get()
     #.......................................................................................................
     if @is_fresh
       @_on_open_populate_jzr_datasources()
