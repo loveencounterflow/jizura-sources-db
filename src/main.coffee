@@ -142,7 +142,7 @@ class Jzr_db_adapter extends Dbric
         comment   text            not null,
       primary key ( rowid ),
       check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
-      check ( rowid = 't:lc:V=' || lcode ) );"""
+      check ( rowid = 't:mr:lc:V=' || lcode ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_lines (
@@ -294,7 +294,7 @@ class Jzr_db_adapter extends Dbric
     paths = get_paths()
     dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
-    dskey = 'dict:hg-rom';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ko-Hang+Latn';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
@@ -385,25 +385,38 @@ class Jzr_db_adapter extends Dbric
     v             = null
     o             = null
     entry         = field_3
+    # ko-Hang+Latn:initial
+    # ko-Hang+Latn:medial
+    # ko-Hang+Latn:final
+    # reading:zh-Latn-pinyin
+    # reading:ja-x-Kan
+    # reading:ja-x-Hir
+    # reading:ja-x-Kat
+    # reading:ja-x-Latn
+    # reading:ko-Hang
+    # reading:ko-Latn
     #.......................................................................................................
     switch true
       #...................................................................................................
-      when ( dskey is 'dict:hg-rom' ) # and ( entry.startsWith 'py:' )
-        debug 'Ωjzrsdb___6', { rowid_in, dskey, field_1, field_2, field_3, field_4, }
-        role          = field_1
-        v             = "hg-rom:#{role}"
-        readings      = [ field_3, ]
+      when ( dskey is 'dict:ko-Hang+Latn' ) # and ( entry.startsWith 'py:' )
+        role      = field_1
+        v         = "ko-Hang+Latn:#{role}"
+        readings  = [ field_3, ]
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'py:' )
-        v         = 'zh_reading'
+        v         = 'reading:zh-Latn-pinyin'
         readings  = @host.language_services.extract_atonal_zh_readings entry
       #...................................................................................................
-      when ( dskey is 'dict:meanings' ) and ( ( entry.startsWith 'hi:' ) or ( entry.startsWith 'ka:' ) )
-        v         = 'ja_reading'
+      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'ka:' )
+        v         = 'reading:ja-x-Kat'
+        readings  = @host.language_services.extract_ja_readings entry
+      #...................................................................................................
+      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hi:' )
+        v         = 'reading:ja-x-HirYYYYYYYYYY'
         readings  = @host.language_services.extract_ja_readings entry
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hg:' )
-        v         = 'hg_reading'
+        v         = 'reading:ko-Hang'
         readings  = @host.language_services.extract_hg_readings entry
     #.....................................................................................................
     if v?
