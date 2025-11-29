@@ -80,11 +80,14 @@ demo_source_identifiers = ->
 get_paths = ->
   R                               = {}
   R.base                          = PATH.resolve __dirname, '..'
+  R.jzr                           = PATH.resolve R.base, '..'
   R.db                            = PATH.join R.base, 'jzr.db'
   # R.db                            = '/dev/shm/jzr.db'
   R.jzrds                         = PATH.join R.base, 'jzrds'
+  R.jzrnewds                      = PATH.join R.jzr, 'jizura-new-datasources'
   R[ 'dict:meanings'          ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
   R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  R[ 'dict:hg-rom'            ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
   return R
 
 
@@ -233,13 +236,14 @@ class Jzr_db_adapter extends Dbric
             gt.s            as s,
             gt.v            as v,
             gt.o            as o
-          from jzr_mirror_lines       as ml
-          join get_triples( ml.rowid, ml.field_1, ml.field_2, ml.field_3 )  as gt
+          from jzr_mirror_lines                                                       as ml
+          join get_triples( ml.rowid, ml.dskey, ml.field_1, ml.field_2, ml.field_3 )  as gt
           where true
-            and ( ml.dskey = 'dict:meanings' )
+            and ( ml.lcode = 'D' )
+            -- and ( ml.dskey = 'dict:meanings' )
             and ( ml.field_1 is not null )
             and ( ml.field_1 not regexp '^@glyphs' )
-            and ( ml.field_3 regexp '^(?:py|hi|ka):' )
+            -- and ( ml.field_3 regexp '^(?:py|hi|ka):' )
         on conflict ( ref, s, v, o ) do nothing
         ;
       """
@@ -249,6 +253,7 @@ class Jzr_db_adapter extends Dbric
     paths = get_paths()
     dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
+    dskey = 'dict:hg-rom';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
@@ -333,14 +338,14 @@ class Jzr_db_adapter extends Dbric
 
     #-------------------------------------------------------------------------------------------------------
     get_triples:
-      parameters:   [ 'rowid_in', 'field_1', 'field_2', 'field_3', 'field_4', ]
+      parameters:   [ 'rowid_in', 'dskey', 'field_1', 'field_2', 'field_3', 'field_4', ]
       columns:      [ 'rowid_out', 'ref', 's', 'v', 'o', ]
-      rows: ( rowid_in, field_1, field_2, field_3, field_4 ) ->
-        yield from @get_triples rowid_in, field_1, field_2, field_3, field_4
+      rows: ( rowid_in, dskey, field_1, field_2, field_3, field_4 ) ->
+        yield from @get_triples rowid_in, dskey, field_1, field_2, field_3, field_4
         ;null
 
   #---------------------------------------------------------------------------------------------------------
-  get_triples: ( rowid_in, field_1, field_2, field_3, field_4 ) ->
+  get_triples: ( rowid_in, dskey, field_1, field_2, field_3, field_4 ) ->
     ref           = rowid_in
     s             = field_2
     v             = null
@@ -349,13 +354,23 @@ class Jzr_db_adapter extends Dbric
     #.......................................................................................................
     switch true
       #...................................................................................................
-      when entry.startsWith 'py:'
-        v         = 'zh_reading'
-        readings  = language_services.extract_atonal_zh_readings entry
+      when ( dskey is 'dict:hg-rom' ) # and ( entry.startsWith 'py:' )
+        debug 'Ωjzrsdb___6', { rowid_in, dskey, field_1, field_2, field_3, field_4, }
+        role          = field_1
+        v             = "hg-rom:#{role}"
+        readings      = [ field_3, ]
       #...................................................................................................
-      when ( entry.startsWith 'hi:' ) or ( entry.startsWith 'ka:' )
+      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'py:' )
+        v         = 'zh_reading'
+        readings  = @host.language_services.extract_atonal_zh_readings entry
+      #...................................................................................................
+      when ( dskey is 'dict:meanings' ) and ( ( entry.startsWith 'hi:' ) or ( entry.startsWith 'ka:' ) )
         v         = 'ja_reading'
-        readings  = language_services.extract_ja_readings entry
+        readings  = @host.language_services.extract_ja_readings entry
+      #...................................................................................................
+      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hg:' )
+        v         = 'hg_reading'
+        readings  = @host.language_services.extract_hg_readings entry
     #.....................................................................................................
     if v?
       for reading in readings
@@ -370,6 +385,11 @@ class Jzr_db_adapter extends Dbric
 
 #===========================================================================================================
 class Language_services
+
+  #---------------------------------------------------------------------------------------------------------
+  constructor: ->
+    @_TMP_hangeul = require 'hangul-disassemble'
+    ;undefined
 
   #---------------------------------------------------------------------------------------------------------
   remove_pinyin_diacritics: ( text ) -> ( text.normalize 'NFKD' ).replace /\P{L}/gv, ''
@@ -400,17 +420,32 @@ class Language_services
     R.delete '@null'
     return [ R..., ]
 
+  #---------------------------------------------------------------------------------------------------------
+  extract_hg_readings: ( entry ) ->
+    # 空      hi:そら, あ·(く|き|ける), から, す·(く|かす), むな·しい
+    R = entry
+    R = R.replace /^(?:hg):/v, ''
+    R = R.replace /\s+/gv, ''
+    R = R.split /,\s*/v
+    R = new Set R
+    R.delete 'null'
+    R.delete '@null'
+    hangeul = [ R..., ].join ''
+    # debug 'Ωjzrsdb___7', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
+    return [ R..., ]
+
+
 #-----------------------------------------------------------------------------------------------------------
 ### TAINT goes into constructor of Jzr class ###
-language_services = new Language_services()
 
 #===========================================================================================================
 class Jizura
 
   #---------------------------------------------------------------------------------------------------------
   constructor: ->
-    @paths  = get_paths()
-    @dba    = new Jzr_db_adapter @paths.db, { host: @, }
+    @paths              = get_paths()
+    @language_services  = new Language_services()
+    @dba                = new Jzr_db_adapter @paths.db, { host: @, }
     @populate_meaning_mirror_triples()
     ;undefined
 
@@ -421,7 +456,7 @@ class Jizura
           count(*) as total_row_count
         from jzr_mirror_lines
         where true
-          and ( dskey = 'dict:meanings' )
+          and ( dskey is 'dict:meanings' )
           and ( field_1 is not null )
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
