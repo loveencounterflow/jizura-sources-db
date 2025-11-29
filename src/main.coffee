@@ -51,7 +51,15 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
 { Benchmarker,              } = SFMODULES.unstable.require_benchmarking()
 benchmarker                   = new Benchmarker()
 timeit                        = ( P... ) -> benchmarker.timeit P...
-
+#...........................................................................................................
+from_bool                     = ( x ) -> switch x
+  when true  then 1
+  when false then 0
+  else throw new Error "Ωjzrsdb___1 expected true or false, got #{rpr x}"
+as_bool                       = ( x ) -> switch x
+  when 1 then true
+  when 0 then false
+  else throw new Error "Ωjzrsdb___2 expected 0 or 1, got #{rpr x}"
 
 #===========================================================================================================
 demo_source_identifiers = ->
