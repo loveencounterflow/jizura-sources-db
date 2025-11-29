@@ -87,7 +87,8 @@ get_paths = ->
   R.jzrnewds                      = PATH.join R.jzr, 'jizura-new-datasources'
   R[ 'dict:meanings'          ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
   R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  R[ 'dict:hg-rom'            ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
+  R[ 'dict:ko-Hang+Latn'      ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
+  R[ 'dict:bcp47'             ]   = PATH.join R.jzrnewds, 'BCP47-language-scripts-regions.tsv'
   return R
 
 
