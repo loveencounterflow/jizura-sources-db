@@ -190,9 +190,16 @@ class Jzr_db_adapter extends Dbric
         o         json            not null,
       primary key ( rowid ),
       check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
-      unique ( ref, s, v, o ),
+      unique ( ref, s, v, o )
       foreign key ( ref ) references jzr_mirror_lines ( rowid )
-      );"""
+      foreign key ( v ) references jzr_mirror_verbs ( v ) );"""
+
+    #.......................................................................................................
+    SQL"""create trigger jzr_mirror_triples_register
+      before insert on jzr_mirror_triples
+      for each row begin
+        select trigger_on_before_insert( 'jzr_mirror_triples', new.rowid, new.ref, new.s, new.v, new.o );
+        end;"""
 
     #.......................................................................................................
     ### aggregate table for all rowids goes here ###
@@ -316,11 +323,23 @@ class Jzr_db_adapter extends Dbric
   #---------------------------------------------------------------------------------------------------------
   initialize: ->
     super()
-    @_TMP_state = { triple_count: 0, }
+    @_TMP_state = { triple_count: 0, most_recent_inserted_row: null }
     # me = @
+
+  #---------------------------------------------------------------------------------------------------------
+  trigger_on_before_insert: ( name, fields... ) ->
+    @_TMP_state.most_recent_inserted_row = { name, fields, }
+    ;null
 
   #=========================================================================================================
   @functions:
+
+    #-------------------------------------------------------------------------------------------------------
+    trigger_on_before_insert:
+      ### NOTE in the future this function could trigger creation of triggers on inserts ###
+      deterministic:  true
+      varargs:        true
+      call: ( name, fields... ) -> @trigger_on_before_insert name, fields...
 
     #-------------------------------------------------------------------------------------------------------
     regexp:
@@ -493,7 +512,15 @@ class Jizura
     @paths              = get_paths()
     @language_services  = new Language_services()
     @dba                = new Jzr_db_adapter @paths.db, { host: @, }
-    @populate_meaning_mirror_triples()
+    #.......................................................................................................
+    ### TAINT move to Jzr_db_adapter together with try/catch ###
+    try
+      @populate_meaning_mirror_triples()
+    catch cause
+      fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
+      throw new Error "Ωjzrsdb___1 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        { cause, }
+    #.......................................................................................................
     ;undefined
 
   #---------------------------------------------------------------------------------------------------------
@@ -530,6 +557,7 @@ class Jizura
 #===========================================================================================================
 demo = ->
   jzr = new Jizura()
+  #.........................................................................................................
   jzr.show_normalization_faults()
   #.........................................................................................................
   ;null
