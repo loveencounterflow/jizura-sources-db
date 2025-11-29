@@ -264,6 +264,12 @@ class Jzr_db_adapter extends Dbric
       """
 
   #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_mirror_lcodes: ->
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=B', lcode: 'B', comment: 'blank line',   }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=C', lcode: 'C', comment: 'comment line', }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=D', lcode: 'D', comment: 'data line',    }
+    ;null
+
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_verbs: ->
     rows = [
@@ -296,13 +302,6 @@ class Jzr_db_adapter extends Dbric
   #   dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
   #   dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
   #   ;null
-
-  #---------------------------------------------------------------------------------------------------------
-  _on_open_populate_jzr_mirror_lcodes: ->
-    @statements.insert_jzr_mirror_lcode.run { rowid: 't:lc:V=B', lcode: 'B', comment: 'blank line',   }
-    @statements.insert_jzr_mirror_lcode.run { rowid: 't:lc:V=C', lcode: 'C', comment: 'comment line', }
-    @statements.insert_jzr_mirror_lcode.run { rowid: 't:lc:V=D', lcode: 'D', comment: 'data line',    }
-    ;null
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lines: ->
