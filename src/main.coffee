@@ -205,7 +205,8 @@ class Jzr_db_adapter extends Dbric
     #.......................................................................................................
     insert_jzr_datasource: SQL"""
       insert into jzr_datasources ( rowid, dskey, path ) values ( $rowid, $dskey, $path )
-        on conflict ( dskey ) do update set path = $path;"""
+        on conflict ( dskey ) do update set path = excluded.path;"""
+
     #.......................................................................................................
     insert_jzr_mirror_verb: SQL"""
       insert into jzr_mirror_verbs ( rowid, s, v, o ) values ( $rowid, $s, $v, $o )
@@ -214,7 +215,7 @@ class Jzr_db_adapter extends Dbric
     #.......................................................................................................
     insert_jzr_mirror_lcode: SQL"""
       insert into jzr_mirror_lcodes ( rowid, lcode, comment ) values ( $rowid, $lcode, $comment )
-        on conflict ( rowid ) do update set lcode = $lcode, comment = $comment;"""
+        on conflict ( rowid ) do update set lcode = excluded.lcode, comment = excluded.comment;"""
 
     #.......................................................................................................
     insert_jzr_mirror_triple: SQL"""
