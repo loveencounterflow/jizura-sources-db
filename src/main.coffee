@@ -114,6 +114,7 @@ class Jzr_db_adapter extends Dbric
     #.......................................................................................................
     if @is_fresh
       @_on_open_populate_jzr_datasources()
+      @_on_open_populate_jzr_mirror_verbs()
       @_on_open_populate_jzr_mirror_lcodes()
       @_on_open_populate_jzr_mirror_lines()
       @_on_open_populate_jzr_mirror_triples_for_meanings()
@@ -171,6 +172,15 @@ class Jzr_db_adapter extends Dbric
       order by ml.rowid;"""
 
     #.......................................................................................................
+    SQL"""create table jzr_mirror_verbs (
+        rowid     text    unique  not null,
+        s         text            not null,
+        v         text    unique  not null,
+        o         text            not null,
+      primary key ( rowid ),
+      check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ) );"""
+
+    #.......................................................................................................
     SQL"""create table jzr_mirror_triples (
         rowid     text    unique  not null,
         ref       text            not null,
@@ -196,6 +206,10 @@ class Jzr_db_adapter extends Dbric
     insert_jzr_datasource: SQL"""
       insert into jzr_datasources ( rowid, dskey, path ) values ( $rowid, $dskey, $path )
         on conflict ( dskey ) do update set path = $path;"""
+    #.......................................................................................................
+    insert_jzr_mirror_verb: SQL"""
+      insert into jzr_mirror_verbs ( rowid, s, v, o ) values ( $rowid, $s, $v, $o )
+        on conflict ( rowid ) do update set s = excluded.s, v = excluded.v, o = excluded.o;"""
 
     #.......................................................................................................
     insert_jzr_mirror_lcode: SQL"""
@@ -247,6 +261,25 @@ class Jzr_db_adapter extends Dbric
         on conflict ( ref, s, v, o ) do nothing
         ;
       """
+
+  #---------------------------------------------------------------------------------------------------------
+  #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_mirror_verbs: ->
+    rows = [
+      { rowid: 't:mr:vb:V=ko-Hang+Latn:initial',    s: "NN", v: 'ko-Hang+Latn:initial',   o: "NN", }
+      { rowid: 't:mr:vb:V=ko-Hang+Latn:medial',     s: "NN", v: 'ko-Hang+Latn:medial',    o: "NN", }
+      { rowid: 't:mr:vb:V=ko-Hang+Latn:final',      s: "NN", v: 'ko-Hang+Latn:final',     o: "NN", }
+      { rowid: 't:mr:vb:V=reading:zh-Latn-pinyin',  s: "NN", v: 'reading:zh-Latn-pinyin', o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Kan',        s: "NN", v: 'reading:ja-x-Kan',       o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Hir',        s: "NN", v: 'reading:ja-x-Hir',       o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Kat',        s: "NN", v: 'reading:ja-x-Kat',       o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Latn',       s: "NN", v: 'reading:ja-x-Latn',      o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Hang',         s: "NN", v: 'reading:ko-Hang',        o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Latn',         s: "NN", v: 'reading:ko-Latn',        o: "NN", }
+      ]
+    for row in rows
+      @statements.insert_jzr_mirror_verb.run row
+    ;null
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
