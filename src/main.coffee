@@ -58,7 +58,7 @@ demo_source_identifiers = ->
   { expand_dictionary,      } = SFMODULES.require_dictionary_tools()
   { get_local_destinations, } = SFMODULES.require_get_local_destinations()
   for key, value of get_local_destinations()
-    debug 'Ωjzrsdb___1', key, value
+    debug 'Ωjzrsdb___3', key, value
   # can append line numbers to files as in:
   # 'dict:meanings.1:L=13332'
   # 'dict:ucd140.1:uhdidx:L=1234'
@@ -102,7 +102,7 @@ class Jzr_db_adapter extends Dbric
       @_on_open_populate_jzr_mirror_lines()
       @_on_open_populate_jzr_mirror_triples_for_meanings()
     else
-      warn 'Ωjzrsdb___2', "skipped data insertion"
+      warn 'Ωjzrsdb___5', "skipped data insertion"
     #.......................................................................................................
     ;undefined
 
@@ -397,7 +397,7 @@ class Jizura
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
     # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb___3', { total_row_count, total, }
+    help 'Ωjzrsdb___8', { total_row_count, total, }
     #.......................................................................................................
     # brand = 'BRAND'
     # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
