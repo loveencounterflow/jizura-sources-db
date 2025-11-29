@@ -158,6 +158,16 @@ class Jzr_db_adapter extends Dbric
       foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
 
     #.......................................................................................................
+    SQL"""create view jzr_uc_normalization_faults as select
+        ml.rowid  as rowid,
+        ml.ref    as ref,
+        ml.line   as line
+      from jzr_mirror_lines as ml
+      where true
+        and ( not is_uc_normal( ml.line ) )
+      order by ml.rowid;"""
+
+    #.......................................................................................................
     SQL"""create table jzr_mirror_triples (
         rowid     text    unique  not null,
         ref       text            not null,
@@ -277,6 +287,12 @@ class Jzr_db_adapter extends Dbric
     regexp:
       deterministic:  true
       call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
+
+    #-------------------------------------------------------------------------------------------------------
+    is_uc_normal:
+      deterministic:  true
+      ### NOTE: also see `String::isWellFormed()` ###
+      call: ( text, form = 'NFC' ) -> from_bool text is text.normalize form ### 'NFC', 'NFD', 'NFKC', or 'NFKD' ###
 
   #=========================================================================================================
   @table_functions:
@@ -421,9 +437,18 @@ class Jizura
     #.......................................................................................................
     ;null
 
+  #---------------------------------------------------------------------------------------------------------
+  show_normalization_faults: ->
+    faulty_rows = ( @dba.prepare SQL"select * from jzr_uc_normalization_faults;" ).all()
+    warn 'Ωjzrsdb___9', reverse faulty_rows
+    # for row from
+    #.......................................................................................................
+    ;null
+
 #===========================================================================================================
 demo = ->
   jzr = new Jizura()
+  jzr.show_normalization_faults()
   #.........................................................................................................
   ;null
 
