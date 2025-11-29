@@ -17,6 +17,9 @@ importers:
       guy:
         specifier: ^14.2.0
         version: 14.2.0
+      hangul-disassemble:
+        specifier: ^0.5.2
+        version: 0.5.2
 
 packages:
 
@@ -76,6 +79,9 @@ packages:
 
   guy@14.2.0:
     resolution: {integrity: sha512-3b3TgmxfspcLULdJ4oOw8uD6hNnVJ4aFJnzoWSHigil+y1UGb3/otrrZcPDQaiL5LRzaJsRi/6AorNOf/F4VtA==}
+
+  hangul-disassemble@0.5.2:
+    resolution: {integrity: sha512-zbMlEi0rDK7UUg9KZ41SfMxrVG5LVZiEDSmkzSo6VbvfIp4IrjcIbU/ITDPse4gr6LZMvw9irwe+1HQOBmGf2A==}
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
@@ -227,6 +233,8 @@ snapshots:
   guy@14.2.0:
     dependencies:
       intertype-legacy: 7.7.1
+
+  hangul-disassemble@0.5.2: {}
 
   ieee754@1.2.1: {}
 
