@@ -431,7 +431,7 @@ class Jzr_db_adapter extends Dbric
         readings  = @host.language_services.extract_ja_readings entry
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hi:' )
-        v         = 'reading:ja-x-HirYYYYYYYYYY'
+        v         = 'reading:ja-x-Hir'
         readings  = @host.language_services.extract_ja_readings entry
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hg:' )
