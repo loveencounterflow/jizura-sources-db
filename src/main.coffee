@@ -164,16 +164,6 @@ class Jzr_db_adapter extends Dbric_std
       foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
 
     #.......................................................................................................
-    SQL"""create view jzr_uc_normalization_faults as select
-        ml.rowid  as rowid,
-        ml.ref    as ref,
-        ml.line   as line
-      from jzr_mirror_lines as ml
-      where true
-        and ( not is_uc_normal( ml.line ) )
-      order by ml.rowid;"""
-
-    #.......................................................................................................
     SQL"""create table jzr_mirror_verbs (
         rowid     text    unique  not null,
         s         text            not null,
@@ -231,6 +221,37 @@ class Jzr_db_adapter extends Dbric_std
             new.initial_hang, new.medial_hang, new.final_hang,
             new.initial_latn, new.medial_latn, new.final_latn );
         end;"""
+
+    #.......................................................................................................
+    #-------------------------------------------------------------------------------------------------------
+    SQL"""create view _jzr_meta_uc_normalization_faults as select
+        ml.rowid  as rowid,
+        ml.ref    as ref,
+        ml.line   as line
+      from jzr_mirror_lines as ml
+      where true
+        and ( not is_uc_normal( ml.line ) )
+      order by ml.rowid;"""
+
+    #-------------------------------------------------------------------------------------------------------
+    SQL"""create view _jzr_meta_kr_readings_unknown_verb_faults as select distinct
+          count(*) over ( partition by v )    as count,
+          'jzr_lang_kr_readings_triples:R=*'  as rowid,
+          '*'                                 as ref,
+          'unknown-verb'                      as description,
+          v                                   as quote
+        from jzr_lang_kr_readings_triples as nn
+        where not exists ( select 1 from jzr_mirror_verbs as vb where vb.v = nn.v );"""
+
+    #.......................................................................................................
+    SQL"""create view jzr_meta_faults as
+      select null as count, null as rowid, null as ref, null as description, null  as quote where false union all
+      -- ...................................................................................................
+      select 1, rowid, ref,  'uc-normalization', line  as quote from _jzr_meta_uc_normalization_faults          union all
+      select *                                                  from _jzr_meta_kr_readings_unknown_verb_faults  union all
+      -- ...................................................................................................
+      select null, null, null, null, null where false
+      ;"""
 
     #.......................................................................................................
     # SQL"""create view jzr_syllables as select
@@ -650,10 +671,19 @@ class Jizura
     #.......................................................................................................
     ;null
 
+  # #---------------------------------------------------------------------------------------------------------
+  # _show_jzr_meta_uc_normalization_faults: ->
+  #   faulty_rows = ( @dba.prepare SQL"select * from _jzr_meta_uc_normalization_faults;" ).all()
+  #   warn 'Ωjzrsdb___9', reverse faulty_rows
+  #   # for row from
+  #   #.......................................................................................................
+  #   ;null
+
   #---------------------------------------------------------------------------------------------------------
-  show_normalization_faults: ->
-    faulty_rows = ( @dba.prepare SQL"select * from jzr_uc_normalization_faults;" ).all()
-    warn 'Ωjzrsdb__11', reverse faulty_rows
+  show_jzr_meta_faults: ->
+    faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all()
+    # warn 'Ωjzrsdb__10',
+    console.table faulty_rows
     # for row from
     #.......................................................................................................
     ;null
@@ -662,7 +692,8 @@ class Jizura
 demo = ->
   jzr = new Jizura()
   #.........................................................................................................
-  jzr.show_normalization_faults()
+  # jzr._show_jzr_meta_uc_normalization_faults()
+  jzr.show_jzr_meta_faults()
   #.........................................................................................................
   ;null
 
