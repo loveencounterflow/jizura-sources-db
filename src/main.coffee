@@ -173,7 +173,7 @@ class Jzr_db_adapter extends Dbric_std
       check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ) );"""
 
     #.......................................................................................................
-    SQL"""create table jzr_mirror_triples (
+    SQL"""create table jzr_mirror_triples_base (
         rowid     text    unique  not null,
         ref       text            not null,
         s         text            not null,
@@ -187,9 +187,9 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     SQL"""create trigger jzr_mirror_triples_register
-      before insert on jzr_mirror_triples
+      before insert on jzr_mirror_triples_base
       for each row begin
-        select trigger_on_before_insert( 'jzr_mirror_triples', new.rowid, new.ref, new.s, new.v, new.o );
+        select trigger_on_before_insert( 'jzr_mirror_triples_base', new.rowid, new.ref, new.s, new.v, new.o );
         end;"""
 
     #.......................................................................................................
@@ -209,7 +209,7 @@ class Jzr_db_adapter extends Dbric_std
       check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
       -- unique ( ref, s, v, o )
       -- foreign key ( ref ) references jzr_mirror_lines ( rowid )
-      -- foreign key ( syllable_hang ) references jzr_mirror_triples ( o ) )
+      -- foreign key ( syllable_hang ) references jzr_mirror_triples_base ( o ) )
       );"""
 
     #.......................................................................................................
@@ -274,9 +274,9 @@ class Jzr_db_adapter extends Dbric_std
     #       ti.o as initial_latn
     #       tm.o as medial_latn
     #       tf.o as final_latn
-    #     from jzr_mirror_triples as t1
+    #     from jzr_mirror_triples_base as t1
     #     join
-    #     join jzr_mirror_triples as ti on ( t1.)
+    #     join jzr_mirror_triples_base as ti on ( t1.)
     #   ;"""
 
     #.......................................................................................................
@@ -305,7 +305,7 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     insert_jzr_mirror_triple: SQL"""
-      insert into jzr_mirror_triples ( rowid, ref, s, v, o ) values ( $rowid, $ref, $s, $v, $o )
+      insert into jzr_mirror_triples_base ( rowid, ref, s, v, o ) values ( $rowid, $ref, $s, $v, $o )
         on conflict ( ref, s, v, o ) do nothing;"""
 
     #.......................................................................................................
@@ -330,7 +330,7 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     populate_jzr_mirror_triples: SQL"""
-      insert into jzr_mirror_triples ( rowid, ref, s, v, o )
+      insert into jzr_mirror_triples_base ( rowid, ref, s, v, o )
         select
             gt.rowid_out    as rowid,
             gt.ref          as ref,
@@ -365,11 +365,11 @@ class Jzr_db_adapter extends Dbric_std
             coalesce( mti.o, '' )                 as initial_latn,
             coalesce( mtm.o, '' )                 as medial_latn,
             coalesce( mtf.o, '' )                 as final_latn
-          from jzr_mirror_triples             as mt
+          from jzr_mirror_triples_base             as mt
           left join disassemble_hangeul( mt.o )    as dh
-          left join jzr_mirror_triples as mti on ( mti.s = dh.initial and mti.v = 'ko-Hang+Latn:initial' )
-          left join jzr_mirror_triples as mtm on ( mtm.s = dh.medial  and mtm.v = 'ko-Hang+Latn:medial'  )
-          left join jzr_mirror_triples as mtf on ( mtf.s = dh.final   and mtf.v = 'ko-Hang+Latn:final'   )
+          left join jzr_mirror_triples_base as mti on ( mti.s = dh.initial and mti.v = 'ko-Hang+Latn:initial' )
+          left join jzr_mirror_triples_base as mtm on ( mtm.s = dh.medial  and mtm.v = 'ko-Hang+Latn:medial'  )
+          left join jzr_mirror_triples_base as mtf on ( mtf.s = dh.final   and mtf.v = 'ko-Hang+Latn:final'   )
           where true
             and ( mt.v = 'reading:ko-Hang' )
             -- and ( ml.dskey = 'dict:meanings' )
