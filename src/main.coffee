@@ -459,9 +459,11 @@ class Jzr_db_adapter extends Dbric_std
       call: ( name, fields... ) -> @trigger_on_before_insert name, fields...
 
     #-------------------------------------------------------------------------------------------------------
-    regexp:
-      deterministic:  true
-      call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
+    ### NOTE moved to Dbric_std; consider to overwrite with version using `slevithan/regex` ###
+    # regexp:
+    #   overwrite:      true
+    #   deterministic:  true
+    #   call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
 
     #-------------------------------------------------------------------------------------------------------
     is_uc_normal:
