@@ -223,6 +223,16 @@ class Jzr_db_adapter extends Dbric_std
         end;"""
 
     #.......................................................................................................
+    SQL"""create view jzr_lang_kr_readings_triples as
+      select rowid, ref, syllable_hang as s, 'reading:ko-Latn'            as v, syllable_latn as o from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang as s, 'reading:ko-Latn:initial'    as v, initial_latn  as o from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang as s, 'reading:ko-Latn:medial'     as v, medial_latn   as o from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang as s, 'reading:ko-Latn:final'      as v, final_latn    as o from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang as s, 'reading:ko-Hang:initial'    as v, initial_hang  as o from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang as s, 'reading:ko-Hang:medial'     as v, medial_hang   as o from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang as s, 'reading:ko-Hang:final'      as v, final_hang    as o from jzr_lang_hang_syllables
+      ;"""
+
     #-------------------------------------------------------------------------------------------------------
     SQL"""create view _jzr_meta_uc_normalization_faults as select
         ml.rowid  as rowid,
@@ -382,16 +392,22 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_verbs: ->
     rows = [
-      { rowid: 't:mr:vb:V=ko-Hang+Latn:initial',    s: "NN", v: 'ko-Hang+Latn:initial',   o: "NN", }
-      { rowid: 't:mr:vb:V=ko-Hang+Latn:medial',     s: "NN", v: 'ko-Hang+Latn:medial',    o: "NN", }
-      { rowid: 't:mr:vb:V=ko-Hang+Latn:final',      s: "NN", v: 'ko-Hang+Latn:final',     o: "NN", }
-      { rowid: 't:mr:vb:V=reading:zh-Latn-pinyin',  s: "NN", v: 'reading:zh-Latn-pinyin', o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Kan',        s: "NN", v: 'reading:ja-x-Kan',       o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Hir',        s: "NN", v: 'reading:ja-x-Hir',       o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Kat',        s: "NN", v: 'reading:ja-x-Kat',       o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Latn',       s: "NN", v: 'reading:ja-x-Latn',      o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Hang',         s: "NN", v: 'reading:ko-Hang',        o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Latn',         s: "NN", v: 'reading:ko-Latn',        o: "NN", }
+      { rowid: 't:mr:vb:V=ko-Hang+Latn:initial',    s: "NN", v: 'ko-Hang+Latn:initial',     o: "NN", }
+      { rowid: 't:mr:vb:V=ko-Hang+Latn:medial',     s: "NN", v: 'ko-Hang+Latn:medial',      o: "NN", }
+      { rowid: 't:mr:vb:V=ko-Hang+Latn:final',      s: "NN", v: 'ko-Hang+Latn:final',       o: "NN", }
+      { rowid: 't:mr:vb:V=reading:zh-Latn-pinyin',  s: "NN", v: 'reading:zh-Latn-pinyin',   o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Kan',        s: "NN", v: 'reading:ja-x-Kan',         o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Hir',        s: "NN", v: 'reading:ja-x-Hir',         o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Kat',        s: "NN", v: 'reading:ja-x-Kat',         o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ja-x-Latn',       s: "NN", v: 'reading:ja-x-Latn',        o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Hang',         s: "NN", v: 'reading:ko-Hang',          o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Latn',         s: "NN", v: 'reading:ko-Latn',          o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Hang:initial', s: "NN", v: 'reading:ko-Hang:initial',  o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Hang:medial',  s: "NN", v: 'reading:ko-Hang:medial',   o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Hang:final',   s: "NN", v: 'reading:ko-Hang:final',    o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Latn:initial', s: "NN", v: 'reading:ko-Latn:initial',  o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Latn:medial',  s: "NN", v: 'reading:ko-Latn:medial',   o: "NN", }
+      { rowid: 't:mr:vb:V=reading:ko-Latn:final',   s: "NN", v: 'reading:ko-Latn:final',    o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
