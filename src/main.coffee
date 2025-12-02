@@ -243,7 +243,7 @@ class Jzr_db_adapter extends Dbric_std
         and ( not is_uc_normal( ml.line ) )
       order by ml.rowid;"""
 
-    #-------------------------------------------------------------------------------------------------------
+    #.......................................................................................................
     SQL"""create view _jzr_meta_kr_readings_unknown_verb_faults as select distinct
           count(*) over ( partition by v )    as count,
           'jzr_lang_kr_readings_triples:R=*'  as rowid,
