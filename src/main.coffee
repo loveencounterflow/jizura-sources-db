@@ -131,7 +131,7 @@ class Jzr_db_adapter extends Dbric_std
       @_on_open_populate_jzr_mirror_lines()
       @_on_open_populate_jzr_mirror_triples_for_meanings()
     else
-      warn 'Ωjzrsdb___4', "skipped data insertion"
+      warn 'Ωjzrsdb___6', "skipped data insertion"
     #.......................................................................................................
     ;undefined
 
@@ -636,7 +636,7 @@ class Language_services
     R.delete 'null'
     R.delete '@null'
     hangeul = [ R..., ].join ''
-    # debug 'Ωjzrsdb___5', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
+    # debug 'Ωjzrsdb___7', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
     return [ R..., ]
 
 
@@ -657,7 +657,7 @@ class Jizura
       @populate_meaning_mirror_triples()
     catch cause
       fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-      throw new Error "Ωjzrsdb___6 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+      throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
         { cause, }
     #.......................................................................................................
     ### TAINT move to Jzr_db_adapter together with try/catch ###
@@ -665,7 +665,7 @@ class Jizura
       @populate_hangeul_syllables()
     catch cause
       fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-      throw new Error "Ωjzrsdb___7 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+      throw new Error "Ωjzrsdb___9 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
         { cause, }
     #.......................................................................................................
     ;undefined
@@ -682,7 +682,7 @@ class Jizura
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
     # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb___8', { total_row_count, total, }
+    help 'Ωjzrsdb__10', { total_row_count, total, }
     #.......................................................................................................
     # brand = 'BRAND'
     # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
@@ -702,7 +702,7 @@ class Jizura
   # #---------------------------------------------------------------------------------------------------------
   # _show_jzr_meta_uc_normalization_faults: ->
   #   faulty_rows = ( @dba.prepare SQL"select * from _jzr_meta_uc_normalization_faults;" ).all()
-  #   warn 'Ωjzrsdb___9', reverse faulty_rows
+  #   warn 'Ωjzrsdb__11', reverse faulty_rows
   #   # for row from
   #   #.......................................................................................................
   #   ;null
@@ -710,7 +710,7 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all()
-    # warn 'Ωjzrsdb__10',
+    # warn 'Ωjzrsdb__12',
     console.table faulty_rows
     # for row from
     #.......................................................................................................
