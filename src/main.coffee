@@ -518,7 +518,7 @@ class Jizura
       @populate_meaning_mirror_triples()
     catch cause
       fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-      throw new Error "Ωjzrsdb___1 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+      throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
         { cause, }
     #.......................................................................................................
     ;undefined
@@ -535,7 +535,7 @@ class Jizura
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
     # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb___8', { total_row_count, total, }
+    help 'Ωjzrsdb__10', { total_row_count, total, }
     #.......................................................................................................
     # brand = 'BRAND'
     # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
@@ -549,7 +549,7 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_normalization_faults: ->
     faulty_rows = ( @dba.prepare SQL"select * from jzr_uc_normalization_faults;" ).all()
-    warn 'Ωjzrsdb___9', reverse faulty_rows
+    warn 'Ωjzrsdb__11', reverse faulty_rows
     # for row from
     #.......................................................................................................
     ;null
