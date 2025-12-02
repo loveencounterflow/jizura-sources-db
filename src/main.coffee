@@ -111,18 +111,20 @@ class Jzr_db_adapter extends Dbric_std
     #.......................................................................................................
     @host     = host
     #.......................................................................................................
-    ### TAINT this is not well placed ###
-    ( @prepare SQL"select * from _jzr_meta_uc_normalization_faults where false;" ).get()
-# table jzr_datasources
-# table jzr_mirror_lcodes
-# table jzr_mirror_lines
-# view _jzr_meta_uc_normalization_faults
-# table jzr_mirror_verbs
-# table jzr_mirror_triples_base
-# trigger jzr_mirror_triples_register
-# table jzr_lang_hang_syllables
-# trigger jzr_lang_hang_syllables_register
-# view jzr_syllables
+    do =>
+      ### TAINT this is not well placed ###
+      ### NOTE execute a Gaps-and-Islands ESSFRI to improve structural integrity assurance: ###
+      # ( @prepare SQL"select * from _jzr_meta_uc_normalization_faults where false;" ).get()
+      messages = []
+      for { name, type, } from @statements.std_get_relations.iterate()
+        try
+          ( @prepare SQL"select * from #{name} where false;" ).all()
+        catch error
+          messages.push "#{type} #{name}: #{error.message}"
+          warn 'Ωjzrsdb___4', error.message
+      return null if messages.length is 0
+      throw new Error "Ωjzrsdb___5 EFFRI testing revealed errors: #{rpr messages}"
+      ;null
     #.......................................................................................................
     if @is_fresh
       @_on_open_populate_jzr_datasources()
