@@ -202,6 +202,52 @@ class Jzr_db_adapter extends Dbric
         end;"""
 
     #.......................................................................................................
+    SQL"""create table jzr_lang_hang_syllables (
+        rowid           text  unique  not null,
+        ref             text          not null,
+        syllable_hang   text  unique  not null,
+        syllable_latn   text  not null generated always as ( initial_latn || medial_latn || final_latn ) virtual,
+        -- syllable_latn   text  unique  not null generated always as ( initial_latn || medial_latn || final_latn ) virtual,
+        initial_hang    text          not null,
+        medial_hang     text          not null,
+        final_hang      text          not null,
+        initial_latn    text          not null,
+        medial_latn     text          not null,
+        final_latn      text          not null,
+      primary key ( rowid ),
+      check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
+      -- unique ( ref, s, v, o )
+      -- foreign key ( ref ) references jzr_mirror_lines ( rowid )
+      -- foreign key ( syllable_hang ) references jzr_mirror_triples ( o ) )
+      );"""
+
+    #.......................................................................................................
+    SQL"""create trigger jzr_lang_hang_syllables_register
+      before insert on jzr_lang_hang_syllables
+      for each row begin
+        select trigger_on_before_insert( 'jzr_lang_hang_syllables',
+          new.rowid, new.ref, new.syllable_hang, new.syllable_latn,
+            new.initial_hang, new.medial_hang, new.final_hang,
+            new.initial_latn, new.medial_latn, new.final_latn );
+        end;"""
+
+    #.......................................................................................................
+    # SQL"""create view jzr_syllables as select
+    #       t1.s
+    #       t1.v
+    #       t1.o
+    #       ti.s as initial_hang
+    #       tm.s as medial_hang
+    #       tf.s as final_hang
+    #       ti.o as initial_latn
+    #       tm.o as medial_latn
+    #       tf.o as final_latn
+    #     from jzr_mirror_triples as t1
+    #     join
+    #     join jzr_mirror_triples as ti on ( t1.)
+    #   ;"""
+
+    #.......................................................................................................
     ### aggregate table for all rowids goes here ###
 
     #.......................................................................................................
@@ -268,6 +314,39 @@ class Jzr_db_adapter extends Dbric
             and ( ml.field_1 not regexp '^@glyphs' )
             -- and ( ml.field_3 regexp '^(?:py|hi|ka):' )
         on conflict ( ref, s, v, o ) do nothing
+        ;
+      """
+
+    #.......................................................................................................
+    populate_jzr_lang_hangeul_syllables: SQL"""
+      insert into jzr_lang_hang_syllables ( rowid, ref,
+        syllable_hang, initial_hang, medial_hang, final_hang,
+                        initial_latn, medial_latn, final_latn
+                        )
+        select
+            't:lang:hang:syl:V=' || mt.o          as rowid,
+            mt.rowid                              as ref,
+            mt.o                                  as syllable_hang,
+            dh.initial                            as initial_hang,
+            dh.medial                             as medial_hang,
+            dh.final                              as final_hang,
+            coalesce( mti.o, '' )                 as initial_latn,
+            coalesce( mtm.o, '' )                 as medial_latn,
+            coalesce( mtf.o, '' )                 as final_latn
+          from jzr_mirror_triples             as mt
+          left join disassemble_hangeul( mt.o )    as dh
+          left join jzr_mirror_triples as mti on ( mti.s = dh.initial and mti.v = 'ko-Hang+Latn:initial' )
+          left join jzr_mirror_triples as mtm on ( mtm.s = dh.medial  and mtm.v = 'ko-Hang+Latn:medial'  )
+          left join jzr_mirror_triples as mtf on ( mtf.s = dh.final   and mtf.v = 'ko-Hang+Latn:final'   )
+          where true
+            and ( mt.v = 'reading:ko-Hang' )
+            -- and ( ml.dskey = 'dict:meanings' )
+            -- and ( ml.field_1 is not null )
+            -- and ( ml.field_1 not regexp '^@glyphs' )
+            -- and ( ml.field_3 regexp '^(?:py|hi|ka):' )
+          order by mt.o
+        on conflict ( rowid         ) do nothing
+        on conflict ( syllable_hang ) do nothing
         ;
       """
 
@@ -397,6 +476,16 @@ class Jzr_db_adapter extends Dbric
         yield from @get_triples rowid_in, dskey, field_1, field_2, field_3, field_4
         ;null
 
+    #-------------------------------------------------------------------------------------------------------
+    disassemble_hangeul:
+      parameters:   [ 'hang', ]
+      columns:      [ 'initial', 'medial', 'final', ]
+      rows: ( hang ) ->
+        jamos = @host.language_services._TMP_hangeul.disassemble hang, { flatten: false, }
+        for { first: initial, vowel: medial, last: final, } in jamos
+          yield { initial, medial, final, }
+        ;null
+
   #---------------------------------------------------------------------------------------------------------
   get_triples: ( rowid_in, dskey, field_1, field_2, field_3, field_4 ) ->
     ref           = rowid_in
@@ -521,6 +610,14 @@ class Jizura
       throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
         { cause, }
     #.......................................................................................................
+    ### TAINT move to Jzr_db_adapter together with try/catch ###
+    try
+      @populate_hangeul_syllables()
+    catch cause
+      fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
+      throw new Error "Ωjzrsdb___9 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        { cause, }
+    #.......................................................................................................
     ;undefined
 
   #---------------------------------------------------------------------------------------------------------
@@ -543,6 +640,12 @@ class Jizura
     @dba.statements.populate_jzr_mirror_triples.run()
     # @_TMP_state.timeit_progress = null
     # ;null
+    #.......................................................................................................
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  populate_hangeul_syllables: ->
+    @dba.statements.populate_jzr_lang_hangeul_syllables.run()
     #.......................................................................................................
     ;null
 
