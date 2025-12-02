@@ -462,7 +462,8 @@ class Jzr_db_adapter extends Dbric_std
     paths = get_paths()
     dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
-    dskey = 'dict:x:ko-Hang+Latn';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
+    dskey = 'dict:x:ko-Hang+Latn';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
+    dskey = 'dict:x:ja-Kan+Latn';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
