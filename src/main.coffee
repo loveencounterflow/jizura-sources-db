@@ -88,10 +88,10 @@ get_paths = ->
   R.jzrnewds                      = PATH.join R.jzr, 'jizura-new-datasources'
   R[ 'dict:meanings'          ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
   R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  R[ 'dict:ko-Hang+Latn'      ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
+  R[ 'dict:x:ko-Hang+Latn'    ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
+  R[ 'dict:x:ja-Kan+Latn'     ]   = PATH.join R.jzrnewds, 'kana-transcriptions.tsv'
   R[ 'dict:bcp47'             ]   = PATH.join R.jzrnewds, 'BCP47-language-scripts-regions.tsv'
   return R
-
 
 
 #===========================================================================================================
@@ -236,13 +236,40 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     SQL"""create view jzr_lang_kr_readings_triples as
-      select rowid, ref, syllable_hang as s, 'reading:ko-Latn'            as v, syllable_latn as o from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang as s, 'reading:ko-Latn:initial'    as v, initial_latn  as o from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang as s, 'reading:ko-Latn:medial'     as v, medial_latn   as o from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang as s, 'reading:ko-Latn:final'      as v, final_latn    as o from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang as s, 'reading:ko-Hang:initial'    as v, initial_hang  as o from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang as s, 'reading:ko-Hang:medial'     as v, medial_hang   as o from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang as s, 'reading:ko-Hang:final'      as v, final_hang    as o from jzr_lang_hang_syllables
+      select null as rowid, null as ref, null as s, null as v, null as o where false union all
+      -- ...................................................................................................
+      select rowid, ref, syllable_hang, 'c:reading:ko-Latn',          syllable_latn   from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'c:reading:ko-Latn:initial',  initial_latn    from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'c:reading:ko-Latn:medial',   medial_latn     from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'c:reading:ko-Latn:final',    final_latn      from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'c:reading:ko-Hang:initial',  initial_hang    from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'c:reading:ko-Hang:medial',   medial_hang     from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'c:reading:ko-Hang:final',    final_hang      from jzr_lang_hang_syllables union all
+      -- ...................................................................................................
+      select null, null, null, null, null where false
+      ;"""
+
+    #.......................................................................................................
+    SQL"""create view jzr_all_triples as
+      select null as rowid, null as ref, null as s, null as v, null as o where false union all
+      -- ...................................................................................................
+      select * from jzr_mirror_triples_base union all
+      select * from jzr_lang_kr_readings_triples union all
+      -- ...................................................................................................
+      select null, null, null, null, null where false
+      ;"""
+
+    #.......................................................................................................
+    SQL"""create view jzr_triples as
+      select null as rowid, null as ref, null as s, null as v, null as o where false union all
+      -- ...................................................................................................
+      select * from jzr_mirror_triples_base where v like 'c:%' union all
+      select tb.rowid, tb.ref, tb.s, kr.v, kr.o from jzr_mirror_triples_base as tb
+        join jzr_lang_kr_readings_triples as kr on ( tb.v = 'c:reading:ko-Hang' and tb.o = kr.s )
+        union all
+      -- ...................................................................................................
+      select null, null, null, null, null where false
+      order by s, v, o
       ;"""
 
     #-------------------------------------------------------------------------------------------------------
@@ -379,11 +406,11 @@ class Jzr_db_adapter extends Dbric_std
             coalesce( mtf.o, '' )                 as final_latn
           from jzr_mirror_triples_base             as mt
           left join disassemble_hangeul( mt.o )    as dh
-          left join jzr_mirror_triples_base as mti on ( mti.s = dh.initial and mti.v = 'ko-Hang+Latn:initial' )
-          left join jzr_mirror_triples_base as mtm on ( mtm.s = dh.medial  and mtm.v = 'ko-Hang+Latn:medial'  )
-          left join jzr_mirror_triples_base as mtf on ( mtf.s = dh.final   and mtf.v = 'ko-Hang+Latn:final'   )
+          left join jzr_mirror_triples_base as mti on ( mti.s = dh.initial and mti.v = 'x:ko-Hang+Latn:initial' )
+          left join jzr_mirror_triples_base as mtm on ( mtm.s = dh.medial  and mtm.v = 'x:ko-Hang+Latn:medial'  )
+          left join jzr_mirror_triples_base as mtf on ( mtf.s = dh.final   and mtf.v = 'x:ko-Hang+Latn:final'   )
           where true
-            and ( mt.v = 'reading:ko-Hang' )
+            and ( mt.v = 'c:reading:ko-Hang' )
             -- and ( ml.dskey = 'dict:meanings' )
             -- and ( ml.field_1 is not null )
             -- and ( ml.field_1 not regexp '^@glyphs' )
@@ -403,23 +430,28 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_verbs: ->
+    ### NOTE
+    in verbs, initial component indicates type of subject:
+      `c:` is for subjects that are CJK characters
+      `x:` is used for unclassified subjects (possibly to be refined in the future)
+    ###
     rows = [
-      { rowid: 't:mr:vb:V=ko-Hang+Latn:initial',    s: "NN", v: 'ko-Hang+Latn:initial',     o: "NN", }
-      { rowid: 't:mr:vb:V=ko-Hang+Latn:medial',     s: "NN", v: 'ko-Hang+Latn:medial',      o: "NN", }
-      { rowid: 't:mr:vb:V=ko-Hang+Latn:final',      s: "NN", v: 'ko-Hang+Latn:final',       o: "NN", }
-      { rowid: 't:mr:vb:V=reading:zh-Latn-pinyin',  s: "NN", v: 'reading:zh-Latn-pinyin',   o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Kan',        s: "NN", v: 'reading:ja-x-Kan',         o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Hir',        s: "NN", v: 'reading:ja-x-Hir',         o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Kat',        s: "NN", v: 'reading:ja-x-Kat',         o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ja-x-Latn',       s: "NN", v: 'reading:ja-x-Latn',        o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Hang',         s: "NN", v: 'reading:ko-Hang',          o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Latn',         s: "NN", v: 'reading:ko-Latn',          o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Hang:initial', s: "NN", v: 'reading:ko-Hang:initial',  o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Hang:medial',  s: "NN", v: 'reading:ko-Hang:medial',   o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Hang:final',   s: "NN", v: 'reading:ko-Hang:final',    o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Latn:initial', s: "NN", v: 'reading:ko-Latn:initial',  o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Latn:medial',  s: "NN", v: 'reading:ko-Latn:medial',   o: "NN", }
-      { rowid: 't:mr:vb:V=reading:ko-Latn:final',   s: "NN", v: 'reading:ko-Latn:final',    o: "NN", }
+      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:initial',    s: "NN", v: 'x:ko-Hang+Latn:initial',     o: "NN", }
+      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:medial',     s: "NN", v: 'x:ko-Hang+Latn:medial',      o: "NN", }
+      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:final',      s: "NN", v: 'x:ko-Hang+Latn:final',       o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:zh-Latn-pinyin',  s: "NN", v: 'c:reading:zh-Latn-pinyin',   o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Kan',        s: "NN", v: 'c:reading:ja-x-Kan',         o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Hir',        s: "NN", v: 'c:reading:ja-x-Hir',         o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Kat',        s: "NN", v: 'c:reading:ja-x-Kat',         o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Latn',       s: "NN", v: 'c:reading:ja-x-Latn',        o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang',         s: "NN", v: 'c:reading:ko-Hang',          o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn',         s: "NN", v: 'c:reading:ko-Latn',          o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang:initial', s: "NN", v: 'c:reading:ko-Hang:initial',  o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang:medial',  s: "NN", v: 'c:reading:ko-Hang:medial',   o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang:final',   s: "NN", v: 'c:reading:ko-Hang:final',    o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn:initial', s: "NN", v: 'c:reading:ko-Latn:initial',  o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn:medial',  s: "NN", v: 'c:reading:ko-Latn:medial',   o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn:final',   s: "NN", v: 'c:reading:ko-Latn:final',    o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
@@ -430,7 +462,7 @@ class Jzr_db_adapter extends Dbric_std
     paths = get_paths()
     dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
-    dskey = 'dict:ko-Hang+Latn';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
+    dskey = 'dict:x:ko-Hang+Latn';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
@@ -545,9 +577,9 @@ class Jzr_db_adapter extends Dbric_std
     v             = null
     o             = null
     entry         = field_3
-    # ko-Hang+Latn:initial
-    # ko-Hang+Latn:medial
-    # ko-Hang+Latn:final
+    # x:ko-Hang+Latn:initial
+    # x:ko-Hang+Latn:medial
+    # x:ko-Hang+Latn:final
     # reading:zh-Latn-pinyin
     # reading:ja-x-Kan
     # reading:ja-x-Hir
@@ -558,25 +590,25 @@ class Jzr_db_adapter extends Dbric_std
     #.......................................................................................................
     switch true
       #...................................................................................................
-      when ( dskey is 'dict:ko-Hang+Latn' ) # and ( entry.startsWith 'py:' )
+      when ( dskey is 'dict:x:ko-Hang+Latn' ) # and ( entry.startsWith 'py:' )
         role      = field_1
-        v         = "ko-Hang+Latn:#{role}"
+        v         = "x:ko-Hang+Latn:#{role}"
         readings  = [ field_3, ]
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'py:' )
-        v         = 'reading:zh-Latn-pinyin'
+        v         = 'c:reading:zh-Latn-pinyin'
         readings  = @host.language_services.extract_atonal_zh_readings entry
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'ka:' )
-        v         = 'reading:ja-x-Kat'
+        v         = 'c:reading:ja-x-Kat'
         readings  = @host.language_services.extract_ja_readings entry
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hi:' )
-        v         = 'reading:ja-x-Hir'
+        v         = 'c:reading:ja-x-Hir'
         readings  = @host.language_services.extract_ja_readings entry
       #...................................................................................................
       when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hg:' )
-        v         = 'reading:ko-Hang'
+        v         = 'c:reading:ko-Hang'
         readings  = @host.language_services.extract_hg_readings entry
     #.....................................................................................................
     if v?
@@ -724,6 +756,20 @@ demo = ->
   #.........................................................................................................
   # jzr._show_jzr_meta_uc_normalization_faults()
   jzr.show_jzr_meta_faults()
+  # c:reading:ja-x-Hir
+  # c:reading:ja-x-Kat
+  seen = new Set()
+  # for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Kat' order by o;"
+  #   for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
+  #     continue if seen.has part
+  #     seen.add part
+  #     echo part
+  # for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Hir' order by o;"
+  #   for part in ( reading.split /(.ー|.ゃ|.ゅ|.ょ|っ.|.)/v ) when part isnt ''
+  #   # for part in ( reading.split /(.)/v ) when part isnt ''
+  #     continue if seen.has part
+  #     seen.add part
+  #     echo part
   #.........................................................................................................
   ;null
 
