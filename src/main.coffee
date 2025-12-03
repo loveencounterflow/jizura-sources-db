@@ -166,6 +166,7 @@ class Jzr_db_adapter extends Dbric_std
         line_nr   integer         not null,
         lcode     text            not null,
         line      text            not null,
+        jfields   json                null,
         field_1   text                null,
         field_2   text                null,
         field_3   text                null,
@@ -349,7 +350,7 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     populate_jzr_mirror_lines: SQL"""
-      insert into jzr_mirror_lines ( rowid, dskey, line_nr, lcode, line, field_1, field_2, field_3, field_4 )
+      insert into jzr_mirror_lines ( rowid, dskey, line_nr, lcode, line, jfields, field_1, field_2, field_3, field_4 )
       select
         't:mr:ln:R=' || row_number() over ()          as rowid,
         -- ds.dskey || ':L=' || fl.line_nr   as rowid,
@@ -357,6 +358,7 @@ class Jzr_db_adapter extends Dbric_std
         fl.line_nr                        as line_nr,
         fl.lcode                          as lcode,
         fl.line                           as line,
+        fl.jfields                        as jfields,
         fl.field_1                        as field_1,
         fl.field_2                        as field_2,
         fl.field_3                        as field_3,
@@ -533,7 +535,7 @@ class Jzr_db_adapter extends Dbric_std
 
     #-------------------------------------------------------------------------------------------------------
     file_lines:
-      columns:      [ 'line_nr', 'lcode', 'line', 'field_1', 'field_2', 'field_3', 'field_4', ]
+      columns:      [ 'line_nr', 'lcode', 'line', 'jfields', 'field_1', 'field_2', 'field_3', 'field_4', ]
       parameters:   [ 'path', ]
       rows: ( path ) ->
         for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
@@ -545,12 +547,13 @@ class Jzr_db_adapter extends Dbric_std
               lcode = 'C'
             else
               lcode = 'D'
-              [ field_1, field_2, field_3, field_4, ] = line.split '\t'
-              field_1 ?= null
-              field_2 ?= null
-              field_3 ?= null
-              field_4 ?= null
-          yield { line_nr, lcode, line, field_1, field_2, field_3, field_4, }
+              [ field_1, field_2, field_3, field_4, ] = jfields = line.split '\t'
+              jfields   = JSON.stringify jfields
+              field_1  ?= null
+              field_2  ?= null
+              field_3  ?= null
+              field_4  ?= null
+          yield { line_nr, lcode, line, jfields, field_1, field_2, field_3, field_4, }
         ;null
 
     #-------------------------------------------------------------------------------------------------------
