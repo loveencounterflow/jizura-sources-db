@@ -743,6 +743,15 @@ class Jizura
   #   ;null
 
   #---------------------------------------------------------------------------------------------------------
+  show_counts: ->
+    counts = ( @dba.prepare SQL"select v, count(*) from jzr_mirror_triples_base group by v;" ).all()
+    console.table counts
+    counts = ( @dba.prepare SQL"select v, count(*) from jzr_triples group by v;" ).all()
+    console.table counts
+    #.......................................................................................................
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all()
     # warn 'Ωjzrsdb__12',
@@ -756,10 +765,11 @@ demo = ->
   jzr = new Jizura()
   #.........................................................................................................
   # jzr._show_jzr_meta_uc_normalization_faults()
+  jzr.show_counts()
   jzr.show_jzr_meta_faults()
   # c:reading:ja-x-Hir
   # c:reading:ja-x-Kat
-  seen = new Set()
+  # seen = new Set()
   # for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Kat' order by o;"
   #   for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
   #     continue if seen.has part
