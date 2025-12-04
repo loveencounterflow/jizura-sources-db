@@ -539,7 +539,7 @@ class Jzr_db_adapter extends Dbric_std
       parameters:   [ 'path', ]
       rows: ( path ) ->
         for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
-          field_1 = field_2 = field_3 = field_4 = null
+          field_1 = field_2 = field_3 = field_4 = jfields = null
           switch true
             when /^\s*$/v.test line
               lcode = 'B'
