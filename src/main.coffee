@@ -751,6 +751,12 @@ class Jizura
     console.table counts
     counts = ( @dba.prepare SQL"select v, count(*) from jzr_triples group by v;" ).all()
     console.table counts
+    counts = ( @dba.prepare SQL"""
+      select dskey, count(*) as count from jzr_mirror_lines group by dskey union all
+      select '*',   count(*) as count from jzr_mirror_lines
+      order by count;""" ).all()
+    counts = Object.fromEntries ( [ dskey, { count, }, ] for { dskey, count, } in counts )
+    console.table counts
     #.......................................................................................................
     ;null
 
