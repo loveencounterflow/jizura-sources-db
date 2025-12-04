@@ -86,11 +86,15 @@ get_paths = ->
   # R.db                            = '/dev/shm/jzr.db'
   R.jzrds                         = PATH.join R.base, 'jzrds'
   R.jzrnewds                      = PATH.join R.jzr, 'jizura-new-datasources'
+  R.raw_github                    = PATH.join R.jzrnewds, 'bvfs/origin/https/raw.githubusercontent.com'
+  kanjium                         = PATH.join R.raw_github, 'mifunetoshiro/kanjium/8a0cdaa16d64a281a2048de2eee2ec5e3a440fa6'
   R[ 'dict:meanings'          ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
   R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
   R[ 'dict:x:ko-Hang+Latn'    ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
   R[ 'dict:x:ja-Kan+Latn'     ]   = PATH.join R.jzrnewds, 'kana-transcriptions.tsv'
   R[ 'dict:bcp47'             ]   = PATH.join R.jzrnewds, 'BCP47-language-scripts-regions.tsv'
+  R[ 'dict:ja:kanjium'        ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
+  R[ 'dict:ja:kanjium:aux'    ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
   return R
 
 
@@ -466,6 +470,8 @@ class Jzr_db_adapter extends Dbric_std
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
     dskey = 'dict:x:ko-Hang+Latn';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
     dskey = 'dict:x:ja-Kan+Latn';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ja:kanjium';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=5', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ja:kanjium:aux';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=6', dskey, path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
