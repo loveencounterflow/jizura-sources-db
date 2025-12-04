@@ -539,6 +539,7 @@ class Jzr_db_adapter extends Dbric_std
       parameters:   [ 'path', ]
       rows: ( path ) ->
         for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
+          line = @host.language_services.normalize_text line
           field_1 = field_2 = field_3 = field_4 = jfields = null
           switch true
             when /^\s*$/v.test line
@@ -633,6 +634,9 @@ class Language_services
   constructor: ->
     @_TMP_hangeul = require 'hangul-disassemble'
     ;undefined
+
+  #---------------------------------------------------------------------------------------------------------
+  normalize_text: ( text, form = 'NFC' ) -> text.normalize form
 
   #---------------------------------------------------------------------------------------------------------
   remove_pinyin_diacritics: ( text ) -> ( text.normalize 'NFKD' ).replace /\P{L}/gv, ''
