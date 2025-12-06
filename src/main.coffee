@@ -130,7 +130,7 @@ class Jzr_db_adapter extends Dbric_std
       throw new Error "Ωjzrsdb___5 EFFRI testing revealed errors: #{rpr messages}"
       ;null
     #.......................................................................................................
-    if @is_fresh
+    if false # @is_fresh
       @_on_open_populate_jzr_datasources()
       @_on_open_populate_jzr_mirror_verbs()
       @_on_open_populate_jzr_mirror_lcodes()
@@ -700,22 +700,25 @@ class Jizura
     @language_services  = new Language_services()
     @dba                = new Jzr_db_adapter @paths.db, { host: @, }
     #.......................................................................................................
+    if false # jzr.dba.is_fresh
     ### TAINT move to Jzr_db_adapter together with try/catch ###
-    try
-      @populate_meaning_mirror_triples()
-    catch cause
-      fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-      throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
-        { cause, }
+      try
+        @populate_meaning_mirror_triples()
+      catch cause
+        fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
+        throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+          { cause, }
+      #.......................................................................................................
+      ### TAINT move to Jzr_db_adapter together with try/catch ###
+      try
+        @populate_hangeul_syllables()
+      catch cause
+        fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
+        throw new Error "Ωjzrsdb___9 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+          { cause, }
     #.......................................................................................................
-    ### TAINT move to Jzr_db_adapter together with try/catch ###
-    try
-      @populate_hangeul_syllables()
-    catch cause
-      fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-      throw new Error "Ωjzrsdb___9 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
-        { cause, }
-    #.......................................................................................................
+    else
+      warn "Ωjzrsdb__13 skipped"
     ;undefined
 
   #---------------------------------------------------------------------------------------------------------
@@ -788,38 +791,45 @@ demo = ->
   jzr.show_jzr_meta_faults()
   # c:reading:ja-x-Hir
   # c:reading:ja-x-Kat
-  # seen = new Set()
-  # for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Kat' order by o;"
-  #   for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
-  #     continue if seen.has part
-  #     seen.add part
-  #     echo part
-  # for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Hir' order by o;"
-  #   for part in ( reading.split /(.ー|.ゃ|.ゅ|.ょ|っ.|.)/v ) when part isnt ''
-  #   # for part in ( reading.split /(.)/v ) when part isnt ''
-  #     continue if seen.has part
-  #     seen.add part
-  #     echo part
+  seen = new Set()
+  for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Kat' order by o;"
+    for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
+      continue if seen.has part
+      seen.add part
+      echo part
+  for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Hir' order by o;"
+    for part in ( reading.split /(.ー|.ゃ|.ゅ|.ょ|っ.|.)/v ) when part isnt ''
+    # for part in ( reading.split /(.)/v ) when part isnt ''
+      continue if seen.has part
+      seen.add part
+      echo part
   #.........................................................................................................
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
 demo_read_dump = ->
-  { Undumper,                   } = SFMODULES.require_coarse_sqlite_statement_segmenter()
-  { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
-  jzr = new Jizura()
-  jzr.dba.teardown { test: '*', }
-  # debug 'Ωjzrsdb__13', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
-  path      = PATH.resolve __dirname, '../jzr.dump.sql'
-  undumper  = new Undumper { db: jzr.dba, }
-  count     = 0
-  for { line, } from walk_lines_with_positions path
-    # debug 'Ωjzrsdb__14', rpr line
-    for statement from undumper.scan line
-      count++
-      echo "Line #{count}:", statement
-      help 'Ωjzrsdb__16', "read #{count} statements" if ( count % 10 ) is 0
-  debug 'Ωjzrsdb__17', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
+  { Benchmarker,          } = SFMODULES.unstable.require_benchmarking()
+  # { nameit,               } = SFMODULES.require_nameit()
+  benchmarker = new Benchmarker()
+  timeit = ( P... ) -> benchmarker.timeit P...
+  #.........................................................................................................
+  timeit { total: 102727, brand: 'demo_read_dump', }, demo_read_dump_ = ({ progress, }) ->
+    { Undumper,                   } = SFMODULES.require_coarse_sqlite_statement_segmenter()
+    { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
+    jzr = new Jizura()
+    jzr.dba.teardown { test: '*', }
+    # debug 'Ωjzrsdb__14', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
+    path      = PATH.resolve __dirname, '../jzr.dump.sql'
+    undumper  = new Undumper { db: jzr.dba, }
+    for { line, } from walk_lines_with_positions path
+      # debug 'Ωjzrsdb__15', rpr line
+      progress()
+      for statement from undumper.scan line
+        null
+        # echo "Line #{count}:", statement
+        # help 'Ωjzrsdb__16', "read #{count} statements" if ( count % 1000 ) is 0
+    debug 'Ωjzrsdb__17', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
+    ;null
   #.........................................................................................................
   ;null
 
