@@ -803,10 +803,30 @@ demo = ->
   #.........................................................................................................
   ;null
 
+#-----------------------------------------------------------------------------------------------------------
+demo_read_dump = ->
+  { Undumper,                   } = SFMODULES.require_coarse_sqlite_statement_segmenter()
+  { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
+  jzr = new Jizura()
+  jzr.dba.teardown { test: '*', }
+  # debug 'Ωjzrsdb__13', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
+  path      = PATH.resolve __dirname, '../jzr.dump.sql'
+  undumper  = new Undumper { db: jzr.dba, }
+  count     = 0
+  for { line, } from walk_lines_with_positions path
+    # debug 'Ωjzrsdb__14', rpr line
+    for statement from undumper.scan line
+      count++
+      echo "Line #{count}:", statement
+      help 'Ωjzrsdb__16', "read #{count} statements" if ( count % 10 ) is 0
+  debug 'Ωjzrsdb__17', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
+  #.........................................................................................................
+  ;null
+
 
 #===========================================================================================================
 if module is require.main then do =>
-  demo()
-  # demo_source_identifiers()
+  # demo()
+  demo_read_dump()
   ;null
 
