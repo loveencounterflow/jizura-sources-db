@@ -820,8 +820,8 @@ demo_read_dump = ->
   # debug 'Ωjzrsdb__14', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
   path      = PATH.resolve __dirname, '../jzr.dump.sql'
   #.........................................................................................................
-  if false
-    undumper  = new Undumper { db: jzr.dba, }
+  if true
+    undumper  = new Undumper { db: jzr.dba, mode: 'fast', }
     timeit { total: 102727, brand: 'demo_read_dump', }, demo_read_dump_with_undumper = ({ progress, }) ->
       for { line, } from walk_lines_with_positions path
         # debug 'Ωjzrsdb__15', rpr line
@@ -844,6 +844,8 @@ demo_read_dump = ->
     debug 'Ωjzrsdb__17', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
     ;null
   #.........................................................................................................
+  jzr.show_counts()
+  jzr.show_jzr_meta_faults()
   ;null
 
 
