@@ -79,23 +79,30 @@ demo_source_identifiers = ->
 
 #===========================================================================================================
 get_paths = ->
-  R                               = {}
-  R.base                          = PATH.resolve __dirname, '..'
-  R.jzr                           = PATH.resolve R.base, '..'
-  R.db                            = PATH.join R.base, 'jzr.db'
-  # R.db                            = '/dev/shm/jzr.db'
-  R.jzrds                         = PATH.join R.base, 'jzrds'
-  R.jzrnewds                      = PATH.join R.jzr, 'jizura-new-datasources'
-  R.raw_github                    = PATH.join R.jzrnewds, 'bvfs/origin/https/raw.githubusercontent.com'
-  kanjium                         = PATH.join R.raw_github, 'mifunetoshiro/kanjium/8a0cdaa16d64a281a2048de2eee2ec5e3a440fa6'
-  R[ 'dict:meanings'          ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
-  R[ 'dict:ucd:v14.0:uhdidx'  ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  R[ 'dict:x:ko-Hang+Latn'    ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
-  R[ 'dict:x:ja-Kan+Latn'     ]   = PATH.join R.jzrnewds, 'kana-transcriptions.tsv'
-  R[ 'dict:bcp47'             ]   = PATH.join R.jzrnewds, 'BCP47-language-scripts-regions.tsv'
-  R[ 'dict:ja:kanjium'        ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
-  R[ 'dict:ja:kanjium:aux'    ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
+  R                                   = {}
+  R.base                              = PATH.resolve __dirname, '..'
+  R.jzr                               = PATH.resolve R.base, '..'
+  R.db                                = PATH.join R.base, 'jzr.db'
+  # R.db                                = '/dev/shm/jzr.db'
+  R.jzrds                             = PATH.join R.base, 'jzrds'
+  R.jzrnewds                          = PATH.join R.jzr, 'jizura-new-datasources'
+  R.raw_github                        = PATH.join R.jzrnewds, 'bvfs/origin/https/raw.githubusercontent.com'
+  kanjium                             = PATH.join R.raw_github, 'mifunetoshiro/kanjium/8a0cdaa16d64a281a2048de2eee2ec5e3a440fa6'
+  rutopio                             = PATH.join R.raw_github, 'rutopio/Korean-Name-Hanja-Charset/12df1ba1b4dfaa095813e4ddfba424e816f94c53'
+  R[ 'dict:meanings'              ]   = PATH.join R.jzrds, 'meaning/meanings.txt'
+  R[ 'dict:ucd:v14.0:uhdidx'      ]   = PATH.join R.jzrds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  R[ 'dict:x:ko-Hang+Latn'        ]   = PATH.join R.jzrnewds, 'hangeul-transcriptions.tsv'
+  R[ 'dict:x:ja-Kan+Latn'         ]   = PATH.join R.jzrnewds, 'kana-transcriptions.tsv'
+  R[ 'dict:bcp47'                 ]   = PATH.join R.jzrnewds, 'BCP47-language-scripts-regions.tsv'
+  R[ 'dict:ja:kanjium'            ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
+  R[ 'dict:ja:kanjium:aux'        ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
+  R[ 'dict:ko:V=data-gov.csv'     ]   = PATH.join rutopio, 'data-gov.csv'
+  R[ 'dict:ko:V=data-gov.json'    ]   = PATH.join rutopio, 'data-gov.json'
+  R[ 'dict:ko:V=data-naver.csv'   ]   = PATH.join rutopio, 'data-naver.csv'
+  R[ 'dict:ko:V=data-naver.json'  ]   = PATH.join rutopio, 'data-naver.json'
+  R[ 'dict:ko:V=README.md'        ]   = PATH.join rutopio, 'README.md'
   return R
+
 
 
 #===========================================================================================================
@@ -480,12 +487,17 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
     paths = get_paths()
-    dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
-    dskey = 'dict:x:ko-Hang+Latn';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
-    dskey = 'dict:x:ja-Kan+Latn';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, path: paths[ dskey ], }
-    dskey = 'dict:ja:kanjium';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=5', dskey, path: paths[ dskey ], }
-    dskey = 'dict:ja:kanjium:aux';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=6', dskey, path: paths[ dskey ], }
+    dskey = 'dict:meanings';              @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
+    dskey = 'dict:x:ko-Hang+Latn';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
+    dskey = 'dict:x:ja-Kan+Latn';         @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ja:kanjium';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ja:kanjium:aux';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=5', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ko:V=data-gov.csv';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=6', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ko:V=data-gov.json';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=7', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ko:V=data-naver.csv';   @statements.insert_jzr_datasource.run { rowid: 't:ds:R=8', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ko:V=data-naver.json';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=9', dskey, path: paths[ dskey ], }
+    dskey = 'dict:ko:V=README.md';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=10', dskey, path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
