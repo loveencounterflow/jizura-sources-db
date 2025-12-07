@@ -181,11 +181,13 @@ class Jzr_db_adapter extends Dbric_std
     #.......................................................................................................
     SQL"""create table jzr_mirror_verbs (
         rowid     text    unique  not null,
+        rank      integer         not null default 1,
         s         text            not null,
         v         text    unique  not null,
         o         text            not null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ) );"""
+      check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ),
+      check ( rank > 0 ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_triples_base (
@@ -264,16 +266,30 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     SQL"""create view jzr_triples as
-      select null as rowid, null as ref, null as s, null as v, null as o where false union all
+      select null as rowid, null as ref, null as rank, null as s, null as v, null as o where false
+      -- -- ...................................................................................................
+      union all
+      select tb1.rowid, tb1.ref, vb1.rank, tb1.s, tb1.v, tb1.o from jzr_mirror_triples_base as tb1
+      join jzr_mirror_verbs as vb1 using ( v )
+      where vb1.v like 'c:%'
       -- ...................................................................................................
-      select * from jzr_mirror_triples_base where v like 'c:%' union all
-      select tb.rowid, tb.ref, tb.s, kr.v, kr.o from jzr_mirror_triples_base as tb
-        join jzr_lang_kr_readings_triples as kr on ( tb.v = 'c:reading:ko-Hang' and tb.o = kr.s )
-        union all
+      union all
+      select tb2.rowid, tb2.ref, vb2.rank, tb2.s, kr.v, kr.o from jzr_mirror_triples_base as tb2
+      join jzr_lang_kr_readings_triples as kr on ( tb2.v = 'c:reading:ko-Hang' and tb2.o = kr.s )
+      join jzr_mirror_verbs as vb2 on ( kr.v = vb2.v )
       -- ...................................................................................................
-      select null, null, null, null, null where false
+      union all
+      select null, null, null, null, null, null where false
       order by s, v, o
       ;"""
+
+    #.......................................................................................................
+    SQL"""create view jzr_top_triples as
+      select * from jzr_triples
+      where rank = 1
+      order by s, v, o
+      ;"""
+
 
     #-------------------------------------------------------------------------------------------------------
     SQL"""create view _jzr_meta_uc_normalization_faults as select
@@ -337,8 +353,8 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     insert_jzr_mirror_verb: SQL"""
-      insert into jzr_mirror_verbs ( rowid, s, v, o ) values ( $rowid, $s, $v, $o )
-        on conflict ( rowid ) do update set s = excluded.s, v = excluded.v, o = excluded.o;"""
+      insert into jzr_mirror_verbs ( rowid, rank, s, v, o ) values ( $rowid, $rank, $s, $v, $o )
+        on conflict ( rowid ) do update set rank = excluded.rank, s = excluded.s, v = excluded.v, o = excluded.o;"""
 
     #.......................................................................................................
     insert_jzr_mirror_lcode: SQL"""
@@ -440,22 +456,22 @@ class Jzr_db_adapter extends Dbric_std
       `x:` is used for unclassified subjects (possibly to be refined in the future)
     ###
     rows = [
-      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:initial',    s: "NN", v: 'x:ko-Hang+Latn:initial',     o: "NN", }
-      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:medial',     s: "NN", v: 'x:ko-Hang+Latn:medial',      o: "NN", }
-      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:final',      s: "NN", v: 'x:ko-Hang+Latn:final',       o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:zh-Latn-pinyin',  s: "NN", v: 'c:reading:zh-Latn-pinyin',   o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Kan',        s: "NN", v: 'c:reading:ja-x-Kan',         o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Hir',        s: "NN", v: 'c:reading:ja-x-Hir',         o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Kat',        s: "NN", v: 'c:reading:ja-x-Kat',         o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Latn',       s: "NN", v: 'c:reading:ja-x-Latn',        o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang',         s: "NN", v: 'c:reading:ko-Hang',          o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn',         s: "NN", v: 'c:reading:ko-Latn',          o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang:initial', s: "NN", v: 'c:reading:ko-Hang:initial',  o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang:medial',  s: "NN", v: 'c:reading:ko-Hang:medial',   o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang:final',   s: "NN", v: 'c:reading:ko-Hang:final',    o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn:initial', s: "NN", v: 'c:reading:ko-Latn:initial',  o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn:medial',  s: "NN", v: 'c:reading:ko-Latn:medial',   o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn:final',   s: "NN", v: 'c:reading:ko-Latn:final',    o: "NN", }
+      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:initial',    rank: 2, s: "NN", v: 'x:ko-Hang+Latn:initial',     o: "NN", }
+      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:medial',     rank: 2, s: "NN", v: 'x:ko-Hang+Latn:medial',      o: "NN", }
+      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:final',      rank: 2, s: "NN", v: 'x:ko-Hang+Latn:final',       o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:zh-Latn-pinyin',  rank: 1, s: "NN", v: 'c:reading:zh-Latn-pinyin',   o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Kan',        rank: 1, s: "NN", v: 'c:reading:ja-x-Kan',         o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Hir',        rank: 1, s: "NN", v: 'c:reading:ja-x-Hir',         o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Kat',        rank: 1, s: "NN", v: 'c:reading:ja-x-Kat',         o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Latn',       rank: 1, s: "NN", v: 'c:reading:ja-x-Latn',        o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang',         rank: 1, s: "NN", v: 'c:reading:ko-Hang',          o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn',         rank: 1, s: "NN", v: 'c:reading:ko-Latn',          o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang:initial', rank: 2, s: "NN", v: 'c:reading:ko-Hang:initial',  o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang:medial',  rank: 2, s: "NN", v: 'c:reading:ko-Hang:medial',   o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Hang:final',   rank: 2, s: "NN", v: 'c:reading:ko-Hang:final',    o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn:initial', rank: 2, s: "NN", v: 'c:reading:ko-Latn:initial',  o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn:medial',  rank: 2, s: "NN", v: 'c:reading:ko-Latn:medial',   o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ko-Latn:final',   rank: 2, s: "NN", v: 'c:reading:ko-Latn:final',    o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
