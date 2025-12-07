@@ -176,10 +176,6 @@ class Jzr_db_adapter extends Dbric_std
         lcode     text            not null,
         line      text            not null,
         jfields   json                null,
-        field_1   text                null,
-        field_2   text                null,
-        field_3   text                null,
-        field_4   text                null,
       primary key ( rowid ),
       check ( rowid regexp '^t:mr:ln:R=\\d+$'),
       unique ( dskey, line_nr ),
@@ -375,7 +371,7 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     populate_jzr_mirror_lines: SQL"""
-      insert into jzr_mirror_lines ( rowid, dskey, line_nr, lcode, line, jfields, field_1, field_2, field_3, field_4 )
+      insert into jzr_mirror_lines ( rowid, dskey, line_nr, lcode, line, jfields )
       select
         't:mr:ln:R=' || row_number() over ()          as rowid,
         -- ds.dskey || ':L=' || fl.line_nr   as rowid,
@@ -383,11 +379,7 @@ class Jzr_db_adapter extends Dbric_std
         fl.line_nr                        as line_nr,
         fl.lcode                          as lcode,
         fl.line                           as line,
-        fl.jfields                        as jfields,
-        fl.field_1                        as field_1,
-        fl.field_2                        as field_2,
-        fl.field_3                        as field_3,
-        fl.field_4                        as field_4
+        fl.jfields                        as jfields
       from jzr_datasources        as ds
       join file_lines( ds.path )  as fl
       where true
@@ -403,13 +395,13 @@ class Jzr_db_adapter extends Dbric_std
             gt.s            as s,
             gt.v            as v,
             gt.o            as o
-          from jzr_mirror_lines                                                       as ml
-          join get_triples( ml.rowid, ml.dskey, ml.field_1, ml.field_2, ml.field_3 )  as gt
+          from jzr_mirror_lines                               as ml
+          join get_triples( ml.rowid, ml.dskey, ml.jfields )  as gt
           where true
             and ( ml.lcode = 'D' )
             -- and ( ml.dskey = 'dict:meanings' )
-            and ( ml.field_1 is not null )
-            and ( ml.field_1 not regexp '^@glyphs' )
+            and ( ml.jfields is not null )
+            and ( ml.jfields->>'$[0]' not regexp '^@glyphs' )
             -- and ( ml.field_3 regexp '^(?:py|hi|ka):' )
         on conflict ( ref, s, v, o ) do nothing
         ;
@@ -563,12 +555,12 @@ class Jzr_db_adapter extends Dbric_std
 
     #-------------------------------------------------------------------------------------------------------
     file_lines:
-      columns:      [ 'line_nr', 'lcode', 'line', 'jfields', 'field_1', 'field_2', 'field_3', 'field_4', ]
+      columns:      [ 'line_nr', 'lcode', 'line', 'jfields' ]
       parameters:   [ 'path', ]
       rows: ( path ) ->
         for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
-          line = @host.language_services.normalize_text line
-          field_1 = field_2 = field_3 = field_4 = jfields = null
+          line    = @host.language_services.normalize_text line
+          jfields = null
           switch true
             when /^\s*$/v.test line
               lcode = 'B'
@@ -576,21 +568,16 @@ class Jzr_db_adapter extends Dbric_std
               lcode = 'C'
             else
               lcode = 'D'
-              [ field_1, field_2, field_3, field_4, ] = jfields = line.split '\t'
-              jfields   = JSON.stringify jfields
-              field_1  ?= null
-              field_2  ?= null
-              field_3  ?= null
-              field_4  ?= null
-          yield { line_nr, lcode, line, jfields, field_1, field_2, field_3, field_4, }
+              jfields   = JSON.stringify line.split '\t'
+          yield { line_nr, lcode, line, jfields, }
         ;null
 
     #-------------------------------------------------------------------------------------------------------
     get_triples:
-      parameters:   [ 'rowid_in', 'dskey', 'field_1', 'field_2', 'field_3', 'field_4', ]
+      parameters:   [ 'rowid_in', 'dskey', 'jfields', ]
       columns:      [ 'rowid_out', 'ref', 's', 'v', 'o', ]
-      rows: ( rowid_in, dskey, field_1, field_2, field_3, field_4 ) ->
-        yield from @get_triples rowid_in, dskey, field_1, field_2, field_3, field_4
+      rows: ( rowid_in, dskey, jfields ) ->
+        yield from @get_triples rowid_in, dskey, jfields
         ;null
 
     #-------------------------------------------------------------------------------------------------------
@@ -604,7 +591,15 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
   #---------------------------------------------------------------------------------------------------------
-  get_triples: ( rowid_in, dskey, field_1, field_2, field_3, field_4 ) ->
+  get_triples: ( rowid_in, dskey, jfields ) ->
+    [ field_1,
+      field_2,
+      field_3,
+      field_4,  ] = JSON.parse jfields
+    field_1      ?= ''
+    field_2      ?= ''
+    field_3      ?= ''
+    field_4      ?= ''
     ref           = rowid_in
     s             = field_2
     v             = null
@@ -743,18 +738,17 @@ class Jizura
 
   #---------------------------------------------------------------------------------------------------------
   populate_meaning_mirror_triples: ->
-    { total_row_count, } = ( @dba.prepare SQL"""
-      select
-          count(*) as total_row_count
-        from jzr_mirror_lines
-        where true
-          and ( dskey is 'dict:meanings' )
-          and ( field_1 is not null )
-          and ( not field_1 regexp '^@glyphs' );""" ).get()
-    total = total_row_count * 2 ### NOTE estimate ###
-    # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb___9', { total_row_count, total, }
-    process.exit 111
+    do =>
+      { total_row_count, } = ( @dba.prepare SQL"""
+        select
+            count(*) as total_row_count
+          from jzr_mirror_lines
+          where true
+            and ( dskey is 'dict:meanings' )
+            and ( jfields is not null ) -- NOTE: necessary
+            and ( not jfields->>'$[0]' regexp '^@glyphs' );""" ).get()
+      total = total_row_count * 2 ### NOTE estimate ###
+      help 'Ωjzrsdb___9', { total_row_count, total, } # { total_row_count: 40086, total: 80172 }
     #.......................................................................................................
     @dba.statements.populate_jzr_mirror_triples.run()
     ;null
