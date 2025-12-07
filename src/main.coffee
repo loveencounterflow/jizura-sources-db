@@ -718,7 +718,7 @@ class Jizura
           { cause, }
     #.......................................................................................................
     else
-      warn "Ωjzrsdb__13 skipped"
+      warn "Ωjzrsdb__10 skipped"
     ;undefined
 
   #---------------------------------------------------------------------------------------------------------
@@ -733,7 +733,7 @@ class Jizura
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
     # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb__10', { total_row_count, total, }
+    help 'Ωjzrsdb__11', { total_row_count, total, }
     #.......................................................................................................
     # brand = 'BRAND'
     # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
@@ -753,7 +753,7 @@ class Jizura
   # #---------------------------------------------------------------------------------------------------------
   # _show_jzr_meta_uc_normalization_faults: ->
   #   faulty_rows = ( @dba.prepare SQL"select * from _jzr_meta_uc_normalization_faults;" ).all()
-  #   warn 'Ωjzrsdb__11', reverse faulty_rows
+  #   warn 'Ωjzrsdb__12', reverse faulty_rows
   #   # for row from
   #   #.......................................................................................................
   #   ;null
@@ -776,7 +776,7 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all()
-    # warn 'Ωjzrsdb__12',
+    # warn 'Ωjzrsdb__13',
     console.table faulty_rows
     # for row from
     #.......................................................................................................
