@@ -812,22 +812,35 @@ demo_read_dump = ->
   # { nameit,               } = SFMODULES.require_nameit()
   benchmarker = new Benchmarker()
   timeit = ( P... ) -> benchmarker.timeit P...
+  { Segmenter,
+    Undumper,                   } = SFMODULES.require_coarse_sqlite_statement_segmenter()
+  { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
+  jzr = new Jizura()
+  jzr.dba.teardown { test: '*', }
+  # debug 'Ωjzrsdb__14', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
+  path      = PATH.resolve __dirname, '../jzr.dump.sql'
   #.........................................................................................................
-  timeit { total: 102727, brand: 'demo_read_dump', }, demo_read_dump_ = ({ progress, }) ->
-    { Undumper,                   } = SFMODULES.require_coarse_sqlite_statement_segmenter()
-    { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
-    jzr = new Jizura()
-    jzr.dba.teardown { test: '*', }
-    # debug 'Ωjzrsdb__14', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
-    path      = PATH.resolve __dirname, '../jzr.dump.sql'
+  if false
     undumper  = new Undumper { db: jzr.dba, }
-    for { line, } from walk_lines_with_positions path
-      # debug 'Ωjzrsdb__15', rpr line
-      progress()
-      for statement from undumper.scan line
-        null
-        # echo "Line #{count}:", statement
-        # help 'Ωjzrsdb__16', "read #{count} statements" if ( count % 1000 ) is 0
+    timeit { total: 102727, brand: 'demo_read_dump', }, demo_read_dump_with_undumper = ({ progress, }) ->
+      for { line, } from walk_lines_with_positions path
+        # debug 'Ωjzrsdb__15', rpr line
+        progress()
+        for statement from undumper.scan line
+          null
+          # echo "Line #{count}:", statement
+          # help 'Ωjzrsdb__16', "read #{count} statements" if ( count % 1000 ) is 0
+  #.........................................................................................................
+  else
+    segmenter  = new Segmenter()
+    timeit { total: 102727, brand: 'demo_read_dump', }, demo_read_dump_with_segmenter = ({ progress, }) ->
+      for { line, } from walk_lines_with_positions path
+        # debug 'Ωjzrsdb__15', rpr line
+        progress()
+        for statement from segmenter.scan line
+          null
+          # echo "Line #{count}:", statement
+          # help 'Ωjzrsdb__16', "read #{count} statements" if ( count % 1000 ) is 0
     debug 'Ωjzrsdb__17', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
     ;null
   #.........................................................................................................
