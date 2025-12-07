@@ -30,7 +30,7 @@ GUY                       = require 'guy'
 # { nfa }                   = require '../../hengist-NG/apps/normalize-function-arguments'
 # GTNG                      = require '../../hengist-NG/apps/guy-test-NG'
 # { Test                  } = GTNG
-# FS                        = require 'node:fs'
+FS                        = require 'node:fs'
 PATH                      = require 'node:path'
 #-----------------------------------------------------------------------------------------------------------
 Bsql3                     = require 'better-sqlite3'
@@ -815,17 +815,23 @@ demo_read_dump = ->
   { Segmenter,
     Undumper,                   } = SFMODULES.require_coarse_sqlite_statement_segmenter()
   { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
+  { wc,                         } = SFMODULES.require_wc()
+  path                            = PATH.resolve __dirname, '../jzr.dump.sql'
+  line_count                      = ( wc path ).lines # 102_727
+  # line_count                      =    102_727
+  byte_count                      = ( FS.statSync path ).size
+  debug 'Ωjzrsdb__17', { byte_count, line_count, }
   jzr = new Jizura()
   jzr.dba.teardown { test: '*', }
   # debug 'Ωjzrsdb__14', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
-  path      = PATH.resolve __dirname, '../jzr.dump.sql'
   #.........................................................................................................
   if true
     undumper  = new Undumper { db: jzr.dba, mode: 'fast', }
-    timeit { total: 102727, brand: 'demo_read_dump', }, demo_read_dump_with_undumper = ({ progress, }) ->
+    timeit { total: line_count, brand: 'demo_read_dump', }, demo_read_dump_with_undumper = ({ progress, }) ->
       for { line, } from walk_lines_with_positions path
         # debug 'Ωjzrsdb__15', rpr line
-        progress()
+        progress { delta: 1, }
+        # progress { delta: line.length, }
         for statement from undumper.scan line
           null
           # echo "Line #{count}:", statement
@@ -833,7 +839,7 @@ demo_read_dump = ->
   #.........................................................................................................
   else
     segmenter  = new Segmenter()
-    timeit { total: 102727, brand: 'demo_read_dump', }, demo_read_dump_with_segmenter = ({ progress, }) ->
+    timeit { total: line_count, brand: 'demo_read_dump', }, demo_read_dump_with_segmenter = ({ progress, }) ->
       for { line, } from walk_lines_with_positions path
         # debug 'Ωjzrsdb__15', rpr line
         progress()
