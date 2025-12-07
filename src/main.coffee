@@ -130,14 +130,12 @@ class Jzr_db_adapter extends Dbric_std
       throw new Error "Ωjzrsdb___5 EFFRI testing revealed errors: #{rpr messages}"
       ;null
     #.......................................................................................................
-    if false # @is_fresh
+    if @is_fresh
       @_on_open_populate_jzr_datasources()
       @_on_open_populate_jzr_mirror_verbs()
       @_on_open_populate_jzr_mirror_lcodes()
       @_on_open_populate_jzr_mirror_lines()
       @_on_open_populate_jzr_mirror_triples_for_meanings()
-    else
-      warn 'Ωjzrsdb___6', "skipped data insertion"
     #.......................................................................................................
     ;undefined
 
@@ -684,7 +682,7 @@ class Language_services
     R.delete 'null'
     R.delete '@null'
     hangeul = [ R..., ].join ''
-    # debug 'Ωjzrsdb___7', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
+    # debug 'Ωjzrsdb___6', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
     return [ R..., ]
 
 
@@ -700,13 +698,13 @@ class Jizura
     @language_services  = new Language_services()
     @dba                = new Jzr_db_adapter @paths.db, { host: @, }
     #.......................................................................................................
-    if false # jzr.dba.is_fresh
+    if @dba.is_fresh
     ### TAINT move to Jzr_db_adapter together with try/catch ###
       try
         @populate_meaning_mirror_triples()
       catch cause
         fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb___7 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
@@ -714,11 +712,9 @@ class Jizura
         @populate_hangeul_syllables()
       catch cause
         fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb___9 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
     #.......................................................................................................
-    else
-      warn "Ωjzrsdb__10 skipped"
     ;undefined
 
   #---------------------------------------------------------------------------------------------------------
@@ -733,7 +729,7 @@ class Jizura
           and ( not field_1 regexp '^@glyphs' );""" ).get()
     total = total_row_count * 2 ### NOTE estimate ###
     # { total_row_count, total, } = { total_row_count: 40086, total: 80172 } # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    help 'Ωjzrsdb__11', { total_row_count, total, }
+    help 'Ωjzrsdb___9', { total_row_count, total, }
     #.......................................................................................................
     # brand = 'BRAND'
     # timeit { total, brand, }, populate_triples_1_connection = ({ progress, }) =>
@@ -753,7 +749,7 @@ class Jizura
   # #---------------------------------------------------------------------------------------------------------
   # _show_jzr_meta_uc_normalization_faults: ->
   #   faulty_rows = ( @dba.prepare SQL"select * from _jzr_meta_uc_normalization_faults;" ).all()
-  #   warn 'Ωjzrsdb__12', reverse faulty_rows
+  #   warn 'Ωjzrsdb__10', reverse faulty_rows
   #   # for row from
   #   #.......................................................................................................
   #   ;null
@@ -776,7 +772,7 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all()
-    # warn 'Ωjzrsdb__13',
+    # warn 'Ωjzrsdb__11',
     console.table faulty_rows
     # for row from
     #.......................................................................................................
@@ -791,18 +787,19 @@ demo = ->
   jzr.show_jzr_meta_faults()
   # c:reading:ja-x-Hir
   # c:reading:ja-x-Kat
-  seen = new Set()
-  for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Kat' order by o;"
-    for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
-      continue if seen.has part
-      seen.add part
-      echo part
-  for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Hir' order by o;"
-    for part in ( reading.split /(.ー|.ゃ|.ゅ|.ょ|っ.|.)/v ) when part isnt ''
-    # for part in ( reading.split /(.)/v ) when part isnt ''
-      continue if seen.has part
-      seen.add part
-      echo part
+  if false
+    seen = new Set()
+    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Kat' order by o;"
+      for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
+        continue if seen.has part
+        seen.add part
+        echo part
+    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Hir' order by o;"
+      for part in ( reading.split /(.ー|.ゃ|.ゅ|.ょ|っ.|.)/v ) when part isnt ''
+      # for part in ( reading.split /(.)/v ) when part isnt ''
+        continue if seen.has part
+        seen.add part
+        echo part
   #.........................................................................................................
   ;null
 
@@ -816,13 +813,9 @@ demo_read_dump = ->
   { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
   { wc,                         } = SFMODULES.require_wc()
   path                            = PATH.resolve __dirname, '../jzr.dump.sql'
-  # line_count                      = ( wc path ).lines # 102_727
-  # byte_count                      = ( wc path ).bytes
-  # total                           = line_count
   jzr = new Jizura()
   jzr.dba.teardown { test: '*', }
-  # debug 'Ωjzrsdb__14', row for row from jzr.dba.walk SQL"select name, type from sqlite_schema;"
-  debug 'Ωjzrsdb__15', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
+  debug 'Ωjzrsdb__12', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
   #.........................................................................................................
   jzr.show_counts()
   jzr.show_jzr_meta_faults()
@@ -831,7 +824,7 @@ demo_read_dump = ->
 
 #===========================================================================================================
 if module is require.main then do =>
-  # demo()
-  demo_read_dump()
+  demo()
+  # demo_read_dump()
   ;null
 
