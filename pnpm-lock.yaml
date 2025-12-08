@@ -20,6 +20,9 @@ importers:
       hangul-disassemble:
         specifier: ^0.5.2
         version: 0.5.2
+      wanakana:
+        specifier: ^5.3.1
+        version: 5.3.1
 
 packages:
 
@@ -173,6 +176,10 @@ packages:
 
   util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}
+
+  wanakana@5.3.1:
+    resolution: {integrity: sha512-OSDqupzTlzl2LGyqTdhcXcl6ezMiFhcUwLBP8YKaBIbMYW1wAwDvupw2T9G9oVaKT9RmaSpyTXjxddFPUcFFIw==}
+    engines: {node: '>=12'}
 
   wrappy@1.0.2:
     resolution: {integrity: sha512-l4Sp/DRseor9wL6EvV2+TuQn63dMkPjZ/sp9XkghTEbV9KlPS1xUsZ3u7/IQO4wxtcFB4bgpQPRcR3QCvezPcQ==}
@@ -341,5 +348,7 @@ snapshots:
       safe-buffer: 5.2.1
 
   util-deprecate@1.0.2: {}
+
+  wanakana@5.3.1: {}
 
   wrappy@1.0.2: {}

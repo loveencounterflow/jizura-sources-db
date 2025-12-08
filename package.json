@@ -14,6 +14,7 @@
     "better-sqlite3": "^12.4.6",
     "bricabrac-sfmodules": "^0.20.0",
     "guy": "^14.2.0",
-    "hangul-disassemble": "^0.5.2"
+    "hangul-disassemble": "^0.5.2",
+    "wanakana": "^5.3.1"
   }
 }
