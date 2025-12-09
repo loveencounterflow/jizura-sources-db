@@ -209,7 +209,8 @@ class Jzr_db_adapter extends Dbric_std
     SQL"""create trigger jzr_mirror_triples_register
       before insert on jzr_mirror_triples_base
       for each row begin
-        select trigger_on_before_insert( 'jzr_mirror_triples_base', new.rowid, new.ref, new.s, new.v, new.o );
+        select trigger_on_before_insert( 'jzr_mirror_triples_base',
+          'rowid:', new.rowid, 'ref:', new.ref, 's:', new.s, 'v:', new.v, 'o:', new.o );
         end;"""
 
     #.......................................................................................................
