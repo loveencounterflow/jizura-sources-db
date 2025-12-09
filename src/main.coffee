@@ -577,7 +577,16 @@ class Jzr_db_adapter extends Dbric_std
       parameters:   [ 'rowid_in', 'dskey', 'jfields', ]
       columns:      [ 'rowid_out', 'ref', 's', 'v', 'o', ]
       rows: ( rowid_in, dskey, jfields ) ->
-        yield from @get_triples rowid_in, dskey, jfields
+        fields  = JSON.parse jfields
+        entry   = fields[ 2 ]
+        switch dskey
+          when 'dict:x:ko-Hang+Latn'        then yield from @triplets_from_dict_x_ko_Hang_Latn rowid_in, dskey, fields
+          when 'dict:meanings' then switch true
+            when ( entry.startsWith 'py:' ) then yield from []
+            when ( entry.startsWith 'ka:' ) then yield from []
+            when ( entry.startsWith 'hi:' ) then yield from []
+            when ( entry.startsWith 'hg:' ) then yield from []
+        # yield from @get_triples rowid_in, dskey, jfields
         ;null
 
     #-------------------------------------------------------------------------------------------------------
@@ -589,6 +598,19 @@ class Jzr_db_adapter extends Dbric_std
         for { first: initial, vowel: medial, last: final, } in jamos
           yield { initial, medial, final, }
         ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  _get_next_triple_rowid: -> "t:mr:3pl:R=#{++@_TMP_state.triple_count}"
+
+  #---------------------------------------------------------------------------------------------------------
+  triplets_from_dict_x_ko_Hang_Latn: ( rowid_in, dskey, [ role, s, o, ] ) ->
+    rowid_out = @_get_next_triple_rowid()
+    ref       = rowid_in
+    v         = "x:ko-Hang+Latn:#{role}"
+    o        ?= ''
+    yield { rowid_out, ref, s, v, o, }
+    @_TMP_state.timeit_progress?()
+    ;null
 
   #---------------------------------------------------------------------------------------------------------
   get_triples: ( rowid_in, dskey, jfields ) ->
