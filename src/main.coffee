@@ -19,6 +19,7 @@ GUY                       = require 'guy'
   white
   green
   blue
+  lime
   gold
   grey
   red
@@ -474,6 +475,8 @@ class Jzr_db_adapter extends Dbric_std
       { rowid: 't:mr:vb:V=c:reading:ja-x-Hir',        rank: 1, s: "NN", v: 'c:reading:ja-x-Hir',         o: "NN", }
       { rowid: 't:mr:vb:V=c:reading:ja-x-Kat',        rank: 1, s: "NN", v: 'c:reading:ja-x-Kat',         o: "NN", }
       { rowid: 't:mr:vb:V=c:reading:ja-x-Latn',       rank: 1, s: "NN", v: 'c:reading:ja-x-Latn',        o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Hir+Latn',   rank: 1, s: "NN", v: 'c:reading:ja-x-Hir+Latn',    o: "NN", }
+      { rowid: 't:mr:vb:V=c:reading:ja-x-Kat+Latn',   rank: 1, s: "NN", v: 'c:reading:ja-x-Kat+Latn',    o: "NN", }
       { rowid: 't:mr:vb:V=c:reading:ko-Hang',         rank: 1, s: "NN", v: 'c:reading:ko-Hang',          o: "NN", }
       { rowid: 't:mr:vb:V=c:reading:ko-Latn',         rank: 1, s: "NN", v: 'c:reading:ko-Latn',          o: "NN", }
       { rowid: 't:mr:vb:V=c:reading:ko-Hang:initial', rank: 2, s: "NN", v: 'c:reading:ko-Hang:initial',  o: "NN", }
@@ -592,12 +595,12 @@ class Jzr_db_adapter extends Dbric_std
         fields  = JSON.parse jfields
         entry   = fields[ 2 ]
         switch dskey
-          when 'dict:x:ko-Hang+Latn'        then yield from @triplets_from_dict_x_ko_Hang_Latn rowid_in, dskey, fields
+          when 'dict:x:ko-Hang+Latn'        then yield from @triplets_from_dict_x_ko_Hang_Latn      rowid_in, dskey, fields
           when 'dict:meanings' then switch true
-            when ( entry.startsWith 'py:' ) then yield from []
-            when ( entry.startsWith 'ka:' ) then yield from []
-            when ( entry.startsWith 'hi:' ) then yield from []
-            when ( entry.startsWith 'hg:' ) then yield from []
+            when ( entry.startsWith 'py:' ) then yield from @triplets_from_c_reading_zh_Latn_pinyin rowid_in, dskey, fields
+            when ( entry.startsWith 'ka:' ) then yield from @triplets_from_c_reading_ja_x_Kan       rowid_in, dskey, fields
+            when ( entry.startsWith 'hi:' ) then yield from @triplets_from_c_reading_ja_x_Kan       rowid_in, dskey, fields
+            when ( entry.startsWith 'hg:' ) then yield from @triplets_from_c_reading_ko_Hang        rowid_in, dskey, fields
         # yield from @get_triples rowid_in, dskey, jfields
         ;null
 
@@ -612,76 +615,47 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
   #---------------------------------------------------------------------------------------------------------
-  _get_next_triple_rowid: -> "t:mr:3pl:R=#{++@_TMP_state.triple_count}"
-
-  #---------------------------------------------------------------------------------------------------------
   triplets_from_dict_x_ko_Hang_Latn: ( rowid_in, dskey, [ role, s, o, ] ) ->
-    rowid_out = @_get_next_triple_rowid()
     ref       = rowid_in
     v         = "x:ko-Hang+Latn:#{role}"
     o        ?= ''
-    yield { rowid_out, ref, s, v, o, }
-    @_TMP_state.timeit_progress?()
+    yield { rowid_out: @next_triple_rowid, ref, s, v, o, }
+    @state.timeit_progress?()
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  get_triples: ( rowid_in, dskey, jfields ) ->
-    [ field_1,
-      field_2,
-      field_3,
-      field_4,  ] = JSON.parse jfields
-    field_1      ?= ''
-    field_2      ?= ''
-    field_3      ?= ''
-    field_4      ?= ''
-    ref           = rowid_in
-    s             = field_2
-    v             = null
-    o             = null
-    entry         = field_3
-    # x:ko-Hang+Latn:initial
-    # x:ko-Hang+Latn:medial
-    # x:ko-Hang+Latn:final
-    # reading:zh-Latn-pinyin
-    # reading:ja-x-Kan
-    # reading:ja-x-Hir
-    # reading:ja-x-Kat
-    # reading:ja-x-Latn
-    # reading:ko-Hang
-    # reading:ko-Latn
-    #.......................................................................................................
-    switch true
-      #...................................................................................................
-      when ( dskey is 'dict:x:ko-Hang+Latn' ) # and ( entry.startsWith 'py:' )
-        role      = field_1
-        v         = "x:ko-Hang+Latn:#{role}"
-        readings  = [ field_3, ]
-      #...................................................................................................
-      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'py:' )
-        v         = 'c:reading:zh-Latn-pinyin'
-        readings  = @host.language_services.extract_atonal_zh_readings entry
-      #...................................................................................................
-      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'ka:' )
-        v         = 'c:reading:ja-x-Kat'
-        readings  = @host.language_services.extract_ja_readings entry
-      #...................................................................................................
-      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hi:' )
-        v         = 'c:reading:ja-x-Hir'
-        readings  = @host.language_services.extract_ja_readings entry
-      #...................................................................................................
-      when ( dskey is 'dict:meanings' ) and ( entry.startsWith 'hg:' )
-        v         = 'c:reading:ko-Hang'
-        readings  = @host.language_services.extract_hg_readings entry
-    #.....................................................................................................
-    if v?
-      for reading in readings
-        @_TMP_state.triple_count++
-        rowid_out = "t:mr:3pl:R=#{@_TMP_state.triple_count}"
-        o         = reading
-        yield { rowid_out, ref, s, v, o, }
-        @_TMP_state.timeit_progress?()
-    #.......................................................................................................
-    return null
+  triplets_from_c_reading_zh_Latn_pinyin: ( rowid_in, dskey, [ _, s, entry, ] ) ->
+    ref       = rowid_in
+    v         = 'c:reading:zh-Latn-pinyin'
+    for reading from @host.language_services.extract_atonal_zh_readings entry
+      yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
+    @state.timeit_progress?()
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  triplets_from_c_reading_ja_x_Kan: ( rowid_in, dskey, [ _, s, entry, ] ) ->
+    ref       = rowid_in
+    if entry.startsWith 'ka:'
+      v_x_Kan   = 'c:reading:ja-x-Kat'
+      v_Latn    = 'c:reading:ja-x-Kat+Latn'
+    else
+      v_x_Kan   = 'c:reading:ja-x-Hir'
+      v_Latn    = 'c:reading:ja-x-Hir+Latn'
+    for reading from @host.language_services.extract_ja_readings entry
+      yield { rowid_out: @next_triple_rowid, ref, s, v: v_x_Kan, o: reading, }
+      for transcription from @host.language_services.romanize_ja_kana reading
+        yield { rowid_out: @next_triple_rowid, ref, s, v: v_Latn, o: transcription, }
+    @state.timeit_progress?()
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  triplets_from_c_reading_ko_Hang: ( rowid_in, dskey, [ _, s, entry, ] ) ->
+    ref       = rowid_in
+    v         = 'c:reading:ko-Hang'
+    for reading from @host.language_services.extract_hg_readings entry
+      yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
+    @state.timeit_progress?()
+    ;null
 
 
 #===========================================================================================================
@@ -690,6 +664,12 @@ class Language_services
   #---------------------------------------------------------------------------------------------------------
   constructor: ->
     @_TMP_hangeul = require 'hangul-disassemble'
+    @_TMP_kana    = require 'wanakana'
+    # { toHiragana,
+    #   toKana,
+    #   toKatakana
+    #   toRomaji,
+    #   tokenize,         } = require 'wanakana'
     ;undefined
 
   #---------------------------------------------------------------------------------------------------------
@@ -738,6 +718,16 @@ class Language_services
     # debug 'Ωjzrsdb__11', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
     return [ R..., ]
 
+  #---------------------------------------------------------------------------------------------------------
+  romanize_ja_kana: ( entry ) ->
+    cfg = {}
+    return @_TMP_kana.toRomaji entry, cfg
+    # ### systematic name more like `..._ja_x_kan_latn()` ###
+    # help 'Ωdjkr__12', toHiragana  'ラーメン',       { convertLongVowelMark: false, }
+    # help 'Ωdjkr__13', toHiragana  'ラーメン',       { convertLongVowelMark: true, }
+    # help 'Ωdjkr__14', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
+    # help 'Ωdjkr__15', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
+    # help 'Ωdjkr__16', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
 
 #-----------------------------------------------------------------------------------------------------------
 ### TAINT goes into constructor of Jzr class ###
@@ -756,16 +746,16 @@ class Jizura
       try
         @populate_meaning_mirror_triples()
       catch cause
-        fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb___7 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        fields_rpr = rpr @dba.state.most_recent_inserted_row
+        throw new Error "Ωjzrsdb__17 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
       try
         @populate_hangeul_syllables()
       catch cause
-        fields_rpr = rpr @dba._TMP_state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb___8 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        fields_rpr = rpr @dba.state.most_recent_inserted_row
+        throw new Error "Ωjzrsdb__18 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
     #.......................................................................................................
     ;undefined
@@ -803,25 +793,37 @@ class Jizura
 
   #---------------------------------------------------------------------------------------------------------
   show_counts: ->
-    counts = ( @dba.prepare SQL"select v, count(*) from jzr_mirror_triples_base group by v;" ).all()
-    console.table counts
-    counts = ( @dba.prepare SQL"select v, count(*) from jzr_triples group by v;" ).all()
-    console.table counts
-    counts = ( @dba.prepare SQL"""
-      select dskey, count(*) as count from jzr_mirror_lines group by dskey union all
-      select '*',   count(*) as count from jzr_mirror_lines
-      order by count;""" ).all()
-    counts = Object.fromEntries ( [ dskey, { count, }, ] for { dskey, count, } in counts )
-    console.table counts
+    do =>
+      query = SQL"select v, count(*) from jzr_mirror_triples_base group by v;"
+      echo ( grey 'Ωjzrsdb__21' ), ( gold reverse bold query )
+      counts = ( @dba.prepare query ).all()
+      console.table counts
+    #.......................................................................................................
+    do =>
+      query = SQL"select v, count(*) from jzr_triples group by v;"
+      echo ( grey 'Ωjzrsdb__22' ), ( gold reverse bold query )
+      counts = ( @dba.prepare query ).all()
+      console.table counts
+    #.......................................................................................................
+    do =>
+      query = SQL"""
+        select dskey, count(*) as count from jzr_mirror_lines group by dskey union all
+        select '*',   count(*) as count from jzr_mirror_lines
+        order by count;"""
+      echo ( grey 'Ωjzrsdb__23' ), ( gold reverse bold query )
+      counts = ( @dba.prepare query ).all()
+      counts = Object.fromEntries ( [ dskey, { count, }, ] for { dskey, count, } in counts )
+      console.table counts
     #.......................................................................................................
     ;null
 
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
-    faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all()
-    # warn 'Ωjzrsdb__11',
-    console.table faulty_rows
-    # for row from
+    if ( faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all() ).length > 0
+      echo 'Ωjzrsdb__24', red reverse bold " found some faults: "
+      console.table faulty_rows
+    else
+      echo 'Ωjzrsdb__25', lime reverse bold " (no faults) "
     #.......................................................................................................
     ;null
 
