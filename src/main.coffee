@@ -442,6 +442,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lcodes: ->
+    debug 'Ωjzrsdb___6', '_on_open_populate_jzr_mirror_lcodes'
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=B', lcode: 'B', comment: 'blank line',   }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=C', lcode: 'C', comment: 'comment line', }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=D', lcode: 'D', comment: 'data line',    }
@@ -454,6 +455,7 @@ class Jzr_db_adapter extends Dbric_std
       `c:` is for subjects that are CJK characters
       `x:` is used for unclassified subjects (possibly to be refined in the future)
     ###
+    debug 'Ωjzrsdb___7', '_on_open_populate_jzr_mirror_verbs'
     rows = [
       { rowid: 't:mr:vb:V=x:ko-Hang+Latn:initial',    rank: 2, s: "NN", v: 'x:ko-Hang+Latn:initial',     o: "NN", }
       { rowid: 't:mr:vb:V=x:ko-Hang+Latn:medial',     rank: 2, s: "NN", v: 'x:ko-Hang+Latn:medial',      o: "NN", }
@@ -478,6 +480,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
+    debug 'Ωjzrsdb___8', '_on_open_populate_jzr_datasources'
     paths = get_paths()
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
     dskey = 'dict:meanings';              @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
@@ -501,6 +504,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lines: ->
+    debug 'Ωjzrsdb___9', '_on_open_populate_jzr_mirror_lines'
     @statements.populate_jzr_mirror_lines.run()
     ;null
 
@@ -509,14 +513,9 @@ class Jzr_db_adapter extends Dbric_std
     # ;null
 
   #---------------------------------------------------------------------------------------------------------
-  initialize: ->
-    super()
-    @_TMP_state = { triple_count: 0, most_recent_inserted_row: null }
-    # me = @
-
-  #---------------------------------------------------------------------------------------------------------
   trigger_on_before_insert: ( name, fields... ) ->
-    @_TMP_state.most_recent_inserted_row = { name, fields, }
+    # debug 'Ωjzrsdb__10', { name, fields, }
+    @state.most_recent_inserted_row = { name, fields, }
     ;null
 
   #=========================================================================================================
