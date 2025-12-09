@@ -353,22 +353,26 @@ class Jzr_db_adapter extends Dbric_std
     #.......................................................................................................
     insert_jzr_datasource: SQL"""
       insert into jzr_datasources ( rowid, dskey, path ) values ( $rowid, $dskey, $path )
-        on conflict ( dskey ) do update set path = excluded.path;"""
+        -- on conflict ( dskey ) do update set path = excluded.path
+        ;"""
 
     #.......................................................................................................
     insert_jzr_mirror_verb: SQL"""
       insert into jzr_mirror_verbs ( rowid, rank, s, v, o ) values ( $rowid, $rank, $s, $v, $o )
-        on conflict ( rowid ) do update set rank = excluded.rank, s = excluded.s, v = excluded.v, o = excluded.o;"""
+        -- on conflict ( rowid ) do update set rank = excluded.rank, s = excluded.s, v = excluded.v, o = excluded.o
+        ;"""
 
     #.......................................................................................................
     insert_jzr_mirror_lcode: SQL"""
       insert into jzr_mirror_lcodes ( rowid, lcode, comment ) values ( $rowid, $lcode, $comment )
-        on conflict ( rowid ) do update set lcode = excluded.lcode, comment = excluded.comment;"""
+        -- on conflict ( rowid ) do update set lcode = excluded.lcode, comment = excluded.comment
+        ;"""
 
     #.......................................................................................................
     insert_jzr_mirror_triple: SQL"""
       insert into jzr_mirror_triples_base ( rowid, ref, s, v, o ) values ( $rowid, $ref, $s, $v, $o )
-        on conflict ( ref, s, v, o ) do nothing;"""
+        -- on conflict ( ref, s, v, o ) do nothing
+        ;"""
 
     #.......................................................................................................
     populate_jzr_mirror_lines: SQL"""
@@ -384,8 +388,8 @@ class Jzr_db_adapter extends Dbric_std
       from jzr_datasources        as ds
       join file_lines( ds.path )  as fl
       where true
-      on conflict ( dskey, line_nr ) do update set line = excluded.line;
-      """
+      -- on conflict ( dskey, line_nr ) do update set line = excluded.line
+      ;"""
 
     #.......................................................................................................
     populate_jzr_mirror_triples: SQL"""
@@ -404,9 +408,8 @@ class Jzr_db_adapter extends Dbric_std
             and ( ml.jfields is not null )
             and ( ml.jfields->>'$[0]' not regexp '^@glyphs' )
             -- and ( ml.field_3 regexp '^(?:py|hi|ka):' )
-        on conflict ( ref, s, v, o ) do nothing
-        ;
-      """
+        -- on conflict ( ref, s, v, o ) do nothing
+        ;"""
 
     #.......................................................................................................
     populate_jzr_lang_hangeul_syllables: SQL"""
@@ -432,10 +435,10 @@ class Jzr_db_adapter extends Dbric_std
           where true
             and ( mt.v = 'c:reading:ko-Hang' )
           order by mt.o
-        on conflict ( rowid         ) do nothing
+        -- on conflict ( rowid         ) do nothing
+        /* ### NOTE `on conflict` needed because we log all actually occurring readings of all characters */
         on conflict ( syllable_hang ) do nothing
-        ;
-      """
+        ;"""
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lcodes: ->
