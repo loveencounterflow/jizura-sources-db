@@ -643,8 +643,10 @@ class Jzr_db_adapter extends Dbric_std
       v_Latn    = 'c:reading:ja-x-Hir+Latn'
     for reading from @host.language_services.extract_ja_readings entry
       yield { rowid_out: @next_triple_rowid, ref, s, v: v_x_Kan, o: reading, }
-      for transcription from @host.language_services.romanize_ja_kana reading
-        yield { rowid_out: @next_triple_rowid, ref, s, v: v_Latn, o: transcription, }
+      # for transcription from @host.language_services.romanize_ja_kana reading
+      #   yield { rowid_out: @next_triple_rowid, ref, s, v: v_Latn, o: transcription, }
+      transcription = @host.language_services.romanize_ja_kana reading
+      yield { rowid_out: @next_triple_rowid, ref, s, v: v_Latn, o: transcription, }
     @state.timeit_progress?()
     ;null
 
