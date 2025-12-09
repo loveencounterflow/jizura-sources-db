@@ -304,6 +304,64 @@ class Jzr_db_adapter extends Dbric_std
       order by s, v, o
       ;"""
 
+    #-------------------------------------------------------------------------------------------------------
+    SQL"""create view jzr_cjk_agg_latn as
+      select distinct
+          s,
+          v,
+          json_group_array( o ) over (
+            partition by s, v
+            order by o
+            rows between unbounded preceding and unbounded following
+            ) as os
+        from jzr_top_triples
+        where v in ( 'c:reading:zh-Latn-pinyin','c:reading:ja-x-Kat+Latn', 'c:reading:ko-Latn')
+        order by s, v, os
+      ;"""
+
+    # #.......................................................................................................
+    # SQL"""create view jzr_cjk_reading_equivalents as
+    #   select distinct
+    #       -- tr1.rowid as ref1,
+    #       -- tr2.rowid as ref2,
+    #       -- tr1.ref   as ref1,
+    #       -- tr2.ref   as ref2,
+    #       -- tr1.rank  as rank1,
+    #       -- tr2.rank  as rank2,
+    #       tr1.s     as s1,
+    #       -- tr2.s     as s2,
+    #       -- tr1.v     as v1,
+    #       -- tr2.v     as v2,
+    #       -- tr3.v     as v3,
+    #       -- tr4.v     as v4,
+    #       -- tr1.o     as o1,
+    #       tr2.o     as o2,
+    #       tr3.o     as o3,
+    #       tr4.o     as o4
+    #     from jzr_triples      as tr1
+    #     left join jzr_triples as tr2 on ( tr1.s = tr2.s and tr2.v = 'c:reading:zh-Latn-pinyin' )
+    #     left join jzr_triples as tr3 on ( tr1.s = tr3.s and tr3.v = 'c:reading:ja-x-Kat+Latn' )
+    #     left join jzr_triples as tr4 on ( tr1.s = tr4.s and tr4.v = 'c:reading:ko-Latn' )
+    #     -- left join jzr_triples as tr2 on ( 'c:reading:zh-Latn-pinyin','c:reading:ja-x-Kat+Latn', 'c:reading:ko-Latn')
+    #     -- left join jzr_triples as tr2 on ( 'c:reading:zh-Latn-pinyin','c:reading:ja-x-Kat+Latn', 'c:reading:ko-Latn')
+    #     where tr1.v in ( 'c:reading:zh-Latn-pinyin', 'c:reading:ja-x-Kat+Latn', 'c:reading:ko-Latn' )
+    #     order by s1, o2, o3, o4
+    #     ;"""
+
+    # #.......................................................................................................
+    # SQL"""create view jzr_cjk_reading_equivalents_2 as
+    #   select distinct
+    #       s1                              as s1,
+    #       json_group_array( o2 ) over w2   as o2,
+    #       json_group_array( o3 ) over w3   as o3,
+    #       json_group_array( o4 ) over w4   as o4
+    #     from jzr_cjk_reading_equivalents
+    #     window
+    #       w2 as ( partition by s1 order by o2 rows between unbounded preceding and unbounded following ),
+    #       w3 as ( partition by s1 order by o3 rows between unbounded preceding and unbounded following ),
+    #       w4 as ( partition by s1 order by o4 rows between unbounded preceding and unbounded following )
+    #   ;"""
+
 
     #-------------------------------------------------------------------------------------------------------
     SQL"""create view _jzr_meta_uc_normalization_faults as select
