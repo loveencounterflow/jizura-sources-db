@@ -201,9 +201,9 @@ class Jzr_db_adapter extends Dbric_std
         o         json            not null,
       primary key ( rowid ),
       check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
-      unique ( ref, s, v, o )
-      foreign key ( ref ) references jzr_mirror_lines ( rowid )
-      foreign key ( v ) references jzr_mirror_verbs ( v ) );"""
+      -- unique ( ref, s, v, o )
+      foreign key ( ref ) references jzr_mirror_lines ( rowid ),
+      foreign key ( v   ) references jzr_mirror_verbs ( v ) );"""
 
     #.......................................................................................................
     SQL"""create trigger jzr_mirror_triples_register
