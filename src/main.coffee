@@ -726,7 +726,7 @@ class Language_services
     R.delete 'null'
     R.delete '@null'
     hangeul = [ R..., ].join ''
-    # debug 'Ωjzrsdb___6', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
+    # debug 'Ωjzrsdb__11', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
     return [ R..., ]
 
 
@@ -773,7 +773,7 @@ class Jizura
             and ( jfields is not null ) -- NOTE: necessary
             and ( not jfields->>'$[0]' regexp '^@glyphs' );""" ).get()
       total = total_row_count * 2 ### NOTE estimate ###
-      help 'Ωjzrsdb___9', { total_row_count, total, } # { total_row_count: 40086, total: 80172 }
+      help 'Ωjzrsdb__19', { total_row_count, total, } # { total_row_count: 40086, total: 80172 }
     #.......................................................................................................
     @dba.statements.populate_jzr_mirror_triples.run()
     ;null
@@ -787,7 +787,7 @@ class Jizura
   # #---------------------------------------------------------------------------------------------------------
   # _show_jzr_meta_uc_normalization_faults: ->
   #   faulty_rows = ( @dba.prepare SQL"select * from _jzr_meta_uc_normalization_faults;" ).all()
-  #   warn 'Ωjzrsdb__10', reverse faulty_rows
+  #   warn 'Ωjzrsdb__20', reverse faulty_rows
   #   # for row from
   #   #.......................................................................................................
   #   ;null
@@ -853,7 +853,7 @@ demo_read_dump = ->
   path                            = PATH.resolve __dirname, '../jzr.dump.sql'
   jzr = new Jizura()
   jzr.dba.teardown { test: '*', }
-  debug 'Ωjzrsdb__12', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
+  debug 'Ωjzrsdb__26', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
   #.........................................................................................................
   jzr.show_counts()
   jzr.show_jzr_meta_faults()
