@@ -15,6 +15,7 @@
     "bricabrac-sfmodules": "^0.20.0",
     "guy": "^14.2.0",
     "hangul-disassemble": "^0.5.2",
+    "mojikura-idl": "^2.1.6",
     "wanakana": "^5.3.1"
   }
 }
