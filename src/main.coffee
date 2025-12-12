@@ -340,6 +340,7 @@ class Jzr_db_adapter extends Dbric_std
         from jzr_cjk_agg2_latn as t1,
         json_each( t1.readings_zh ) as t2,
         json_each( t1.readings_ja ) as t3
+        where reading_zh not in ( 'yu', 'chi' ) -- exclude non-homophones
         order by t2.value, t3.value
       ;"""
 
@@ -364,6 +365,7 @@ class Jzr_db_adapter extends Dbric_std
         from jzr_cjk_agg2_latn as t1,
         json_each( t1.readings_zh ) as t2,
         json_each( t1.readings_ko ) as t3
+        where reading_zh not in ( 'yu', 'chi' ) -- exclude non-homophones
         order by t2.value, t3.value
       ;"""
 
@@ -395,10 +397,23 @@ class Jzr_db_adapter extends Dbric_std
     #-------------------------------------------------------------------------------------------------------
     SQL"""create view jzr_band_names as
       select distinct
-          t1.s, t2.s, t1.reading_zh || ' ' || t2.reading_zh as reading
+          t1.s                                  as c1,
+          t2.s                                  as c2,
+          t1.reading_zh || ' ' || t2.reading_zh as reading
         from jzr_equivalent_reading_triples as t1
         join jzr_equivalent_reading_triples as t2
-        where t1.s != t2.s
+        where true
+          and ( c1 != c2 )
+          and ( c1 not in ( '満', '蟇', '弥', '侭', '尽', '弹', '弾' ) )
+          and ( c2 not in ( '満', '蟇', '弥', '侭', '尽', '弹', '弾' ) )
+        order by reading
+      ;"""
+
+    #-------------------------------------------------------------------------------------------------------
+    SQL"""create view jzr_band_names_2 as
+      select
+          c1 || c2 as c
+        from jzr_band_names
         order by reading
       ;"""
 
@@ -976,4 +991,3 @@ if module is require.main then do =>
   demo()
   # demo_read_dump()
   ;null
-
