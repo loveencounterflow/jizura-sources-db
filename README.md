@@ -82,4 +82,8 @@
     * table population
   * related: how to decide when to rebuild? `Dbric::is_ready` v `Dbric::is_fresh`
 
-* check for leading, trailing whitespace in field values
+* **`[—]`** check for leading, trailing whitespace in field values
+
+* **`[—]`** incorporate UCD v17
+
+
