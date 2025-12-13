@@ -468,11 +468,33 @@ class Jzr_db_adapter extends Dbric_std
         where not exists ( select 1 from jzr_mirror_verbs as vb where vb.v = nn.v );"""
 
     #.......................................................................................................
+    SQL"""create view _jzr_meta_error_verb_faults as select distinct
+          count(*) over ( partition by v )    as count,
+          'error:R=*'                         as rowid,
+          rowid                               as ref,
+          'error-verb'                        as description,
+          v                                   as quote
+        from jzr_triples as nn
+        where v like '%:error';"""
+
+    #.......................................................................................................
+    SQL"""create view _jzr_meta_mirror_lines_whitespace_faults as select distinct
+          1                                            as count,
+          't:mr:ln:jfields:ws:R=*'                     as rowid,
+          ml.rowid                                     as ref,
+          'extraneous-whitespace'                      as description,
+          ml.jfields                                   as quote
+        from jzr_mirror_lines as ml
+        where ( has_peripheral_ws_in_jfield( jfields ) );"""
+
+    #.......................................................................................................
     SQL"""create view jzr_meta_faults as
       select null as count, null as rowid, null as ref, null as description, null  as quote where false union all
       -- ...................................................................................................
       select 1, rowid, ref,  'uc-normalization', line  as quote from _jzr_meta_uc_normalization_faults          union all
       select *                                                  from _jzr_meta_kr_readings_unknown_verb_faults  union all
+      select *                                                  from _jzr_meta_error_verb_faults                union all
+      select *                                                  from _jzr_meta_mirror_lines_whitespace_faults   union all
       -- ...................................................................................................
       select null, null, null, null, null where false
       ;"""
@@ -730,6 +752,13 @@ class Jzr_db_adapter extends Dbric_std
       deterministic:  true
       ### NOTE: also see `String::isWellFormed()` ###
       call: ( text, form = 'NFC' ) -> from_bool text is text.normalize form ### 'NFC', 'NFD', 'NFKC', or 'NFKD' ###
+
+    #-------------------------------------------------------------------------------------------------------
+    has_peripheral_ws_in_jfield:
+      deterministic:  true
+      call: ( jfields_json ) ->
+        return from_bool false unless ( jfields = JSON.parse jfields_json )?
+        return from_bool jfields.some ( value ) -> /(^\s)|(\s$)/.test value
 
   #=========================================================================================================
   @table_functions:
