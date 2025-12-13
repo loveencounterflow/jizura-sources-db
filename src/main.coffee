@@ -601,8 +601,7 @@ class Jzr_db_adapter extends Dbric_std
     populate_jzr_lang_hangeul_syllables: SQL"""
       insert into jzr_lang_hang_syllables ( rowid, ref,
         syllable_hang, initial_hang, medial_hang, final_hang,
-                        initial_latn, medial_latn, final_latn
-                        )
+                        initial_latn, medial_latn, final_latn )
         select
             't:lang:hang:syl:V=' || mt.o          as rowid,
             mt.rowid                              as ref,
