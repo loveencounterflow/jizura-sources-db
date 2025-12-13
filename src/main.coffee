@@ -675,6 +675,8 @@ class Jzr_db_adapter extends Dbric_std
       { rowid: 't:mr:vb:V=c:reading:ko-Latn:initial',   rank: 2, s: "NN", v: 'c:reading:ko-Latn:initial',  o: "NN", }
       { rowid: 't:mr:vb:V=c:reading:ko-Latn:medial',    rank: 2, s: "NN", v: 'c:reading:ko-Latn:medial',   o: "NN", }
       { rowid: 't:mr:vb:V=c:reading:ko-Latn:final',     rank: 2, s: "NN", v: 'c:reading:ko-Latn:final',    o: "NN", }
+      { rowid: 't:mr:vb:V=c:shape:ids:shortest',        rank: 2, s: "NN", v: 'c:shape:ids:shortest',       o: "NN", }
+      { rowid: 't:mr:vb:V=c:shape:ids:shortest:json',   rank: 2, s: "NN", v: 'c:shape:ids:shortest:json',  o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
@@ -808,6 +810,7 @@ class Jzr_db_adapter extends Dbric_std
             when ( entry.startsWith 'ka:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hi:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hg:' ) then yield from @triples_from_c_reading_ko_Hang         rowid_in, dskey, fields
+          when 'shape:idsv2'                then yield from @triples_from_shape_idsv2               rowid_in, dskey, fields
         # yield from @get_triples rowid_in, dskey, jfields
         ;null
 
@@ -863,6 +866,21 @@ class Jzr_db_adapter extends Dbric_std
     v         = 'c:reading:ko-Hang'
     for reading from @host.language_services.extract_hg_readings entry
       yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
+    @state.timeit_progress?()
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  triples_from_shape_idsv2: ( rowid_in, dskey, [ _, s, formula, ] ) ->
+    ref       = rowid_in
+    # for reading from @host.language_services.parse_ids formula
+    #   yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
+    return null if ( not formula? ) or ( formula is '' )
+    yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:shortest', o: formula, }
+    error = null
+    try formula_json = JSON.stringify IDLX.parse formula catch error
+      yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:shortest:error', o: error.message, }
+    unless error?
+      yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:shortest:json', o: formula_json, }
     @state.timeit_progress?()
     ;null
 
@@ -1010,6 +1028,11 @@ class Jizura
       total = total_row_count * 2 ### NOTE estimate ###
       help 'Ωjzrsdb__21', { total_row_count, total, } # { total_row_count: 40086, total: 80172 }
     #.......................................................................................................
+    @dba.statements.populate_jzr_mirror_triples.run()
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  populate_shape_formula_mirror_triples: ->
     @dba.statements.populate_jzr_mirror_triples.run()
     ;null
 
