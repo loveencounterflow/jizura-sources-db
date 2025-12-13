@@ -773,12 +773,12 @@ class Jzr_db_adapter extends Dbric_std
         fields  = JSON.parse jfields
         entry   = fields[ 2 ]
         switch dskey
-          when 'dict:x:ko-Hang+Latn'        then yield from @triplets_from_dict_x_ko_Hang_Latn      rowid_in, dskey, fields
+          when 'dict:x:ko-Hang+Latn'        then yield from @triples_from_dict_x_ko_Hang_Latn       rowid_in, dskey, fields
           when 'dict:meanings' then switch true
-            when ( entry.startsWith 'py:' ) then yield from @triplets_from_c_reading_zh_Latn_pinyin rowid_in, dskey, fields
-            when ( entry.startsWith 'ka:' ) then yield from @triplets_from_c_reading_ja_x_Kan       rowid_in, dskey, fields
-            when ( entry.startsWith 'hi:' ) then yield from @triplets_from_c_reading_ja_x_Kan       rowid_in, dskey, fields
-            when ( entry.startsWith 'hg:' ) then yield from @triplets_from_c_reading_ko_Hang        rowid_in, dskey, fields
+            when ( entry.startsWith 'py:' ) then yield from @triples_from_c_reading_zh_Latn_pinyin  rowid_in, dskey, fields
+            when ( entry.startsWith 'ka:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
+            when ( entry.startsWith 'hi:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
+            when ( entry.startsWith 'hg:' ) then yield from @triples_from_c_reading_ko_Hang         rowid_in, dskey, fields
         # yield from @get_triples rowid_in, dskey, jfields
         ;null
 
@@ -793,7 +793,7 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
   #---------------------------------------------------------------------------------------------------------
-  triplets_from_dict_x_ko_Hang_Latn: ( rowid_in, dskey, [ role, s, o, ] ) ->
+  triples_from_dict_x_ko_Hang_Latn: ( rowid_in, dskey, [ role, s, o, ] ) ->
     ref       = rowid_in
     v         = "x:ko-Hang+Latn:#{role}"
     o        ?= ''
@@ -802,7 +802,7 @@ class Jzr_db_adapter extends Dbric_std
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  triplets_from_c_reading_zh_Latn_pinyin: ( rowid_in, dskey, [ _, s, entry, ] ) ->
+  triples_from_c_reading_zh_Latn_pinyin: ( rowid_in, dskey, [ _, s, entry, ] ) ->
     ref       = rowid_in
     v         = 'c:reading:zh-Latn-pinyin'
     for reading from @host.language_services.extract_atonal_zh_readings entry
@@ -811,7 +811,7 @@ class Jzr_db_adapter extends Dbric_std
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  triplets_from_c_reading_ja_x_Kan: ( rowid_in, dskey, [ _, s, entry, ] ) ->
+  triples_from_c_reading_ja_x_Kan: ( rowid_in, dskey, [ _, s, entry, ] ) ->
     ref       = rowid_in
     if entry.startsWith 'ka:'
       v_x_Kan   = 'c:reading:ja-x-Kat'
@@ -829,7 +829,7 @@ class Jzr_db_adapter extends Dbric_std
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  triplets_from_c_reading_ko_Hang: ( rowid_in, dskey, [ _, s, entry, ] ) ->
+  triples_from_c_reading_ko_Hang: ( rowid_in, dskey, [ _, s, entry, ] ) ->
     ref       = rowid_in
     v         = 'c:reading:ko-Hang'
     for reading from @host.language_services.extract_hg_readings entry
