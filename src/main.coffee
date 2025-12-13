@@ -1000,13 +1000,13 @@ class Jizura
   show_counts: ->
     do =>
       query = SQL"select v, count(*) from jzr_mirror_triples_base group by v;"
-      echo ( grey 'Ωjzrsdb__21' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__23' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
     do =>
       query = SQL"select v, count(*) from jzr_triples group by v;"
-      echo ( grey 'Ωjzrsdb__22' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__24' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
@@ -1014,8 +1014,8 @@ class Jizura
       query = SQL"""
         select dskey, count(*) as count from jzr_mirror_lines group by dskey union all
         select '*',   count(*) as count from jzr_mirror_lines
-        order by count;"""
-      echo ( grey 'Ωjzrsdb__23' ), ( gold reverse bold query )
+        order by count desc;"""
+      echo ( grey 'Ωjzrsdb__25' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       counts = Object.fromEntries ( [ dskey, { count, }, ] for { dskey, count, } in counts )
       console.table counts
@@ -1025,10 +1025,10 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     if ( faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all() ).length > 0
-      echo 'Ωjzrsdb__24', red reverse bold " found some faults: "
+      echo 'Ωjzrsdb__26', red reverse bold " found some faults: "
       console.table faulty_rows
     else
-      echo 'Ωjzrsdb__25', lime reverse bold " (no faults) "
+      echo 'Ωjzrsdb__27', lime reverse bold " (no faults) "
     #.......................................................................................................
     ;null
 
@@ -1081,7 +1081,7 @@ demo_read_dump = ->
   path                            = PATH.resolve __dirname, '../jzr.dump.sql'
   jzr = new Jizura()
   jzr.dba.teardown { test: '*', }
-  debug 'Ωjzrsdb__26', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
+  debug 'Ωjzrsdb__28', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
   #.........................................................................................................
   jzr.show_counts()
   jzr.show_jzr_meta_faults()
