@@ -40,21 +40,23 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
 #...........................................................................................................
 { Dbric,
   Dbric_std,
-  SQL,                      } = SFMODULES.unstable.require_dbric()
+  SQL,                  } = SFMODULES.unstable.require_dbric()
 #...........................................................................................................
 { lets,
-  freeze,                   } = SFMODULES.require_letsfreezethat_infra().simple
+  freeze,               } = SFMODULES.require_letsfreezethat_infra().simple
 #...........................................................................................................
 { Jetstream,
-  Async_jetstream,          } = SFMODULES.require_jetstream()
+  Async_jetstream,      } = SFMODULES.require_jetstream()
 #...........................................................................................................
-{ walk_lines_with_positions } = SFMODULES.unstable.require_fast_linereader()
+{ walk_lines_with_positions
+                        } = SFMODULES.unstable.require_fast_linereader()
 #...........................................................................................................
-{ Benchmarker,              } = SFMODULES.unstable.require_benchmarking()
+{ Benchmarker,          } = SFMODULES.unstable.require_benchmarking()
 benchmarker                   = new Benchmarker()
 timeit                        = ( P... ) -> benchmarker.timeit P...
 #...........................................................................................................
-{ set_getter,               } = SFMODULES.require_managed_property_tools()
+{ set_getter,           } = SFMODULES.require_managed_property_tools()
+{ IDL, IDLX,            } = require 'mojikura-idl'
 
 
 #===========================================================================================================
