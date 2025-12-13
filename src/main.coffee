@@ -909,7 +909,7 @@ class Language_services
     R.delete 'null'
     R.delete '@null'
     hangeul = [ R..., ].join ''
-    # debug 'Ωjzrsdb__11', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
+    # debug 'Ωjzrsdb__13', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
     return [ R..., ]
 
   #---------------------------------------------------------------------------------------------------------
@@ -917,11 +917,11 @@ class Language_services
     cfg = {}
     return @_TMP_kana.toRomaji entry, cfg
     # ### systematic name more like `..._ja_x_kan_latn()` ###
-    # help 'Ωdjkr__12', toHiragana  'ラーメン',       { convertLongVowelMark: false, }
-    # help 'Ωdjkr__13', toHiragana  'ラーメン',       { convertLongVowelMark: true, }
-    # help 'Ωdjkr__14', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
-    # help 'Ωdjkr__15', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
-    # help 'Ωdjkr__16', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
+    # help 'Ωdjkr__14', toHiragana  'ラーメン',       { convertLongVowelMark: false, }
+    # help 'Ωdjkr__15', toHiragana  'ラーメン',       { convertLongVowelMark: true, }
+    # help 'Ωdjkr__16', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
+    # help 'Ωdjkr__17', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
+    # help 'Ωdjkr__18', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
 
 #-----------------------------------------------------------------------------------------------------------
 ### TAINT goes into constructor of Jzr class ###
@@ -954,7 +954,7 @@ class Jizura
         @populate_meaning_mirror_triples()
       catch cause
         fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__17 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb__19 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
@@ -962,7 +962,7 @@ class Jizura
         @populate_hangeul_syllables()
       catch cause
         fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__18 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb__20 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
     #.......................................................................................................
     ;undefined
@@ -979,7 +979,7 @@ class Jizura
             and ( jfields is not null ) -- NOTE: necessary
             and ( not jfields->>'$[0]' regexp '^@glyphs' );""" ).get()
       total = total_row_count * 2 ### NOTE estimate ###
-      help 'Ωjzrsdb__19', { total_row_count, total, } # { total_row_count: 40086, total: 80172 }
+      help 'Ωjzrsdb__21', { total_row_count, total, } # { total_row_count: 40086, total: 80172 }
     #.......................................................................................................
     @dba.statements.populate_jzr_mirror_triples.run()
     ;null
@@ -993,7 +993,7 @@ class Jizura
   # #---------------------------------------------------------------------------------------------------------
   # _show_jzr_meta_uc_normalization_faults: ->
   #   faulty_rows = ( @dba.prepare SQL"select * from _jzr_meta_uc_normalization_faults;" ).all()
-  #   warn 'Ωjzrsdb__20', reverse faulty_rows
+  #   warn 'Ωjzrsdb__22', reverse faulty_rows
   #   # for row from
   #   #.......................................................................................................
   #   ;null
@@ -1002,13 +1002,13 @@ class Jizura
   show_counts: ->
     do =>
       query = SQL"select v, count(*) from jzr_mirror_triples_base group by v;"
-      echo ( grey 'Ωjzrsdb__23' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__25' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
     do =>
       query = SQL"select v, count(*) from jzr_triples group by v;"
-      echo ( grey 'Ωjzrsdb__24' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__26' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
@@ -1017,7 +1017,7 @@ class Jizura
         select dskey, count(*) as count from jzr_mirror_lines group by dskey union all
         select '*',   count(*) as count from jzr_mirror_lines
         order by count desc;"""
-      echo ( grey 'Ωjzrsdb__25' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__27' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       counts = Object.fromEntries ( [ dskey, { count, }, ] for { dskey, count, } in counts )
       console.table counts
@@ -1027,10 +1027,10 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     if ( faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all() ).length > 0
-      echo 'Ωjzrsdb__26', red reverse bold " found some faults: "
+      echo 'Ωjzrsdb__28', red reverse bold " found some faults: "
       console.table faulty_rows
     else
-      echo 'Ωjzrsdb__27', lime reverse bold " (no faults) "
+      echo 'Ωjzrsdb__29', lime reverse bold " (no faults) "
     #.......................................................................................................
     ;null
 
@@ -1083,7 +1083,7 @@ demo_read_dump = ->
   path                            = PATH.resolve __dirname, '../jzr.dump.sql'
   jzr = new Jizura()
   jzr.dba.teardown { test: '*', }
-  debug 'Ωjzrsdb__28', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
+  debug 'Ωjzrsdb__30', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
   #.........................................................................................................
   jzr.show_counts()
   jzr.show_jzr_meta_faults()
