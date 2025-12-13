@@ -167,7 +167,6 @@ class Jzr_db_adapter extends Dbric_std
       @_on_open_populate_jzr_mirror_verbs()
       @_on_open_populate_jzr_mirror_lcodes()
       @_on_open_populate_jzr_mirror_lines()
-      @_on_open_populate_jzr_mirror_triples_for_meanings()
     #.......................................................................................................
     ;undefined
 
@@ -674,7 +673,7 @@ class Jzr_db_adapter extends Dbric_std
     # dskey = 'dict:ko:V=data-naver.csv';   @statements.insert_jzr_datasource.run { rowid: 't:ds:R=8', dskey, path: paths[ dskey ], }
     # dskey = 'dict:ko:V=data-naver.json';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=9', dskey, path: paths[ dskey ], }
     # dskey = 'dict:ko:V=README.md';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=10', dskey, path: paths[ dskey ], }
-    dskey = 'shape:idlv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, path: paths[ dskey ], }
+    dskey = 'shape:idsv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, path: paths[ dskey ], }
     dskey = 'shape:zhz5bf';               @statements.insert_jzr_datasource.run { rowid: 't:ds:R=12', dskey, path: paths[ dskey ], }
     ;null
 
@@ -690,10 +689,6 @@ class Jzr_db_adapter extends Dbric_std
     debug 'Ωjzrsdb___9', '_on_open_populate_jzr_mirror_lines'
     @statements.populate_jzr_mirror_lines.run()
     ;null
-
-  #---------------------------------------------------------------------------------------------------------
-  _on_open_populate_jzr_mirror_triples_for_meanings: ->
-    # ;null
 
   #---------------------------------------------------------------------------------------------------------
   trigger_on_before_insert: ( name, fields... ) ->
