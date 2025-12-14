@@ -697,6 +697,7 @@ class Jzr_db_adapter extends Dbric_std
     ###
     debug 'Ωjzrsdb__12', '_on_open_populate_jzr_mirror_verbs'
     rows = [
+      { rowid: 't:mr:vb:V=testing:unused',              rank: 2, s: "NN", v: 'testing:unused',             o: "NN", }
       { rowid: 't:mr:vb:V=x:ko-Hang+Latn:initial',      rank: 2, s: "NN", v: 'x:ko-Hang+Latn:initial',     o: "NN", }
       { rowid: 't:mr:vb:V=x:ko-Hang+Latn:medial',       rank: 2, s: "NN", v: 'x:ko-Hang+Latn:medial',      o: "NN", }
       { rowid: 't:mr:vb:V=x:ko-Hang+Latn:final',        rank: 2, s: "NN", v: 'x:ko-Hang+Latn:final',       o: "NN", }
@@ -1146,13 +1147,27 @@ class Jizura
   show_counts: ->
     #.......................................................................................................
     do =>
-      query = SQL"select v, count(*) from jzr_mirror_triples_base group by v;"
+      query = SQL"""
+        select
+            mv.v            as v,
+            count( t3.v )   as count
+          from        jzr_mirror_triples_base as t3
+          right join  jzr_mirror_verbs        as mv using ( v )
+        group by v
+        order by count desc, v;"""
       echo ( grey 'Ωjzrsdb__28' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
     do =>
-      query = SQL"select v, count(*) from jzr_triples group by v;"
+      query = SQL"""
+        select
+            mv.v            as v,
+            count( t3.v )   as count
+          from        jzr_triples       as t3
+          right join  jzr_mirror_verbs  as mv using ( v )
+        group by v
+        order by count desc, v;"""
       echo ( grey 'Ωjzrsdb__29' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
