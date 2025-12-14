@@ -1077,9 +1077,28 @@ class Datasource_field_parser
       yield { line_nr, lcode, line, jfields, }
     ;null
 
-  # #---------------------------------------------------------------------------------------------------------
-  # walk_md:table: ->
-  #   yield return null
+  #---------------------------------------------------------------------------------------------------------
+  walk_md_table: ->
+    for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
+      line    = @host.language_services.normalize_text line
+      jfields = null
+      lcode   = 'U'
+      switch true
+        when /^\s*$/v.test line       then lcode = 'B'
+        when not line.startsWith '|'  then null # not an MD table
+        when line.startsWith '|-'     then null # MD table header separator
+        when /^\|\s+\*/v.test line    then null # MD table header
+        else
+          lcode   = 'D'
+          jfields = line.split '|'
+          jfields.shift()
+          jfields.pop()
+          jfields = ( field.trim()                          for field in jfields )
+          jfields = ( ( field.replace /^`(.+)`$/gv, '$1' )  for field in jfields )
+          jfields = JSON.stringify jfields
+          # debug 'Ωjzrsdb__21', jfields
+      yield { line_nr, lcode, line, jfields, }
+    ;null
 
   # #---------------------------------------------------------------------------------------------------------
   # walk_csv: ->
