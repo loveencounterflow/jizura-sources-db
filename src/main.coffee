@@ -57,7 +57,7 @@ timeit                        = ( P... ) -> benchmarker.timeit P...
 #...........................................................................................................
 { set_getter,           } = SFMODULES.require_managed_property_tools()
 { IDL, IDLX,            } = require 'mojikura-idl'
-
+{ type_of,              } = SFMODULES.unstable.require_type_of()
 
 #===========================================================================================================
 from_bool                     = ( x ) -> switch x
