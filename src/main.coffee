@@ -717,6 +717,7 @@ class Jzr_db_adapter extends Dbric_std
       { rowid: 't:mr:vb:V=c:reading:ko-Latn:final',     rank: 2, s: "NN", v: 'c:reading:ko-Latn:final',    o: "NN", }
       { rowid: 't:mr:vb:V=c:shape:ids:shortest',        rank: 1, s: "NN", v: 'c:shape:ids:shortest',       o: "NN", }
       { rowid: 't:mr:vb:V=c:shape:ids:shortest:ast',    rank: 2, s: "NN", v: 'c:shape:ids:shortest:ast',   o: "NN", }
+      { rowid: 't:mr:vb:V=c:shape:ids:shortest:error',  rank: 2, s: "NN", v: 'c:shape:ids:shortest:error', o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
