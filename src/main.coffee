@@ -99,33 +99,52 @@ o888o
 
                                                                                                          ###
 #===========================================================================================================
-get_paths = ->
-  R                                   = {}
-  R.base                              = PATH.resolve __dirname, '..'
-  R.jzr                               = PATH.resolve R.base, '..'
-  R.db                                = PATH.join R.base, 'jzr.db'
-  # R.db                                = '/dev/shm/jzr.db'
-  # R.jzrds                             = PATH.join R.base, 'jzrds'
-  R.jzrnds                            = PATH.join R.base, 'jizura-new-datasources'
-  R.mojikura                          = PATH.join R.jzrnds, 'mojikura'
-  R.raw_github                        = PATH.join R.jzrnds, 'bvfs/origin/https/raw.githubusercontent.com'
-  kanjium                             = PATH.join R.raw_github, 'mifunetoshiro/kanjium/8a0cdaa16d64a281a2048de2eee2ec5e3a440fa6'
-  rutopio                             = PATH.join R.raw_github, 'rutopio/Korean-Name-Hanja-Charset/12df1ba1b4dfaa095813e4ddfba424e816f94c53'
-  # R[ 'dict:ucd:v14.0:uhdidx'      ]   = PATH.join R.jzrnds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  R[ 'dict:x:ko-Hang+Latn'        ]   = PATH.join R.jzrnds, 'hangeul-transcriptions.tsv'
-  R[ 'dict:x:ja-Kan+Latn'         ]   = PATH.join R.jzrnds, 'kana-transcriptions.tsv'
-  R[ 'dict:bcp47'                 ]   = PATH.join R.jzrnds, 'BCP47-language-scripts-regions.tsv'
-  R[ 'dict:ja:kanjium'            ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
-  R[ 'dict:ja:kanjium:aux'        ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
-  R[ 'dict:ko:V=data-gov.csv'     ]   = PATH.join rutopio, 'data-gov.csv'
-  R[ 'dict:ko:V=data-gov.json'    ]   = PATH.join rutopio, 'data-gov.json'
-  R[ 'dict:ko:V=data-naver.csv'   ]   = PATH.join rutopio, 'data-naver.csv'
-  R[ 'dict:ko:V=data-naver.json'  ]   = PATH.join rutopio, 'data-naver.json'
-  R[ 'dict:ko:V=README.md'        ]   = PATH.join rutopio, 'README.md'
-  R[ 'dict:meanings'              ]   = PATH.join R.mojikura, 'meaning/meanings.txt'
-  R[ 'shape:idsv2'                ]   = PATH.join R.mojikura, 'shape/shape-breakdown-formula-v2.txt'
-  R[ 'shape:zhz5bf'               ]   = PATH.join R.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
-  R[ 'ucdb:rsgs'                  ]   = PATH.join R.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
+get_paths_and_formats = ->
+  paths                               = {}
+  formats                             = {}
+  R                                   = { paths, formats, }
+  paths.base                          = PATH.resolve __dirname, '..'
+  paths.jzr                           = PATH.resolve paths.base, '..'
+  paths.db                            = PATH.join paths.base, 'jzr.db'
+  # paths.db                            = '/dev/shm/jzr.db'
+  # paths.jzrds                         = PATH.join paths.base, 'jzrds'
+  paths.jzrnds                        = PATH.join paths.base, 'jizura-new-datasources'
+  paths.mojikura                      = PATH.join paths.jzrnds, 'mojikura'
+  paths.raw_github                    = PATH.join paths.jzrnds, 'bvfs/origin/https/raw.githubusercontent.com'
+  kanjium                             = PATH.join paths.raw_github, 'mifunetoshiro/kanjium/8a0cdaa16d64a281a2048de2eee2ec5e3a440fa6'
+  rutopio                             = PATH.join paths.raw_github, 'rutopio/Korean-Name-Hanja-Charset/12df1ba1b4dfaa095813e4ddfba424e816f94c53'
+  #.........................................................................................................
+  # paths[ 'dict:ucd:v14.0:uhdidx'      ]   = PATH.join paths.jzrnds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  paths[ 'dict:x:ko-Hang+Latn'        ]   = PATH.join paths.jzrnds, 'hangeul-transcriptions.tsv'
+  paths[ 'dict:x:ja-Kan+Latn'         ]   = PATH.join paths.jzrnds, 'kana-transcriptions.tsv'
+  paths[ 'dict:bcp47'                 ]   = PATH.join paths.jzrnds, 'BCP47-language-scripts-regions.tsv'
+  paths[ 'dict:ja:kanjium'            ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
+  paths[ 'dict:ja:kanjium:aux'        ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
+  paths[ 'dict:ko:V=data-gov.csv'     ]   = PATH.join rutopio, 'data-gov.csv'
+  paths[ 'dict:ko:V=data-gov.json'    ]   = PATH.join rutopio, 'data-gov.json'
+  paths[ 'dict:ko:V=data-naver.csv'   ]   = PATH.join rutopio, 'data-naver.csv'
+  paths[ 'dict:ko:V=data-naver.json'  ]   = PATH.join rutopio, 'data-naver.json'
+  paths[ 'dict:ko:V=README.md'        ]   = PATH.join rutopio, 'README.md'
+  paths[ 'dict:meanings'              ]   = PATH.join paths.mojikura, 'meaning/meanings.txt'
+  paths[ 'shape:idsv2'                ]   = PATH.join paths.mojikura, 'shape/shape-breakdown-formula-v2.txt'
+  paths[ 'shape:zhz5bf'               ]   = PATH.join paths.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
+  paths[ 'ucdb:rsgs'                  ]   = PATH.join paths.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
+  #.........................................................................................................
+  # formats[ 'dict:ucd:v14.0:uhdidx'      ]   = , 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  formats[ 'dict:x:ko-Hang+Latn'        ]   = 'tsv'
+  formats[ 'dict:x:ja-Kan+Latn'         ]   = 'tsv'
+  formats[ 'dict:bcp47'                 ]   = 'tsv'
+  formats[ 'dict:ja:kanjium'            ]   = 'txt'
+  formats[ 'dict:ja:kanjium:aux'        ]   = 'txt'
+  formats[ 'dict:ko:V=data-gov.csv'     ]   = 'csv'
+  formats[ 'dict:ko:V=data-gov.json'    ]   = 'json'
+  formats[ 'dict:ko:V=data-naver.csv'   ]   = 'csv'
+  formats[ 'dict:ko:V=data-naver.json'  ]   = 'json'
+  formats[ 'dict:ko:V=README.md'        ]   = 'md'
+  formats[ 'dict:meanings'              ]   = 'txt'
+  formats[ 'shape:idsv2'                ]   = 'txt'
+  formats[ 'shape:zhz5bf'               ]   = 'txt'
+  formats[ 'ucdb:rsgs'                  ]   = 'md:table'
   return R
 
 
@@ -164,6 +183,7 @@ class Jzr_db_adapter extends Dbric_std
       ;null
     #.......................................................................................................
     if @is_fresh
+      @_on_open_populate_jzr_datasource_formats()
       @_on_open_populate_jzr_datasources()
       @_on_open_populate_jzr_mirror_verbs()
       @_on_open_populate_jzr_mirror_lcodes()
@@ -214,12 +234,23 @@ class Jzr_db_adapter extends Dbric_std
       );"""
 
     #.......................................................................................................
+    SQL"""create table jzr_datasource_formats (
+        rowid     text    unique  not null generated always as ( 't:ds:f:V=' || format ) stored,
+        format    text    unique  not null,
+        comment   text            not null
+      -- primary key ( rowid ),
+      -- check ( rowid regexp '^t:ds:R=\\d+$' )
+      );"""
+
+    #.......................................................................................................
     SQL"""create table jzr_datasources (
         rowid     text    unique  not null,
         dskey     text    unique  not null,
+        format    text            not null,
         path      text            not null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:ds:R=\\d+$'));"""
+      foreign key ( format ) references jzr_datasource_formats ( format ),
+      check ( rowid regexp '^t:ds:R=\\d+$') );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_lcodes (
@@ -578,8 +609,14 @@ class Jzr_db_adapter extends Dbric_std
   @statements:
 
     #.......................................................................................................
+    insert_jzr_datasource_format: SQL"""
+      insert into jzr_datasource_formats ( format, comment ) values ( $format, $comment )
+        -- on conflict ( dskey ) do update set path = excluded.path
+        ;"""
+
+    #.......................................................................................................
     insert_jzr_datasource: SQL"""
-      insert into jzr_datasources ( rowid, dskey, path ) values ( $rowid, $dskey, $path )
+      insert into jzr_datasources ( rowid, dskey, format, path ) values ( $rowid, $dskey, $format, $path )
         -- on conflict ( dskey ) do update set path = excluded.path
         ;"""
 
@@ -612,8 +649,9 @@ class Jzr_db_adapter extends Dbric_std
         fl.lcode                          as lcode,
         fl.line                           as line,
         fl.jfields                        as jfields
-      from jzr_datasources        as ds
-      join file_lines( ds.path )  as fl
+      from jzr_datasources                                  as ds
+      join jzr_datasource_formats                           as df using ( format )
+      join walk_file_lines( ds.dskey, df.format, ds.path )  as fl
       where true
       -- on conflict ( dskey, line_nr ) do update set line = excluded.line
       ;"""
@@ -727,28 +765,40 @@ class Jzr_db_adapter extends Dbric_std
     ;null
 
   #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_datasource_formats: ->
+    debug 'Ωjzrsdb__13', '_on_open_populate_jzr_datasource_formats'
+    @statements.insert_jzr_datasource_format.run { format: 'tsv',       comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'md:table',  comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'csv',       comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'json',      comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'md',        comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'txt',       comment: 'NN', }
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
-    debug 'Ωjzrsdb__13', '_on_open_populate_jzr_datasources'
-    paths = get_paths()
-    # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
-    dskey = 'dict:meanings';              @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
-    dskey = 'dict:x:ko-Hang+Latn';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
-    dskey = 'dict:x:ja-Kan+Latn';         @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, path: paths[ dskey ], }
-    # dskey = 'dict:ja:kanjium';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, path: paths[ dskey ], }
-    # dskey = 'dict:ja:kanjium:aux';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=5', dskey, path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-gov.csv';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=6', dskey, path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-gov.json';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=7', dskey, path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-naver.csv';   @statements.insert_jzr_datasource.run { rowid: 't:ds:R=8', dskey, path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-naver.json';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=9', dskey, path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=README.md';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=10', dskey, path: paths[ dskey ], }
-    dskey = 'shape:idsv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, path: paths[ dskey ], }
-    dskey = 'shape:zhz5bf';               @statements.insert_jzr_datasource.run { rowid: 't:ds:R=12', dskey, path: paths[ dskey ], }
-    dskey = 'ucdb:rsgs';                  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=13', dskey, path: paths[ dskey ], }
+    debug 'Ωjzrsdb__14', '_on_open_populate_jzr_datasources'
+    { paths
+      formats, } = get_paths_and_formats()
+    # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'dict:meanings';              @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'dict:x:ko-Hang+Latn';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'dict:x:ja-Kan+Latn';         @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'dict:ja:kanjium';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'dict:ja:kanjium:aux';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=5', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'dict:ko:V=data-gov.csv';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=6', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'dict:ko:V=data-gov.json';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=7', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'dict:ko:V=data-naver.csv';   @statements.insert_jzr_datasource.run { rowid: 't:ds:R=8', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'dict:ko:V=data-naver.json';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=9', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'dict:ko:V=README.md';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=10', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'shape:idsv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'shape:zhz5bf';               @statements.insert_jzr_datasource.run { rowid: 't:ds:R=12', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ucdb:rsgs';                  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=13', dskey, format: formats[ dskey ], path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
   # _on_open_populate_verbs: ->
-  #   paths = get_paths()
+  #   paths = get_paths_and_formats()
   #   dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
   #   dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
   #   ;null
@@ -823,10 +873,10 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
     #-------------------------------------------------------------------------------------------------------
-    file_lines:
+    walk_file_lines:
       columns:      [ 'line_nr', 'lcode', 'line', 'jfields' ]
-      parameters:   [ 'path', ]
-      rows: ( path ) ->
+      parameters:   [ 'dskey', 'format', 'path', ]
+      rows: ( dskey, format, path ) ->
         for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
           line    = @host.language_services.normalize_text line
           jfields = null
@@ -1085,7 +1135,8 @@ class Jizura
 
   #---------------------------------------------------------------------------------------------------------
   constructor: ->
-    @paths              = get_paths()
+    { paths, }          = get_paths_and_formats()
+    @paths              = paths
     @language_services  = new Language_services()
     @dba                = new Jzr_db_adapter @paths.db, { host: @, }
     #.......................................................................................................
