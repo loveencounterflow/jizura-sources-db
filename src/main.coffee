@@ -573,6 +573,16 @@ class Jzr_db_adapter extends Dbric_std
         where ( has_peripheral_ws_in_jfield( jfields ) );"""
 
     #.......................................................................................................
+    SQL"""create view _jzr_meta_mirror_lines_with_errors as select distinct
+          1                                            as count,
+          't:mr:ln:jfields:ws:R=*'                     as rowid,
+          ml.rowid                                     as ref,
+          'error'                                      as description,
+          ml.line                                      as quote
+        from jzr_mirror_lines as ml
+        where ( ml.lcode = 'E' );"""
+
+    #.......................................................................................................
     SQL"""create view jzr_meta_faults as
       select null as count, null as rowid, null as ref, null as description, null  as quote where false union all
       -- ...................................................................................................
@@ -580,6 +590,7 @@ class Jzr_db_adapter extends Dbric_std
       select *                                                  from _jzr_meta_kr_readings_unknown_verb_faults  union all
       select *                                                  from _jzr_meta_error_verb_faults                union all
       select *                                                  from _jzr_meta_mirror_lines_whitespace_faults   union all
+      select *                                                  from _jzr_meta_mirror_lines_with_errors         union all
       -- ...................................................................................................
       select null, null, null, null, null where false
       ;"""
@@ -734,9 +745,11 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lcodes: ->
     debug 'Ωjzrsdb__11', '_on_open_populate_jzr_mirror_lcodes'
-    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=B', lcode: 'B', comment: 'blank line',   }
-    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=C', lcode: 'C', comment: 'comment line', }
-    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=D', lcode: 'D', comment: 'data line',    }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=B', lcode: 'B', comment: 'blank line',    }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=C', lcode: 'C', comment: 'comment line',  }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=D', lcode: 'D', comment: 'data line',     }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=E', lcode: 'E', comment: 'error',         }
+    @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=U', lcode: 'U', comment: 'unknown',       }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
