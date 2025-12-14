@@ -904,31 +904,7 @@ class Jzr_db_adapter extends Dbric_std
       columns:      [ 'line_nr', 'lcode', 'line', 'jfields' ]
       parameters:   [ 'dskey', 'format', 'path', ]
       rows: ( dskey, format, path ) ->
-        debug 'Ωjzrsdb__17', "walk_file_lines:", { format, dskey, }
-        switch format
-          when 'tsv'
-            for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
-              line    = @host.language_services.normalize_text line
-              jfields = null
-              switch true
-                when /^\s*$/v.test line
-                  lcode = 'B'
-                when /^\s*#/v.test line
-                  lcode = 'C'
-                else
-                  lcode = 'D'
-                  jfields   = JSON.stringify line.split '\t'
-              yield { line_nr, lcode, line, jfields, }
-          when 'md:table'
-            null
-          when 'csv'
-            null
-          when 'json'
-            null
-          when 'md'
-            null
-          when 'txt'
-            null
+        yield from new Datasource_field_parser { host: @host, dskey, format, path, }
         ;null
 
     #-------------------------------------------------------------------------------------------------------
@@ -1045,6 +1021,88 @@ class Jzr_db_adapter extends Dbric_std
 #===========================================================================================================
 ###
 
+      .o8            .o88o.
+     "888            888 `"
+ .oooo888   .oooo.o o888oo     oo.ooooo.   .oooo.   oooo d8b  .oooo.o  .ooooo.  oooo d8b
+d88' `888  d88(  "8  888        888' `88b `P  )88b  `888""8P d88(  "8 d88' `88b `888""8P
+888   888  `"Y88b.   888        888   888  .oP"888   888     `"Y88b.  888ooo888  888
+888   888  o.  )88b  888        888   888 d8(  888   888     o.  )88b 888    .o  888
+`Y8bod88P" 8""888P' o888o       888bod8P' `Y888""8o d888b    8""888P' `Y8bod8P' d888b
+                                888
+                               o888o
+                                                                                                         ###
+#===========================================================================================================
+class Datasource_field_parser
+
+  #---------------------------------------------------------------------------------------------------------
+  constructor: ({ host, dskey, format, path, }) ->
+    @host     = host
+    @dskey    = dskey
+    @format   = format
+    @path     = path
+    ;undefined
+
+  #---------------------------------------------------------------------------------------------------------
+  [Symbol.iterator]: -> yield from @walk()
+
+  #---------------------------------------------------------------------------------------------------------
+  walk: ->
+    debug 'Ωjzrsdb__17', "walk_file_lines:", { format: @format, dskey: @dskey, }
+    #.......................................................................................................
+    method_name = 'walk_' + @format.replace /[^a-z]/gv, '_'
+    method      = @[ method_name ] ? @_walk_no_such_parser
+    yield from method.call @
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  _walk_no_such_parser: ->
+    message = "Ωjzrsdb__25 no parser found for format #{rpr @format}"
+    warn message
+    yield { line_nr: 0, lcode: 'E', line: message, jfields: null, }
+    for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
+      yield { line_nr, lcode: 'U', line, jfields: null, }
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  walk_tsv: ->
+    for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
+      line    = @host.language_services.normalize_text line
+      jfields = null
+      switch true
+        when /^\s*$/v.test line
+          lcode = 'B'
+        when /^\s*#/v.test line
+          lcode = 'C'
+        else
+          lcode = 'D'
+          jfields   = JSON.stringify line.split '\t'
+      yield { line_nr, lcode, line, jfields, }
+    ;null
+
+  # #---------------------------------------------------------------------------------------------------------
+  # walk_md:table: ->
+  #   yield return null
+
+  # #---------------------------------------------------------------------------------------------------------
+  # walk_csv: ->
+  #   yield return null
+
+  # #---------------------------------------------------------------------------------------------------------
+  # walk_json: ->
+  #   yield return null
+
+  # #---------------------------------------------------------------------------------------------------------
+  # walk_md: ->
+  #   yield return null
+
+  # #---------------------------------------------------------------------------------------------------------
+  # walk_txt: ->
+  #   yield return null
+
+
+#===========================================================================================================
+###
+
 ooooo
 `888'
  888          .oooo.   ooo. .oo.    .oooooooo              .oooo.o oooo d8b oooo    ooo
@@ -1054,7 +1112,6 @@ ooooo
 o888ooooood8 `Y888""8o o888o o888o `8oooooo.  ooooooooooo 8""888P' d888b        `8'
                                    d"     YD
                                    "Y88888P'
-
                                                                                                          ###
 #===========================================================================================================
 class Language_services
