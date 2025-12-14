@@ -125,6 +125,7 @@ get_paths = ->
   R[ 'dict:meanings'              ]   = PATH.join R.mojikura, 'meaning/meanings.txt'
   R[ 'shape:idsv2'                ]   = PATH.join R.mojikura, 'shape/shape-breakdown-formula-v2.txt'
   R[ 'shape:zhz5bf'               ]   = PATH.join R.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
+  R[ 'ucdb:rsgs'                  ]   = PATH.join R.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
   return R
 
 
