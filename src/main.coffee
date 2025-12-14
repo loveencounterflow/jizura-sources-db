@@ -881,6 +881,7 @@ class Jzr_db_adapter extends Dbric_std
       deterministic:  true
       call: ( jfields_json ) ->
         return from_bool false unless ( jfields = JSON.parse jfields_json )?
+        return from_bool false unless ( type_of jfields ) is 'list'
         return from_bool jfields.some ( value ) -> /(^\s)|(\s$)/.test value
 
   #=========================================================================================================
