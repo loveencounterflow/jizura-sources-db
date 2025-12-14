@@ -470,6 +470,22 @@ class Jzr_db_adapter extends Dbric_std
         order by reading
       ;"""
 
+    #=======================================================================================================
+    SQL"""create table jzr_components (
+        rowid     text    unique  not null,
+        ref       text            not null,
+        level     integer         not null,
+        lnr       integer         not null,
+        rnr       integer         not null,
+        glyph     text            not null,
+        component text            not null,
+      primary key ( rowid ),
+      foreign key ( ref ) references jzr_mirror_triples_base ( rowid ),
+      check ( ( length( glyph     ) = 1 ) or ( glyph      regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      check ( ( length( component ) = 1 ) or ( component  regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      check ( rowid regexp '^.*$' )
+      );"""
+
 
     #=======================================================================================================
     SQL"""create view _jzr_meta_uc_normalization_faults as select
