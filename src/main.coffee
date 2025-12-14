@@ -122,9 +122,9 @@ get_paths = ->
   R[ 'dict:ko:V=data-naver.csv'   ]   = PATH.join rutopio, 'data-naver.csv'
   R[ 'dict:ko:V=data-naver.json'  ]   = PATH.join rutopio, 'data-naver.json'
   R[ 'dict:ko:V=README.md'        ]   = PATH.join rutopio, 'README.md'
-  R[ 'dict:meanings'              ]   = PATH.join R.mojikura, '/meaning/meanings.txt'
-  R[ 'shape:idsv2'                ]   = PATH.join R.mojikura, '/shape/shape-breakdown-formula-v2.txt'
-  R[ 'shape:zhz5bf'               ]   = PATH.join R.mojikura, '/shape/shape-strokeorder-zhaziwubifa.txt'
+  R[ 'dict:meanings'              ]   = PATH.join R.mojikura, 'meaning/meanings.txt'
+  R[ 'shape:idsv2'                ]   = PATH.join R.mojikura, 'shape/shape-breakdown-formula-v2.txt'
+  R[ 'shape:zhz5bf'               ]   = PATH.join R.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
   return R
 
 
