@@ -602,9 +602,9 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     populate_jzr_mirror_lines: SQL"""
-      insert into jzr_mirror_lines ( rowid, dskey, line_nr, lcode, line, jfields )
+      insert into jzr_mirror_lines ( dskey, line_nr, lcode, line, jfields )
       select
-        't:mr:ln:R=' || row_number() over ()          as rowid,
+        -- 't:mr:ln:R=' || row_number() over ()          as rowid,
         -- ds.dskey || ':L=' || fl.line_nr   as rowid,
         ds.dskey                          as dskey,
         fl.line_nr                        as line_nr,
