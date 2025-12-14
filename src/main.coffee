@@ -1012,6 +1012,32 @@ class Language_services
     # help 'Ωdjkr__16', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
     # help 'Ωdjkr__17', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
     # help 'Ωdjkr__18', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
+  #---------------------------------------------------------------------------------------------------------
+  parse_idlx: ( formula ) -> IDLX.parse formula
+
+  #---------------------------------------------------------------------------------------------------------
+  operators_and_components_from_idlx: ( formula ) ->
+    switch type = type_of formula
+      when 'text'   then  formula_ast = @parse_idlx formula
+      when 'list'   then  formula_ast =             formula
+      else throw new Error "Ωjzrsdb__23 expected a text or a list, got a #{type}"
+    operators   = []
+    components  = []
+    separate    = ( list ) ->
+      for element, idx in list
+        if idx is 0
+          operators.push element
+          continue
+        if ( type_of element ) is 'list'
+          separate element
+          # components.splice components.length, 0, ( separate element )...
+          continue
+        components.push element
+    separate formula_ast
+    return { operators, components, }
+
+
+
 
 #-----------------------------------------------------------------------------------------------------------
 ### TAINT goes into constructor of Jzr class ###
