@@ -877,18 +877,31 @@ class Jzr_db_adapter extends Dbric_std
       columns:      [ 'line_nr', 'lcode', 'line', 'jfields' ]
       parameters:   [ 'dskey', 'format', 'path', ]
       rows: ( dskey, format, path ) ->
-        for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
-          line    = @host.language_services.normalize_text line
-          jfields = null
-          switch true
-            when /^\s*$/v.test line
-              lcode = 'B'
-            when /^\s*#/v.test line
-              lcode = 'C'
-            else
-              lcode = 'D'
-              jfields   = JSON.stringify line.split '\t'
-          yield { line_nr, lcode, line, jfields, }
+        debug 'Ωjzrsdb__17', "walk_file_lines:", { format, dskey, }
+        switch format
+          when 'tsv'
+            for { lnr: line_nr, line, eol, } from walk_lines_with_positions path
+              line    = @host.language_services.normalize_text line
+              jfields = null
+              switch true
+                when /^\s*$/v.test line
+                  lcode = 'B'
+                when /^\s*#/v.test line
+                  lcode = 'C'
+                else
+                  lcode = 'D'
+                  jfields   = JSON.stringify line.split '\t'
+              yield { line_nr, lcode, line, jfields, }
+          when 'md:table'
+            null
+          when 'csv'
+            null
+          when 'json'
+            null
+          when 'md'
+            null
+          when 'txt'
+            null
         ;null
 
     #-------------------------------------------------------------------------------------------------------
