@@ -232,15 +232,15 @@ class Jzr_db_adapter extends Dbric_std
     #.......................................................................................................
     SQL"""create table jzr_mirror_lines (
         -- 't:jfm:'
-        rowid     text    unique  not null,
-        ref       text    unique  not null generated always as ( dskey || ':L=' || line_nr ) virtual,
+        rowid     text    unique  not null generated always as ( 't:mr:ln:ds=' || dskey || ':L=' || line_nr ) stored,
+        ref       text    unique  not null generated always as (                  dskey || ':L=' || line_nr ) virtual,
         dskey     text            not null,
         line_nr   integer         not null,
         lcode     text            not null,
         line      text            not null,
         jfields   json                null,
-      primary key ( rowid ),
-      check ( rowid regexp '^t:mr:ln:R=\\d+$'),
+      -- primary key ( rowid ),                           -- ### NOTE Experimental: no explicit PK, instead generated `rowid` column
+      -- check ( rowid regexp '^t:mr:ln:ds=.+:L=\\d+$'),  -- ### NOTE no need to check as value is generated ###
       unique ( dskey, line_nr ),
       foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
 
