@@ -1069,10 +1069,8 @@ class Datasource_field_parser
       line    = @host.language_services.normalize_text line
       jfields = null
       switch true
-        when /^\s*$/v.test line
-          lcode = 'B'
-        when /^\s*#/v.test line
-          lcode = 'C'
+        when /^\s*$/v.test line then lcode = 'B'
+        when /^\s*#/v.test line then lcode = 'C'
         else
           lcode = 'D'
           jfields   = JSON.stringify line.split '\t'
