@@ -141,9 +141,9 @@ get_paths_and_formats = ->
   formats[ 'dict:ko:V=data-naver.csv'   ]   = 'csv'
   formats[ 'dict:ko:V=data-naver.json'  ]   = 'json'
   formats[ 'dict:ko:V=README.md'        ]   = 'md'
-  formats[ 'dict:meanings'              ]   = 'txt'
-  formats[ 'shape:idsv2'                ]   = 'txt'
-  formats[ 'shape:zhz5bf'               ]   = 'txt'
+  formats[ 'dict:meanings'              ]   = 'tsv'
+  formats[ 'shape:idsv2'                ]   = 'tsv'
+  formats[ 'shape:zhz5bf'               ]   = 'tsv'
   formats[ 'ucdb:rsgs'                  ]   = 'md:table'
   return R
 
