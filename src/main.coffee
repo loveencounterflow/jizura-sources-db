@@ -513,7 +513,7 @@ class Jzr_db_adapter extends Dbric_std
           'error:R=*'                         as rowid,
           rowid                               as ref,
           'error-verb'                        as description,
-          v                                   as quote
+          'v:' || v || ', o:' || o            as quote
         from jzr_triples as nn
         where v like '%:error';"""
 
