@@ -189,6 +189,30 @@ class Jzr_db_adapter extends Dbric_std
   @build: [
 
     #.......................................................................................................
+    SQL"""create table jzr_glyphranges (
+        rowid     text    unique  not null,
+        lo        integer         not null,
+        hi        integer         not null,
+        lo_glyph  text            generated always as ( char( lo ) ) stored,
+        hi_glyph  text            generated always as ( char( hi ) ) stored,
+      primary key ( rowid ),
+      constraint "Ωconstraint___6" check ( lo between 0x000000 and 0x10ffff ),
+      constraint "Ωconstraint___7" check ( hi between 0x000000 and 0x10ffff ),
+      constraint "Ωconstraint___8" check ( lo <= hi ),
+      constraint "Ωconstraint___9" check ( rowid regexp '^.*$')
+      );"""
+
+    #.......................................................................................................
+    SQL"""create table jzr_glyphsets (
+        rowid       text    unique  not null,
+        name        text    not null,
+        glyphrange  text    not null,
+      primary key ( rowid ),
+      foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
+      constraint "Ωconstraint__10" check ( rowid regexp '^.*$')
+      );"""
+
+    #.......................................................................................................
     SQL"""create table jzr_datasources (
         rowid     text    unique  not null,
         dskey     text    unique  not null,
