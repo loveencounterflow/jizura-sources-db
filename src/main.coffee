@@ -188,6 +188,7 @@ class Jzr_db_adapter extends Dbric_std
       @_on_open_populate_jzr_mirror_verbs()
       @_on_open_populate_jzr_mirror_lcodes()
       @_on_open_populate_jzr_mirror_lines()
+      @_on_open_populate_jzr_glyphrange()
     #.......................................................................................................
     ;undefined
 
@@ -211,12 +212,15 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     SQL"""create table jzr_glyphranges (
-        rowid     text    unique  not null,
+        rowid     text    unique  not null generated always as ( 't:uc:rsg:V=' || rsg ),
+        rsg       text    unique  not null,
+        is_cjk    boolean         not null,
         lo        integer         not null,
         hi        integer         not null,
-        lo_glyph  text            generated always as ( char( lo ) ) stored,
-        hi_glyph  text            generated always as ( char( hi ) ) stored,
-      primary key ( rowid ),
+        -- lo_glyph  text            not null generated always as ( char( lo ) ) stored,
+        -- hi_glyph  text            not null generated always as ( char( hi ) ) stored,
+        name      text            not null,
+      -- primary key ( rowid ),
       constraint "Ωconstraint___6" check ( lo between 0x000000 and 0x10ffff ),
       constraint "Ωconstraint___7" check ( hi between 0x000000 and 0x10ffff ),
       constraint "Ωconstraint___8" check ( lo <= hi ),
@@ -633,6 +637,12 @@ class Jzr_db_adapter extends Dbric_std
   @statements:
 
     #.......................................................................................................
+    insert_jzr_glyphrange: SQL"""
+      insert into jzr_glyphranges ( rsg, is_cjk, lo, hi, name ) values ( $rsg, $is_cjk, $lo, $hi, $name )
+        -- on conflict ( dskey ) do update set path = excluded.path
+        ;"""
+
+    #.......................................................................................................
     insert_jzr_datasource_format: SQL"""
       insert into jzr_datasource_formats ( format, comment ) values ( $format, $comment )
         -- on conflict ( dskey ) do update set path = excluded.path
@@ -727,6 +737,27 @@ class Jzr_db_adapter extends Dbric_std
         /* ### NOTE `on conflict` needed because we log all actually occurring readings of all characters */
         on conflict ( syllable_hang ) do nothing
         ;"""
+
+    #.......................................................................................................
+    populate_jzr_glyphrange: SQL"""
+      insert into jzr_glyphranges ( rsg, is_cjk, lo, hi, name )
+      select
+        -- 't:mr:ln:R=' || row_number() over ()          as rowid,
+        -- ds.dskey || ':L=' || fl.line_nr   as rowid,
+        gr.rsg                            as rsg,
+        gr.is_cjk                         as is_cjk,
+        -- ref
+        gr.lo                             as lo,
+        gr.hi                             as hi,
+        gr.name                           as name
+      from jzr_mirror_lines                                               as ml
+      join parse_ucdb_rsgs_glyphrange( ml.dskey, ml.line_nr, ml.jfields ) as gr
+      where true
+        and ( ml.dskey = 'ucdb:rsgs' )
+        and ( ml.lcode = 'D' )
+      order by ml.line_nr
+      -- on conflict ( dskey, line_nr ) do update set line = excluded.line
+      ;"""
 
   #=========================================================================================================
   ###
@@ -836,6 +867,12 @@ class Jzr_db_adapter extends Dbric_std
     ;null
 
   #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_glyphrange: ->
+    debug 'Ωjzrsdb__16', '_on_open_populate_jzr_glyphrange'
+    @statements.populate_jzr_glyphrange.run()
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
   trigger_on_before_insert: ( name, fields... ) ->
     # debug 'Ωjzrsdb__17', { name, fields, }
     @state.most_recent_inserted_row = { name, fields, }
@@ -933,6 +970,14 @@ class Jzr_db_adapter extends Dbric_std
         jamos = @host.language_services._TMP_hangeul.disassemble hang, { flatten: false, }
         for { first: initial, vowel: medial, last: final, } in jamos
           yield { initial, medial, final, }
+        ;null
+
+    #-------------------------------------------------------------------------------------------------------
+    parse_ucdb_rsgs_glyphrange:
+      parameters:   [ 'dskey', 'line_nr', 'jfields', ]
+      columns:      [ 'rsg', 'is_cjk', 'lo', 'hi', 'name', ]
+      rows: ( dskey, line_nr, jfields ) ->
+        yield datasource_format_parser.parse_ucdb_rsgs_glyphrange { dskey, line_nr, jfields, }
         ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -1115,6 +1160,31 @@ class Datasource_field_parser
   # #---------------------------------------------------------------------------------------------------------
   # walk_txt: ->
   #   yield return null
+
+
+#===========================================================================================================
+class datasource_format_parser
+
+  #---------------------------------------------------------------------------------------------------------
+  @parse_ucdb_rsgs_glyphrange: ({ jfields, }) ->
+    [ iclabel,
+      rsg,
+      is_cjk_txt,
+      lo_hi_txt,
+      name,     ] = JSON.parse jfields
+    lo_hi_re      = /// ^ 0x (?<lo> [0-9a-f]{1,6} ) \s*\.\.\s* 0x (?<hi> [0-9a-f]{1,6} ) $ ///iv
+    #.......................................................................................................
+    is_cjk = switch is_cjk_txt
+      when 'true'   then 1
+      when 'false'  then 0
+      else throw new Error "Ωjzrsdb__22 expected 'true' or 'false', got #{rpr is_cjk_txt}"
+    #.......................................................................................................
+    unless ( match = lo_hi_txt.match lo_hi_re )?
+      throw new Error "Ωjzrsdb__23 expected a range literal like '0x01a6..0x10ff', got #{rpr lo_hi_txt}"
+    lo  = parseInt match.groups.lo, 16
+    hi  = parseInt match.groups.hi, 16
+    #.......................................................................................................
+    return { rsg, is_cjk, lo, hi, name, }
 
 
 #===========================================================================================================
