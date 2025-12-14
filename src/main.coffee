@@ -743,6 +743,7 @@ class Jzr_db_adapter extends Dbric_std
     # dskey = 'dict:ko:V=README.md';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=10', dskey, path: paths[ dskey ], }
     dskey = 'shape:idsv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, path: paths[ dskey ], }
     dskey = 'shape:zhz5bf';               @statements.insert_jzr_datasource.run { rowid: 't:ds:R=12', dskey, path: paths[ dskey ], }
+    dskey = 'ucdb:rsgs';                  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=13', dskey, path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
