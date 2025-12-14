@@ -927,6 +927,22 @@ class Jzr_db_adapter extends Dbric_std
     # #.......................................................................................................
     # formula_json    = JSON.stringify formula_ast
     # yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:shortest:ast', o: formula_json, }
+    # #.......................................................................................................
+    # { operators,
+    #   components, } = @host.language_services.operators_and_components_from_idlx formula_ast
+    # seen_operators  = new Set()
+    # seen_components = new Set()
+    # #.......................................................................................................
+    # for operator in operators
+    #   continue if seen_operators.has operator
+    #   seen_operators.add operator
+    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:has-operator', o: operator, }
+    # #.......................................................................................................
+    # for component in components
+    #   continue if seen_components.has component
+    #   seen_components.add component
+    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:has-component', o: component, }
+    # #.......................................................................................................
     @state.timeit_progress?()
     ;null
 
