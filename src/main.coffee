@@ -1029,7 +1029,7 @@ class Datasource_field_parser
 
   #---------------------------------------------------------------------------------------------------------
   walk: ->
-    debug 'Ωjzrsdb__36', "walk_file_lines:", { format: @format, dskey: @dskey, }
+    debug 'Ωjzrsdb__36', "Datasource_field_parser::walk:", { format: @format, dskey: @dskey, }
     #.......................................................................................................
     method_name = 'walk_' + @format.replace /[^a-z]/gv, '_'
     method      = @[ method_name ] ? @_walk_no_such_parser
