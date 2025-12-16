@@ -131,20 +131,20 @@ get_paths_and_formats = ->
   paths[ 'ds:ucdb:rsgs'                  ]   = PATH.join paths.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
   #.........................................................................................................
   # formats[ 'ds:dict:ucd:v14.0:uhdidx'      ]   = , 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  formats[ 'ds:dict:x:ko-Hang+Latn'        ]   = 'tsv'
-  formats[ 'ds:dict:x:ja-Kan+Latn'         ]   = 'tsv'
-  formats[ 'ds:dict:bcp47'                 ]   = 'tsv'
-  formats[ 'ds:dict:ja:kanjium'            ]   = 'txt'
-  formats[ 'ds:dict:ja:kanjium:aux'        ]   = 'txt'
-  formats[ 'ds:dict:ko:V=data-gov.csv'     ]   = 'csv'
-  formats[ 'ds:dict:ko:V=data-gov.json'    ]   = 'json'
-  formats[ 'ds:dict:ko:V=data-naver.csv'   ]   = 'csv'
-  formats[ 'ds:dict:ko:V=data-naver.json'  ]   = 'json'
-  formats[ 'ds:dict:ko:V=README.md'        ]   = 'md'
-  formats[ 'ds:dict:meanings'              ]   = 'tsv'
-  formats[ 'ds:shape:idsv2'                ]   = 'tsv'
-  formats[ 'ds:shape:zhz5bf'               ]   = 'tsv'
-  formats[ 'ds:ucdb:rsgs'                  ]   = 'md:table'
+  formats[ 'ds:dict:x:ko-Hang+Latn'        ]   = 'dsf:tsv'
+  formats[ 'ds:dict:x:ja-Kan+Latn'         ]   = 'dsf:tsv'
+  formats[ 'ds:dict:bcp47'                 ]   = 'dsf:tsv'
+  formats[ 'ds:dict:ja:kanjium'            ]   = 'dsf:txt'
+  formats[ 'ds:dict:ja:kanjium:aux'        ]   = 'dsf:txt'
+  formats[ 'ds:dict:ko:V=data-gov.csv'     ]   = 'dsf:csv'
+  formats[ 'ds:dict:ko:V=data-gov.json'    ]   = 'dsf:json'
+  formats[ 'ds:dict:ko:V=data-naver.csv'   ]   = 'dsf:csv'
+  formats[ 'ds:dict:ko:V=data-naver.json'  ]   = 'dsf:json'
+  formats[ 'ds:dict:ko:V=README.md'        ]   = 'dsf:md'
+  formats[ 'ds:dict:meanings'              ]   = 'dsf:tsv'
+  formats[ 'ds:shape:idsv2'                ]   = 'dsf:tsv'
+  formats[ 'ds:shape:zhz5bf'               ]   = 'dsf:tsv'
+  formats[ 'ds:ucdb:rsgs'                  ]   = 'dsf:md:table'
   return R
 
 
@@ -254,12 +254,19 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     SQL"""create table jzr_datasource_formats (
-        rowid     text    unique  not null generated always as ( 't:ds:f:V=' || format ) stored,
         format    text    unique  not null,
-        comment   text            not null
-      -- primary key ( rowid ),
-      -- check ( rowid regexp '^t:ds:R=\\d+$' )
+        comment   text            not null,
+      primary key ( format ),
+      check ( format regexp '^dsf:[\\-\\+\\.:a-zA-Z0-9]+$' )
       );"""
+    #.......................................................................................................
+    SQL"""create trigger jzr_datasource_formats_insert
+      before insert on jzr_datasource_formats
+      for each row begin
+        select trigger_on_before_insert( 'jzr_datasource_formats',
+          'format:', new.format, 'comment:', new.comment );
+        insert into jzr_urns ( urn, comment ) values ( new.format, new.comment );
+        end;"""
 
     #.......................................................................................................
     SQL"""create table jzr_datasources (
@@ -742,12 +749,12 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasource_formats: ->
     debug 'Ωjzrsdb__30', '_on_open_populate_jzr_datasource_formats'
-    @statements.insert_jzr_datasource_format.run { format: 'tsv',       comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'md:table',  comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'csv',       comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'json',      comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'md',        comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'txt',       comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:tsv',       comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:md:table',  comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:csv',       comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:json',      comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:md',        comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:txt',       comment: 'NN', }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -1030,7 +1037,7 @@ class Datasource_field_parser
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  walk_tsv: ->
+  walk_dsf_tsv: ->
     for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
       line    = @host.language_services.normalize_text line
       jfields = null
@@ -1044,7 +1051,7 @@ class Datasource_field_parser
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  walk_md_table: ->
+  walk_dsf_md_table: ->
     for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
       line    = @host.language_services.normalize_text line
       jfields = null
