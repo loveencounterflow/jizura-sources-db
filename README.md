@@ -86,4 +86,10 @@
 
 * **`[—]`** incorporate UCD v17
 
+* **`[—]`** build registry of all unique IDs (not only verbs), representing RowIDs as glob / wildcard
+  matchers; include role ID such as `role:v` for verbs
+  * **`[—]`** probably best to enforce foreign keys with additional linting / fault checking to ensure URNs
+    are employed as intended
+  * **`[—]`** alternatively, use 1 tale per URN role, add view for comprehensive overview
+
 
