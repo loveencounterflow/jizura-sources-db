@@ -331,7 +331,8 @@ class Jzr_db_adapter extends Dbric_std
       constraint "Ωconstraint__18" check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
       -- unique ( ref, s, v, o )
       constraint "Ωconstraint__19" foreign key ( ref ) references jzr_mirror_lines ( rowid ),
-      constraint "Ωconstraint__20" foreign key ( v   ) references jzr_mirror_verbs ( v ) );"""
+      constraint "Ωconstraint__20" foreign key ( v   ) references jzr_mirror_verbs ( v )
+      );"""
 
     #.......................................................................................................
     SQL"""create trigger jzr_mirror_triples_register
@@ -708,30 +709,25 @@ class Jzr_db_adapter extends Dbric_std
     ###
     debug 'Ωjzrsdb__29', '_on_open_populate_jzr_mirror_verbs'
     rows = [
-      { rank: 2, s: "NN", v: 'v:testing:unused',             o: "NN", }
-      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:initial',     o: "NN", }
-      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:medial',      o: "NN", }
-      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:final',       o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:zh-Latn-pinyin',   o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kan',         o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Hir',         o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kat',         o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Latn',        o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Hir+Latn',    o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kat+Latn',    o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ko-Hang',          o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:reading:ko-Latn',          o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:initial',  o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:medial',   o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:final',    o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:initial',  o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:medial',   o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:final',    o: "NN", }
-      { rank: 1, s: "NN", v: 'v:c:shape:ids:shortest',       o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:shape:ids:shortest:ast',   o: "NN", }
-      { rank: 2, s: "NN", v: 'v:c:shape:ids:shortest:error', o: "NN", }
-      # { rank: 2, s: "NN", v: 'v:c:shape:ids:has-operator',   o: "NN", }
-      # { rank: 2, s: "NN", v: 'v:c:shape:ids:has-component',  o: "NN", }
+      { rank: 2, s: "NN", v: 'v:testing:unused',                      o: "NN", }
+      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:initial',              o: "NN", }
+      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:medial',               o: "NN", }
+      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:final',                o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:zh-Latn-pinyin',            o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kan',                  o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Hir',                  o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kat',                  o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Latn',                 o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Hir+Latn',             o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kat+Latn',             o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ko-Hang',                   o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ko-Latn',                   o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:initial',           o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:medial',            o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:final',             o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:initial',           o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:medial',            o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:final',             o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
@@ -874,7 +870,7 @@ class Jzr_db_adapter extends Dbric_std
             when ( entry.startsWith 'ka:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hi:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hg:' ) then yield from @triples_from_c_reading_ko_Hang         rowid_in, dskey, fields
-          when 'ds:shape:idsv2'                then yield from @triples_from_shape_idsv2               rowid_in, dskey, fields
+          when 'ds:shape:idsv2'             then yield from @triples_from_shape_idsv2               rowid_in, dskey, fields
         # yield from @get_triples rowid_in, dskey, jfields
         ;null
 
