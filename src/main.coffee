@@ -40,7 +40,9 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
 #...........................................................................................................
 { Dbric,
   Dbric_std,
-  SQL,                  } = SFMODULES.unstable.require_dbric()
+  SQL,
+  from_bool,
+  as_bool,              } = SFMODULES.unstable.require_dbric()
 #...........................................................................................................
 { lets,
   freeze,               } = SFMODULES.require_letsfreezethat_infra().simple
@@ -59,15 +61,6 @@ timeit                        = ( P... ) -> benchmarker.timeit P...
 { IDL, IDLX,            } = require 'mojikura-idl'
 { type_of,              } = SFMODULES.unstable.require_type_of()
 
-#===========================================================================================================
-from_bool                     = ( x ) -> switch x
-  when true  then 1
-  when false then 0
-  else throw new Error "Ωjzrsdb___1 expected true or false, got #{rpr x}"
-as_bool                       = ( x ) -> switch x
-  when 1 then true
-  when 0 then false
-  else throw new Error "Ωjzrsdb___2 expected 0 or 1, got #{rpr x}"
 
 #===========================================================================================================
 demo_source_identifiers = ->
@@ -476,7 +469,7 @@ class Jzr_db_adapter extends Dbric_std
         ml.line   as line
       from jzr_mirror_lines as ml
       where true
-        and ( not jzr_is_uc_normal( ml.line ) )
+        and ( not std_is_uc_normal( ml.line ) )
       order by ml.rowid;"""
 
     #.......................................................................................................
@@ -840,12 +833,6 @@ class Jzr_db_adapter extends Dbric_std
     #   overwrite:      true
     #   deterministic:  true
     #   call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
-
-    #-------------------------------------------------------------------------------------------------------
-    jzr_is_uc_normal:
-      deterministic:  true
-      ### NOTE: also see `String::isWellFormed()` ###
-      call: ( text, form = 'NFC' ) -> from_bool text is text.normalize form ### 'NFC', 'NFD', 'NFKC', or 'NFKD' ###
 
     #-------------------------------------------------------------------------------------------------------
     jzr_has_peripheral_ws_in_jfield:
