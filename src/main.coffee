@@ -263,7 +263,7 @@ class Jzr_db_adapter extends Dbric_std
     SQL"""create trigger jzr_datasource_formats_insert
       before insert on jzr_datasource_formats
       for each row begin
-        select trigger_on_before_insert( 'jzr_datasource_formats',
+        select jzr_trigger_on_before_insert( 'jzr_datasource_formats',
           'format:', new.format, 'comment:', new.comment );
         insert into jzr_urns ( urn, comment ) values ( new.format, new.comment );
         end;"""
@@ -280,7 +280,7 @@ class Jzr_db_adapter extends Dbric_std
     SQL"""create trigger jzr_datasources_insert
       before insert on jzr_datasources
       for each row begin
-        select trigger_on_before_insert( 'jzr_datasources',
+        select jzr_trigger_on_before_insert( 'jzr_datasources',
           'dskey:', new.dskey, 'format:', new.format, 'path:', new.path );
         insert into jzr_urns ( urn, comment ) values ( new.dskey, 'format: ' || new.format || ', path: ' || new.path );
         end;"""
@@ -322,7 +322,7 @@ class Jzr_db_adapter extends Dbric_std
     SQL"""create trigger jzr_mirror_verbs_insert
       before insert on jzr_mirror_verbs
       for each row begin
-        select trigger_on_before_insert( 'jzr_mirror_verbs',
+        select jzr_trigger_on_before_insert( 'jzr_mirror_verbs',
           'rank:', new.rank, 's:', new.s, 'v:', new.v, 'o:', new.o );
         insert into jzr_urns ( urn, comment ) values ( new.v, 's: ' || new.s || ', o: ' || new.o );
         end;"""
@@ -345,7 +345,7 @@ class Jzr_db_adapter extends Dbric_std
     SQL"""create trigger jzr_mirror_triples_register
       before insert on jzr_mirror_triples_base
       for each row begin
-        select trigger_on_before_insert( 'jzr_mirror_triples_base',
+        select jzr_trigger_on_before_insert( 'jzr_mirror_triples_base',
           'rowid:', new.rowid, 'ref:', new.ref, 's:', new.s, 'v:', new.v, 'o:', new.o );
         end;"""
 
@@ -373,7 +373,7 @@ class Jzr_db_adapter extends Dbric_std
     SQL"""create trigger jzr_lang_hang_syllables_register
       before insert on jzr_lang_hang_syllables
       for each row begin
-        select trigger_on_before_insert( 'jzr_lang_hang_syllables',
+        select jzr_trigger_on_before_insert( 'jzr_lang_hang_syllables',
           new.rowid, new.ref, new.syllable_hang, new.syllable_latn,
             new.initial_hang, new.medial_hang, new.final_hang,
             new.initial_latn, new.medial_latn, new.final_latn );
@@ -476,7 +476,7 @@ class Jzr_db_adapter extends Dbric_std
         ml.line   as line
       from jzr_mirror_lines as ml
       where true
-        and ( not is_uc_normal( ml.line ) )
+        and ( not jzr_is_uc_normal( ml.line ) )
       order by ml.rowid;"""
 
     #.......................................................................................................
@@ -507,7 +507,7 @@ class Jzr_db_adapter extends Dbric_std
           'extraneous-whitespace'                      as description,
           ml.jfields                                   as quote
         from jzr_mirror_lines as ml
-        where ( has_peripheral_ws_in_jfield( jfields ) );"""
+        where ( jzr_has_peripheral_ws_in_jfield( jfields ) );"""
 
     #.......................................................................................................
     SQL"""create view _jzr_meta_mirror_lines_with_errors as select distinct
@@ -616,9 +616,9 @@ class Jzr_db_adapter extends Dbric_std
         fl.lcode                          as lcode,
         fl.line                           as line,
         fl.jfields                        as jfields
-      from jzr_datasources                                  as ds
-      join jzr_datasource_formats                           as df using ( format )
-      join walk_file_lines( ds.dskey, df.format, ds.path )  as fl
+      from jzr_datasources                                      as ds
+      join jzr_datasource_formats                               as df using ( format )
+      join jzr_walk_file_lines( ds.dskey, df.format, ds.path )  as fl
       where true
       -- on conflict ( dskey, line_nr ) do update set line = excluded.line
       ;"""
@@ -632,8 +632,8 @@ class Jzr_db_adapter extends Dbric_std
             gt.s            as s,
             gt.v            as v,
             gt.o            as o
-          from jzr_mirror_lines                               as ml
-          join get_triples( ml.rowid, ml.dskey, ml.jfields )  as gt
+          from jzr_mirror_lines                                   as ml
+          join jzr_walk_triples( ml.rowid, ml.dskey, ml.jfields ) as gt
           where true
             and ( ml.lcode = 'D' )
             -- and ( ml.dskey = 'ds:dict:meanings' )
@@ -658,8 +658,8 @@ class Jzr_db_adapter extends Dbric_std
             coalesce( mti.o, '' )                 as initial_latn,
             coalesce( mtm.o, '' )                 as medial_latn,
             coalesce( mtf.o, '' )                 as final_latn
-          from jzr_mirror_triples_base             as mt
-          left join disassemble_hangeul( mt.o )    as dh
+          from jzr_mirror_triples_base              as mt
+          left join jzr_disassemble_hangeul( mt.o ) as dh
           left join jzr_mirror_triples_base as mti on ( mti.s = dh.initial and mti.v = 'v:x:ko-Hang+Latn:initial' )
           left join jzr_mirror_triples_base as mtm on ( mtm.s = dh.medial  and mtm.v = 'v:x:ko-Hang+Latn:medial'  )
           left join jzr_mirror_triples_base as mtf on ( mtf.s = dh.final   and mtf.v = 'v:x:ko-Hang+Latn:final'   )
@@ -683,8 +683,8 @@ class Jzr_db_adapter extends Dbric_std
         gr.lo                             as lo,
         gr.hi                             as hi,
         gr.name                           as name
-      from jzr_mirror_lines                                               as ml
-      join parse_ucdb_rsgs_glyphrange( ml.dskey, ml.line_nr, ml.jfields ) as gr
+      from jzr_mirror_lines                                                   as ml
+      join jzr_parse_ucdb_rsgs_glyphrange( ml.dskey, ml.line_nr, ml.jfields ) as gr
       where true
         and ( ml.dskey = 'ds:ucdb:rsgs' )
         and ( ml.lcode = 'D' )
@@ -828,7 +828,7 @@ class Jzr_db_adapter extends Dbric_std
   @functions:
 
     #-------------------------------------------------------------------------------------------------------
-    trigger_on_before_insert:
+    jzr_trigger_on_before_insert:
       ### NOTE in the future this function could trigger creation of triggers on inserts ###
       deterministic:  true
       varargs:        true
@@ -842,13 +842,13 @@ class Jzr_db_adapter extends Dbric_std
     #   call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
 
     #-------------------------------------------------------------------------------------------------------
-    is_uc_normal:
+    jzr_is_uc_normal:
       deterministic:  true
       ### NOTE: also see `String::isWellFormed()` ###
       call: ( text, form = 'NFC' ) -> from_bool text is text.normalize form ### 'NFC', 'NFD', 'NFKC', or 'NFKD' ###
 
     #-------------------------------------------------------------------------------------------------------
-    has_peripheral_ws_in_jfield:
+    jzr_has_peripheral_ws_in_jfield:
       deterministic:  true
       call: ( jfields_json ) ->
         return from_bool false unless ( jfields = JSON.parse jfields_json )?
@@ -859,7 +859,7 @@ class Jzr_db_adapter extends Dbric_std
   @table_functions:
 
     #-------------------------------------------------------------------------------------------------------
-    split_words:
+    jzr_split_words:
       columns:      [ 'keyword', ]
       parameters:   [ 'line', ]
       rows: ( line ) ->
@@ -871,7 +871,7 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
     #-------------------------------------------------------------------------------------------------------
-    walk_file_lines:
+    jzr_walk_file_lines:
       columns:      [ 'line_nr', 'lcode', 'line', 'jfields' ]
       parameters:   [ 'dskey', 'format', 'path', ]
       rows: ( dskey, format, path ) ->
@@ -879,14 +879,14 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
     #-------------------------------------------------------------------------------------------------------
-    get_triples:
+    jzr_walk_triples:
       parameters:   [ 'rowid_in', 'dskey', 'jfields', ]
       columns:      [ 'rowid_out', 'ref', 's', 'v', 'o', ]
       rows: ( rowid_in, dskey, jfields ) ->
         fields  = JSON.parse jfields
         entry   = fields[ 2 ]
         switch dskey
-          when 'ds:dict:x:ko-Hang+Latn'        then yield from @triples_from_dict_x_ko_Hang_Latn       rowid_in, dskey, fields
+          when 'ds:dict:x:ko-Hang+Latn'     then yield from @triples_from_dict_x_ko_Hang_Latn       rowid_in, dskey, fields
           when 'ds:dict:meanings' then switch true
             when ( entry.startsWith 'py:' ) then yield from @triples_from_c_reading_zh_Latn_pinyin  rowid_in, dskey, fields
             when ( entry.startsWith 'ka:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
@@ -896,7 +896,7 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
     #-------------------------------------------------------------------------------------------------------
-    disassemble_hangeul:
+    jzr_disassemble_hangeul:
       parameters:   [ 'hang', ]
       columns:      [ 'initial', 'medial', 'final', ]
       rows: ( hang ) ->
@@ -906,7 +906,7 @@ class Jzr_db_adapter extends Dbric_std
         ;null
 
     #-------------------------------------------------------------------------------------------------------
-    parse_ucdb_rsgs_glyphrange:
+    jzr_parse_ucdb_rsgs_glyphrange:
       parameters:   [ 'dskey', 'line_nr', 'jfields', ]
       columns:      [ 'rsg', 'is_cjk', 'lo', 'hi', 'name', ]
       rows: ( dskey, line_nr, jfields ) ->
