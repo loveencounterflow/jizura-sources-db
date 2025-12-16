@@ -76,12 +76,12 @@ demo_source_identifiers = ->
   for key, value of get_local_destinations()
     debug 'Ωjzrsdb___3', key, value
   # can append line numbers to files as in:
-  # 'dict:meanings.1:L=13332'
-  # 'dict:ucd140.1:uhdidx:L=1234'
+  # 'ds:dict:meanings.1:L=13332'
+  # 'ds:dict:ucd140.1:uhdidx:L=1234'
   # rowids: 't:jfm:R=1'
   # {
-  #   'dict:meanings':          '$jzrds/meaning/meanings.txt'
-  #   'dict:ucd:v14.0:uhdidx' : '$jzrds/unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  #   'ds:dict:meanings':          '$jzrds/meaning/meanings.txt'
+  #   'ds:dict:ucd:v14.0:uhdidx' : '$jzrds/unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
   #   }
 
 #===========================================================================================================
@@ -114,37 +114,37 @@ get_paths_and_formats = ->
   kanjium                             = PATH.join paths.raw_github, 'mifunetoshiro/kanjium/8a0cdaa16d64a281a2048de2eee2ec5e3a440fa6'
   rutopio                             = PATH.join paths.raw_github, 'rutopio/Korean-Name-Hanja-Charset/12df1ba1b4dfaa095813e4ddfba424e816f94c53'
   #.........................................................................................................
-  # paths[ 'dict:ucd:v14.0:uhdidx'      ]   = PATH.join paths.jzrnds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  paths[ 'dict:x:ko-Hang+Latn'        ]   = PATH.join paths.jzrnds, 'hangeul-transcriptions.tsv'
-  paths[ 'dict:x:ja-Kan+Latn'         ]   = PATH.join paths.jzrnds, 'kana-transcriptions.tsv'
-  paths[ 'dict:bcp47'                 ]   = PATH.join paths.jzrnds, 'BCP47-language-scripts-regions.tsv'
-  paths[ 'dict:ja:kanjium'            ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
-  paths[ 'dict:ja:kanjium:aux'        ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
-  paths[ 'dict:ko:V=data-gov.csv'     ]   = PATH.join rutopio, 'data-gov.csv'
-  paths[ 'dict:ko:V=data-gov.json'    ]   = PATH.join rutopio, 'data-gov.json'
-  paths[ 'dict:ko:V=data-naver.csv'   ]   = PATH.join rutopio, 'data-naver.csv'
-  paths[ 'dict:ko:V=data-naver.json'  ]   = PATH.join rutopio, 'data-naver.json'
-  paths[ 'dict:ko:V=README.md'        ]   = PATH.join rutopio, 'README.md'
-  paths[ 'dict:meanings'              ]   = PATH.join paths.mojikura, 'meaning/meanings.txt'
-  paths[ 'shape:idsv2'                ]   = PATH.join paths.mojikura, 'shape/shape-breakdown-formula-v2.txt'
-  paths[ 'shape:zhz5bf'               ]   = PATH.join paths.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
-  paths[ 'ucdb:rsgs'                  ]   = PATH.join paths.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
+  # paths[ 'ds:dict:ucd:v14.0:uhdidx'      ]   = PATH.join paths.jzrnds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  paths[ 'ds:dict:x:ko-Hang+Latn'        ]   = PATH.join paths.jzrnds, 'hangeul-transcriptions.tsv'
+  paths[ 'ds:dict:x:ja-Kan+Latn'         ]   = PATH.join paths.jzrnds, 'kana-transcriptions.tsv'
+  paths[ 'ds:dict:bcp47'                 ]   = PATH.join paths.jzrnds, 'BCP47-language-scripts-regions.tsv'
+  paths[ 'ds:dict:ja:kanjium'            ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
+  paths[ 'ds:dict:ja:kanjium:aux'        ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
+  paths[ 'ds:dict:ko:V=data-gov.csv'     ]   = PATH.join rutopio, 'data-gov.csv'
+  paths[ 'ds:dict:ko:V=data-gov.json'    ]   = PATH.join rutopio, 'data-gov.json'
+  paths[ 'ds:dict:ko:V=data-naver.csv'   ]   = PATH.join rutopio, 'data-naver.csv'
+  paths[ 'ds:dict:ko:V=data-naver.json'  ]   = PATH.join rutopio, 'data-naver.json'
+  paths[ 'ds:dict:ko:V=README.md'        ]   = PATH.join rutopio, 'README.md'
+  paths[ 'ds:dict:meanings'              ]   = PATH.join paths.mojikura, 'meaning/meanings.txt'
+  paths[ 'ds:shape:idsv2'                ]   = PATH.join paths.mojikura, 'shape/shape-breakdown-formula-v2.txt'
+  paths[ 'ds:shape:zhz5bf'               ]   = PATH.join paths.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
+  paths[ 'ds:ucdb:rsgs'                  ]   = PATH.join paths.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
   #.........................................................................................................
-  # formats[ 'dict:ucd:v14.0:uhdidx'      ]   = , 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  formats[ 'dict:x:ko-Hang+Latn'        ]   = 'tsv'
-  formats[ 'dict:x:ja-Kan+Latn'         ]   = 'tsv'
-  formats[ 'dict:bcp47'                 ]   = 'tsv'
-  formats[ 'dict:ja:kanjium'            ]   = 'txt'
-  formats[ 'dict:ja:kanjium:aux'        ]   = 'txt'
-  formats[ 'dict:ko:V=data-gov.csv'     ]   = 'csv'
-  formats[ 'dict:ko:V=data-gov.json'    ]   = 'json'
-  formats[ 'dict:ko:V=data-naver.csv'   ]   = 'csv'
-  formats[ 'dict:ko:V=data-naver.json'  ]   = 'json'
-  formats[ 'dict:ko:V=README.md'        ]   = 'md'
-  formats[ 'dict:meanings'              ]   = 'tsv'
-  formats[ 'shape:idsv2'                ]   = 'tsv'
-  formats[ 'shape:zhz5bf'               ]   = 'tsv'
-  formats[ 'ucdb:rsgs'                  ]   = 'md:table'
+  # formats[ 'ds:dict:ucd:v14.0:uhdidx'      ]   = , 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
+  formats[ 'ds:dict:x:ko-Hang+Latn'        ]   = 'tsv'
+  formats[ 'ds:dict:x:ja-Kan+Latn'         ]   = 'tsv'
+  formats[ 'ds:dict:bcp47'                 ]   = 'tsv'
+  formats[ 'ds:dict:ja:kanjium'            ]   = 'txt'
+  formats[ 'ds:dict:ja:kanjium:aux'        ]   = 'txt'
+  formats[ 'ds:dict:ko:V=data-gov.csv'     ]   = 'csv'
+  formats[ 'ds:dict:ko:V=data-gov.json'    ]   = 'json'
+  formats[ 'ds:dict:ko:V=data-naver.csv'   ]   = 'csv'
+  formats[ 'ds:dict:ko:V=data-naver.json'  ]   = 'json'
+  formats[ 'ds:dict:ko:V=README.md'        ]   = 'md'
+  formats[ 'ds:dict:meanings'              ]   = 'tsv'
+  formats[ 'ds:shape:idsv2'                ]   = 'tsv'
+  formats[ 'ds:shape:zhz5bf'               ]   = 'tsv'
+  formats[ 'ds:ucdb:rsgs'                  ]   = 'md:table'
   return R
 
 
@@ -211,6 +211,14 @@ class Jzr_db_adapter extends Dbric_std
   @build: [
 
     #.......................................................................................................
+    SQL"""create table jzr_urns (
+        urn     text      unique  not null,
+        comment text              not null,
+      primary key ( urn ),
+      constraint "Ωconstraint___6" check ( urn regexp '^[\\-\\+\\.:a-zA-Z0-9]+$' ) )
+      ;"""
+
+    #.......................................................................................................
     SQL"""create table jzr_glyphranges (
         rowid     text    unique  not null generated always as ( 't:uc:rsg:V=' || rsg ),
         rsg       text    unique  not null,
@@ -221,10 +229,10 @@ class Jzr_db_adapter extends Dbric_std
         -- hi_glyph  text            not null generated always as ( char( hi ) ) stored,
         name      text            not null,
       -- primary key ( rowid ),
-      constraint "Ωconstraint___6" check ( lo between 0x000000 and 0x10ffff ),
-      constraint "Ωconstraint___7" check ( hi between 0x000000 and 0x10ffff ),
-      constraint "Ωconstraint___8" check ( lo <= hi ),
-      constraint "Ωconstraint___9" check ( rowid regexp '^.*$')
+      constraint "Ωconstraint___7" check ( lo between 0x000000 and 0x10ffff ),
+      constraint "Ωconstraint___8" check ( hi between 0x000000 and 0x10ffff ),
+      constraint "Ωconstraint___9" check ( lo <= hi ),
+      constraint "Ωconstraint__10" check ( rowid regexp '^.*$')
       );"""
 
     #.......................................................................................................
@@ -240,8 +248,8 @@ class Jzr_db_adapter extends Dbric_std
         name        text    not null,
         glyphrange  text    not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__10" foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
-      constraint "Ωconstraint__11" check ( rowid regexp '^.*$')
+      constraint "Ωconstraint__11" foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
+      constraint "Ωconstraint__12" check ( rowid regexp '^.*$')
       );"""
 
     #.......................................................................................................
@@ -255,13 +263,20 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     SQL"""create table jzr_datasources (
-        rowid     text    unique  not null,
         dskey     text    unique  not null,
         format    text            not null,
         path      text            not null,
-      primary key ( rowid ),
-      constraint "Ωconstraint__12" foreign key ( format ) references jzr_datasource_formats ( format ),
-      constraint "Ωconstraint__13" check ( rowid regexp '^t:ds:R=\\d+$') );"""
+      primary key ( dskey ),
+      constraint "Ωconstraint__13" foreign key ( format ) references jzr_datasource_formats ( format )
+      );"""
+    #.......................................................................................................
+    SQL"""create trigger jzr_datasources_insert
+      before insert on jzr_datasources
+      for each row begin
+        select trigger_on_before_insert( 'jzr_datasources',
+          'dskey:', new.dskey, 'format:', new.format, 'path:', new.path );
+        insert into jzr_urns ( urn, comment ) values ( new.dskey, 'format: ' || new.format || ', path: ' || new.path );
+        end;"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_lcodes (
@@ -296,6 +311,14 @@ class Jzr_db_adapter extends Dbric_std
       primary key ( v ),
       -- check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ),
       constraint "Ωconstraint__17" check ( rank > 0 ) );"""
+    #.......................................................................................................
+    SQL"""create trigger jzr_mirror_verbs_insert
+      before insert on jzr_mirror_verbs
+      for each row begin
+        select trigger_on_before_insert( 'jzr_mirror_verbs',
+          'rank:', new.rank, 's:', new.s, 'v:', new.v, 'o:', new.o );
+        insert into jzr_urns ( urn, comment ) values ( new.v, 's: ' || new.s || ', o: ' || new.o );
+        end;"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_triples_base (
@@ -543,7 +566,7 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     insert_jzr_datasource: SQL"""
-      insert into jzr_datasources ( rowid, dskey, format, path ) values ( $rowid, $dskey, $format, $path )
+      insert into jzr_datasources ( dskey, format, path ) values ( $dskey, $format, $path )
         -- on conflict ( dskey ) do update set path = excluded.path
         ;"""
 
@@ -596,7 +619,7 @@ class Jzr_db_adapter extends Dbric_std
           join get_triples( ml.rowid, ml.dskey, ml.jfields )  as gt
           where true
             and ( ml.lcode = 'D' )
-            -- and ( ml.dskey = 'dict:meanings' )
+            -- and ( ml.dskey = 'ds:dict:meanings' )
             and ( ml.jfields is not null )
             and ( ml.jfields->>'$[0]' not regexp '^@glyphs' )
             -- and ( ml.field_3 regexp '^(?:py|hi|ka):' )
@@ -646,7 +669,7 @@ class Jzr_db_adapter extends Dbric_std
       from jzr_mirror_lines                                               as ml
       join parse_ucdb_rsgs_glyphrange( ml.dskey, ml.line_nr, ml.jfields ) as gr
       where true
-        and ( ml.dskey = 'ucdb:rsgs' )
+        and ( ml.dskey = 'ds:ucdb:rsgs' )
         and ( ml.lcode = 'D' )
       order by ml.line_nr
       -- on conflict ( dskey, line_nr ) do update set line = excluded.line
@@ -730,27 +753,27 @@ class Jzr_db_adapter extends Dbric_std
     debug 'Ωjzrsdb__31', '_on_open_populate_jzr_datasources'
     { paths
       formats, } = get_paths_and_formats()
-    # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    dskey = 'dict:meanings';              @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    dskey = 'dict:x:ko-Hang+Latn';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    dskey = 'dict:x:ja-Kan+Latn';         @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    # dskey = 'dict:ja:kanjium';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    # dskey = 'dict:ja:kanjium:aux';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=5', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-gov.csv';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=6', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-gov.json';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=7', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-naver.csv';   @statements.insert_jzr_datasource.run { rowid: 't:ds:R=8', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=data-naver.json';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=9', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    # dskey = 'dict:ko:V=README.md';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=10', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    dskey = 'shape:idsv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    dskey = 'shape:zhz5bf';               @statements.insert_jzr_datasource.run { rowid: 't:ds:R=12', dskey, format: formats[ dskey ], path: paths[ dskey ], }
-    dskey = 'ucdb:rsgs';                  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=13', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ds:dict:meanings';              @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ds:dict:x:ko-Hang+Latn';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ds:dict:x:ja-Kan+Latn';         @statements.insert_jzr_datasource.run { rowid: 't:ds:R=3', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ja:kanjium';            @statements.insert_jzr_datasource.run { rowid: 't:ds:R=4', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ja:kanjium:aux';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=5', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ko:V=data-gov.csv';     @statements.insert_jzr_datasource.run { rowid: 't:ds:R=6', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ko:V=data-gov.json';    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=7', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ko:V=data-naver.csv';   @statements.insert_jzr_datasource.run { rowid: 't:ds:R=8', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ko:V=data-naver.json';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=9', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    # dskey = 'ds:dict:ko:V=README.md';        @statements.insert_jzr_datasource.run { rowid: 't:ds:R=10', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ds:shape:idsv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ds:shape:zhz5bf';               @statements.insert_jzr_datasource.run { rowid: 't:ds:R=12', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ds:ucdb:rsgs';                  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=13', dskey, format: formats[ dskey ], path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
   # _on_open_populate_verbs: ->
   #   paths = get_paths_and_formats()
-  #   dskey = 'dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
-  #   dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
+  #   dskey = 'ds:dict:meanings';          @statements.insert_jzr_datasource.run { rowid: 't:ds:R=1', dskey, path: paths[ dskey ], }
+  #   dskey = 'ds:dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, path: paths[ dskey ], }
   #   ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -845,13 +868,13 @@ class Jzr_db_adapter extends Dbric_std
         fields  = JSON.parse jfields
         entry   = fields[ 2 ]
         switch dskey
-          when 'dict:x:ko-Hang+Latn'        then yield from @triples_from_dict_x_ko_Hang_Latn       rowid_in, dskey, fields
-          when 'dict:meanings' then switch true
+          when 'ds:dict:x:ko-Hang+Latn'        then yield from @triples_from_dict_x_ko_Hang_Latn       rowid_in, dskey, fields
+          when 'ds:dict:meanings' then switch true
             when ( entry.startsWith 'py:' ) then yield from @triples_from_c_reading_zh_Latn_pinyin  rowid_in, dskey, fields
             when ( entry.startsWith 'ka:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hi:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hg:' ) then yield from @triples_from_c_reading_ko_Hang         rowid_in, dskey, fields
-          when 'shape:idsv2'                then yield from @triples_from_shape_idsv2               rowid_in, dskey, fields
+          when 'ds:shape:idsv2'                then yield from @triples_from_shape_idsv2               rowid_in, dskey, fields
         # yield from @get_triples rowid_in, dskey, jfields
         ;null
 
