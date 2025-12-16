@@ -228,6 +228,13 @@ class Jzr_db_adapter extends Dbric_std
       );"""
 
     #.......................................................................................................
+    SQL"""create view jzr_cjk_glyphranges as select
+        *
+      from jzr_glyphranges
+      where is_cjk
+      order by lo;"""
+
+    #.......................................................................................................
     SQL"""create table jzr_glyphsets (
         rowid       text    unique  not null,
         name        text    not null,
