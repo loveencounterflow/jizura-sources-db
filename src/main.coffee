@@ -1238,42 +1238,6 @@ class Jizura
     ;undefined
 
   #---------------------------------------------------------------------------------------------------------
-  populate_meaning_mirror_triples: ->
-    do =>
-      { total_row_count, } = ( @dba.prepare SQL"""
-        select
-            count(*) as total_row_count
-          from jzr_mirror_lines
-          where true
-            and ( dskey is 'dict:meanings' )
-            and ( jfields is not null ) -- NOTE: necessary
-            and ( not jfields->>'$[0]' regexp '^@glyphs' );""" ).get()
-      total = total_row_count * 2 ### NOTE estimate ###
-      help 'Ωjzrsdb__33', { total_row_count, total, } # { total_row_count: 40086, total: 80172 }
-    #.......................................................................................................
-    @dba.statements.populate_jzr_mirror_triples.run()
-    ;null
-
-  #---------------------------------------------------------------------------------------------------------
-  populate_shape_formula_mirror_triples: ->
-    @dba.statements.populate_jzr_mirror_triples.run()
-    ;null
-
-  #---------------------------------------------------------------------------------------------------------
-  populate_hangeul_syllables: ->
-    @dba.statements.populate_jzr_lang_hangeul_syllables.run()
-    #.......................................................................................................
-    ;null
-
-  # #---------------------------------------------------------------------------------------------------------
-  # _show_jzr_meta_uc_normalization_faults: ->
-  #   faulty_rows = ( @dba.prepare SQL"select * from _jzr_meta_uc_normalization_faults;" ).all()
-  #   warn 'Ωjzrsdb__34', reverse faulty_rows
-  #   # for row from
-  #   #.......................................................................................................
-  #   ;null
-
-  #---------------------------------------------------------------------------------------------------------
   show_counts: ->
     #.......................................................................................................
     do =>
