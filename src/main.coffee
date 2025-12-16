@@ -1372,9 +1372,47 @@ demo_read_dump = ->
   jzr.show_jzr_meta_faults()
   ;null
 
+#-----------------------------------------------------------------------------------------------------------
+demo_show_all_tables = ->
+  jzr = new Jizura()
+  relation_names = [
+    # '_jzr_meta_error_verb_faults'
+    # '_jzr_meta_kr_readings_unknown_verb_faults'
+    # '_jzr_meta_mirror_lines_whitespace_faults'
+    # '_jzr_meta_mirror_lines_with_errors'
+    # '_jzr_meta_uc_normalization_faults'
+    'jzr_all_triples'
+    'jzr_components'
+    'jzr_datasource_formats'
+    'jzr_datasources'
+    'jzr_glyphranges'
+    'jzr_glyphsets'
+    'jzr_lang_hang_syllables'
+    'jzr_lang_kr_readings_triples'
+    'jzr_mirror_lcodes'
+    'jzr_mirror_lines'
+    'jzr_mirror_triples_base'
+    'jzr_mirror_verbs'
+    'jzr_top_triples'
+    'jzr_triples'
+    ]
+  for relation_name in relation_names
+    table = {}
+    # statement = SQL"""select * from #{relation_name} order by random() limit 10;"""
+    statement = SQL"""select * from #{relation_name} limit 10;"""
+    count     = 0
+    for row from jzr.dba.walk statement
+      count++
+      table[ relation_name + " (#{count})" ] = row
+    echo reverse bold " #{relation_name} "
+    console.table table
+  ;null
 
 #===========================================================================================================
 if module is require.main then do =>
   demo()
+  demo_show_all_tables()
   # demo_read_dump()
   ;null
+
+
