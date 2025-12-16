@@ -893,7 +893,6 @@ class Jzr_db_adapter extends Dbric_std
             when ( entry.startsWith 'hi:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hg:' ) then yield from @triples_from_c_reading_ko_Hang         rowid_in, dskey, fields
           when 'ds:shape:idsv2'             then yield from @triples_from_shape_idsv2               rowid_in, dskey, fields
-        # yield from @get_triples rowid_in, dskey, jfields
         ;null
 
     #-------------------------------------------------------------------------------------------------------
