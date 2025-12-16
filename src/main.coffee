@@ -728,6 +728,12 @@ class Jzr_db_adapter extends Dbric_std
       { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:initial',           o: "NN", }
       { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:medial',            o: "NN", }
       { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:final',             o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:shape:ids:formula:shortest',        o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:shape:ids:formula:shortest:ast',    o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:shape:ids:formula:shortest:error',  o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:shape:ids:has-operator',            o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:shape:ids:has-component',           o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:shape:ids:components',              o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
@@ -944,33 +950,36 @@ class Jzr_db_adapter extends Dbric_std
     #   yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
     return null if ( not formula? ) or ( formula is '' )
     #.......................................................................................................
-    yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:shortest', o: formula, }
+    yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:formula:shortest', o: formula, }
     #.......................................................................................................
     error = null
     try formula_ast = @host.language_services.parse_idlx formula catch error
       o = JSON.stringify { ref: 'Ωjzrsdb__35', message: error.message, row: { rowid_in, dskey, s, formula, }, }
       warn "error: #{o}"
-      yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:shortest:error', o, }
+      yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:formula:shortest:error', o, }
     return null if error?
-    # #.......................................................................................................
-    # formula_json    = JSON.stringify formula_ast
-    # yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:shortest:ast', o: formula_json, }
-    # #.......................................................................................................
-    # { operators,
-    #   components, } = @host.language_services.operators_and_components_from_idlx formula_ast
-    # seen_operators  = new Set()
-    # seen_components = new Set()
-    # #.......................................................................................................
-    # for operator in operators
-    #   continue if seen_operators.has operator
-    #   seen_operators.add operator
-    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:has-operator', o: operator, }
-    # #.......................................................................................................
-    # for component in components
-    #   continue if seen_components.has component
-    #   seen_components.add component
-    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:has-component', o: component, }
-    # #.......................................................................................................
+    #.......................................................................................................
+    formula_json    = JSON.stringify formula_ast
+    yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:formula:shortest:ast', o: formula_json, }
+    #.......................................................................................................
+    { operators,
+      components, } = @host.language_services.operators_and_components_from_idlx formula_ast
+    seen_operators  = new Set()
+    seen_components = new Set()
+    #.......................................................................................................
+    components_json = JSON.stringify components
+    yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:components', o: components_json, }
+    #.......................................................................................................
+    for operator in operators
+      continue if seen_operators.has operator
+      seen_operators.add operator
+      yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:has-operator', o: operator, }
+    #.......................................................................................................
+    for component in components
+      continue if seen_components.has component
+      seen_components.add component
+      yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:has-component', o: component, }
+    #.......................................................................................................
     @state.timeit_progress?()
     ;null
 
