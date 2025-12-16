@@ -232,7 +232,7 @@ class Jzr_db_adapter extends Dbric_std
       constraint "Ωconstraint___7" check ( lo between 0x000000 and 0x10ffff ),
       constraint "Ωconstraint___8" check ( hi between 0x000000 and 0x10ffff ),
       constraint "Ωconstraint___9" check ( lo <= hi ),
-      constraint "Ωconstraint__10" check ( rowid regexp '^.*$')
+      constraint "Ωconstraint__10" check ( rowid regexp '^.*$' )
       );"""
 
     #.......................................................................................................
@@ -245,11 +245,11 @@ class Jzr_db_adapter extends Dbric_std
     #.......................................................................................................
     SQL"""create table jzr_glyphsets (
         rowid       text    unique  not null,
-        name        text    not null,
-        glyphrange  text    not null,
+        name        text            not null,
+        glyphrange  text            not null,
       primary key ( rowid ),
       constraint "Ωconstraint__11" foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
-      constraint "Ωconstraint__12" check ( rowid regexp '^.*$')
+      constraint "Ωconstraint__12" check ( rowid regexp '^.*$' )
       );"""
 
     #.......................................................................................................
