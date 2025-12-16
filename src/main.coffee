@@ -240,8 +240,8 @@ class Jzr_db_adapter extends Dbric_std
         name        text    not null,
         glyphrange  text    not null,
       primary key ( rowid ),
-      foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
-      constraint "Ωconstraint__10" check ( rowid regexp '^.*$')
+      constraint "Ωconstraint__10" foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
+      constraint "Ωconstraint__11" check ( rowid regexp '^.*$')
       );"""
 
     #.......................................................................................................
@@ -260,8 +260,8 @@ class Jzr_db_adapter extends Dbric_std
         format    text            not null,
         path      text            not null,
       primary key ( rowid ),
-      foreign key ( format ) references jzr_datasource_formats ( format ),
-      check ( rowid regexp '^t:ds:R=\\d+$') );"""
+      constraint "Ωconstraint__12" foreign key ( format ) references jzr_datasource_formats ( format ),
+      constraint "Ωconstraint__13" check ( rowid regexp '^t:ds:R=\\d+$') );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_lcodes (
@@ -269,8 +269,8 @@ class Jzr_db_adapter extends Dbric_std
         lcode     text    unique  not null,
         comment   text            not null,
       primary key ( rowid ),
-      check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
-      check ( rowid = 't:mr:lc:V=' || lcode ) );"""
+      constraint "Ωconstraint__14" check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
+      constraint "Ωconstraint__15" check ( rowid = 't:mr:lc:V=' || lcode ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_lines (
@@ -285,18 +285,17 @@ class Jzr_db_adapter extends Dbric_std
       -- primary key ( rowid ),                           -- ### NOTE Experimental: no explicit PK, instead generated `rowid` column
       -- check ( rowid regexp '^t:mr:ln:ds=.+:L=\\d+$'),  -- ### NOTE no need to check as value is generated ###
       unique ( dskey, line_nr ),
-      foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
+      constraint "Ωconstraint__16" foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_verbs (
-        rowid     text    unique  not null,
         rank      integer         not null default 1,
         s         text            not null,
         v         text    unique  not null,
         o         text            not null,
-      primary key ( rowid ),
-      check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ),
-      check ( rank > 0 ) );"""
+      primary key ( v ),
+      -- check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ),
+      constraint "Ωconstraint__17" check ( rank > 0 ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_triples_base (
@@ -306,10 +305,10 @@ class Jzr_db_adapter extends Dbric_std
         v         text            not null,
         o         json            not null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
+      constraint "Ωconstraint__18" check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
       -- unique ( ref, s, v, o )
-      foreign key ( ref ) references jzr_mirror_lines ( rowid ),
-      foreign key ( v   ) references jzr_mirror_verbs ( v ) );"""
+      constraint "Ωconstraint__19" foreign key ( ref ) references jzr_mirror_lines ( rowid ),
+      constraint "Ωconstraint__20" foreign key ( v   ) references jzr_mirror_verbs ( v ) );"""
 
     #.......................................................................................................
     SQL"""create trigger jzr_mirror_triples_register
@@ -333,10 +332,10 @@ class Jzr_db_adapter extends Dbric_std
         medial_latn     text          not null,
         final_latn      text          not null,
       primary key ( rowid ),
-      check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
+      constraint "Ωconstraint__21" check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
       -- unique ( ref, s, v, o )
-      -- foreign key ( ref ) references jzr_mirror_lines ( rowid )
-      -- foreign key ( syllable_hang ) references jzr_mirror_triples_base ( o ) )
+      -- constraint "Ωconstraint__22" foreign key ( ref ) references jzr_mirror_lines ( rowid )
+      -- constraint "Ωconstraint__23" foreign key ( syllable_hang ) references jzr_mirror_triples_base ( o ) )
       );"""
 
     #.......................................................................................................
@@ -353,13 +352,13 @@ class Jzr_db_adapter extends Dbric_std
     SQL"""create view jzr_lang_kr_readings_triples as
       select null as rowid, null as ref, null as s, null as v, null as o where false union all
       -- ...................................................................................................
-      select rowid, ref, syllable_hang, 'c:reading:ko-Latn',          syllable_latn   from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang, 'c:reading:ko-Latn:initial',  initial_latn    from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang, 'c:reading:ko-Latn:medial',   medial_latn     from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang, 'c:reading:ko-Latn:final',    final_latn      from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang, 'c:reading:ko-Hang:initial',  initial_hang    from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang, 'c:reading:ko-Hang:medial',   medial_hang     from jzr_lang_hang_syllables union all
-      select rowid, ref, syllable_hang, 'c:reading:ko-Hang:final',    final_hang      from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'v:c:reading:ko-Latn',          syllable_latn   from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'v:c:reading:ko-Latn:initial',  initial_latn    from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'v:c:reading:ko-Latn:medial',   medial_latn     from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'v:c:reading:ko-Latn:final',    final_latn      from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'v:c:reading:ko-Hang:initial',  initial_hang    from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'v:c:reading:ko-Hang:medial',   medial_hang     from jzr_lang_hang_syllables union all
+      select rowid, ref, syllable_hang, 'v:c:reading:ko-Hang:final',    final_hang      from jzr_lang_hang_syllables union all
       -- ...................................................................................................
       select null, null, null, null, null where false
       ;"""
@@ -381,11 +380,11 @@ class Jzr_db_adapter extends Dbric_std
       union all
       select tb1.rowid, tb1.ref, vb1.rank, tb1.s, tb1.v, tb1.o from jzr_mirror_triples_base as tb1
       join jzr_mirror_verbs as vb1 using ( v )
-      where vb1.v like 'c:%'
+      where vb1.v like 'v:c:%'
       -- ...................................................................................................
       union all
       select tb2.rowid, tb2.ref, vb2.rank, tb2.s, kr.v, kr.o from jzr_mirror_triples_base as tb2
-      join jzr_lang_kr_readings_triples as kr on ( tb2.v = 'c:reading:ko-Hang' and tb2.o = kr.s )
+      join jzr_lang_kr_readings_triples as kr on ( tb2.v = 'v:c:reading:ko-Hang' and tb2.o = kr.s )
       join jzr_mirror_verbs as vb2 on ( kr.v = vb2.v )
       -- ...................................................................................................
       union all
@@ -410,10 +409,10 @@ class Jzr_db_adapter extends Dbric_std
         glyph     text            not null,
         component text            not null,
       primary key ( rowid ),
-      foreign key ( ref ) references jzr_mirror_triples_base ( rowid ),
-      check ( ( length( glyph     ) = 1 ) or ( glyph      regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
-      check ( ( length( component ) = 1 ) or ( component  regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
-      check ( rowid regexp '^.*$' )
+      constraint "Ωconstraint__24" foreign key ( ref ) references jzr_mirror_triples_base ( rowid ),
+      constraint "Ωconstraint__25" check ( ( length( glyph     ) = 1 ) or ( glyph      regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      constraint "Ωconstraint__26" check ( ( length( component ) = 1 ) or ( component  regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      constraint "Ωconstraint__27" check ( rowid regexp '^.*$' )
       );"""
 
 
@@ -550,7 +549,7 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     insert_jzr_mirror_verb: SQL"""
-      insert into jzr_mirror_verbs ( rowid, rank, s, v, o ) values ( $rowid, $rank, $s, $v, $o )
+      insert into jzr_mirror_verbs ( rank, s, v, o ) values ( $rank, $s, $v, $o )
         -- on conflict ( rowid ) do update set rank = excluded.rank, s = excluded.s, v = excluded.v, o = excluded.o
         ;"""
 
@@ -621,11 +620,11 @@ class Jzr_db_adapter extends Dbric_std
             coalesce( mtf.o, '' )                 as final_latn
           from jzr_mirror_triples_base             as mt
           left join disassemble_hangeul( mt.o )    as dh
-          left join jzr_mirror_triples_base as mti on ( mti.s = dh.initial and mti.v = 'x:ko-Hang+Latn:initial' )
-          left join jzr_mirror_triples_base as mtm on ( mtm.s = dh.medial  and mtm.v = 'x:ko-Hang+Latn:medial'  )
-          left join jzr_mirror_triples_base as mtf on ( mtf.s = dh.final   and mtf.v = 'x:ko-Hang+Latn:final'   )
+          left join jzr_mirror_triples_base as mti on ( mti.s = dh.initial and mti.v = 'v:x:ko-Hang+Latn:initial' )
+          left join jzr_mirror_triples_base as mtm on ( mtm.s = dh.medial  and mtm.v = 'v:x:ko-Hang+Latn:medial'  )
+          left join jzr_mirror_triples_base as mtf on ( mtf.s = dh.final   and mtf.v = 'v:x:ko-Hang+Latn:final'   )
           where true
-            and ( mt.v = 'c:reading:ko-Hang' )
+            and ( mt.v = 'v:c:reading:ko-Hang' )
           order by mt.o
         -- on conflict ( rowid         ) do nothing
         /* ### NOTE `on conflict` needed because we log all actually occurring readings of all characters */
@@ -669,7 +668,7 @@ class Jzr_db_adapter extends Dbric_std
                                                                                                          ###
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lcodes: ->
-    debug 'Ωjzrsdb__11', '_on_open_populate_jzr_mirror_lcodes'
+    debug 'Ωjzrsdb__28', '_on_open_populate_jzr_mirror_lcodes'
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=B', lcode: 'B', comment: 'blank line',    }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=C', lcode: 'C', comment: 'comment line',  }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=D', lcode: 'D', comment: 'data line',     }
@@ -681,35 +680,35 @@ class Jzr_db_adapter extends Dbric_std
   _on_open_populate_jzr_mirror_verbs: ->
     ### NOTE
     in verbs, initial component indicates type of subject:
-      `c:` is for subjects that are CJK characters
-      `x:` is used for unclassified subjects (possibly to be refined in the future)
+      `v:c:` is for subjects that are CJK characters
+      `v:x:` is used for unclassified subjects (possibly to be refined in the future)
     ###
-    debug 'Ωjzrsdb__12', '_on_open_populate_jzr_mirror_verbs'
+    debug 'Ωjzrsdb__29', '_on_open_populate_jzr_mirror_verbs'
     rows = [
-      { rowid: 't:mr:vb:V=testing:unused',              rank: 2, s: "NN", v: 'testing:unused',             o: "NN", }
-      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:initial',      rank: 2, s: "NN", v: 'x:ko-Hang+Latn:initial',     o: "NN", }
-      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:medial',       rank: 2, s: "NN", v: 'x:ko-Hang+Latn:medial',      o: "NN", }
-      { rowid: 't:mr:vb:V=x:ko-Hang+Latn:final',        rank: 2, s: "NN", v: 'x:ko-Hang+Latn:final',       o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:zh-Latn-pinyin',    rank: 1, s: "NN", v: 'c:reading:zh-Latn-pinyin',   o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Kan',          rank: 1, s: "NN", v: 'c:reading:ja-x-Kan',         o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Hir',          rank: 1, s: "NN", v: 'c:reading:ja-x-Hir',         o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Kat',          rank: 1, s: "NN", v: 'c:reading:ja-x-Kat',         o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Latn',         rank: 1, s: "NN", v: 'c:reading:ja-x-Latn',        o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Hir+Latn',     rank: 1, s: "NN", v: 'c:reading:ja-x-Hir+Latn',    o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ja-x-Kat+Latn',     rank: 1, s: "NN", v: 'c:reading:ja-x-Kat+Latn',    o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang',           rank: 1, s: "NN", v: 'c:reading:ko-Hang',          o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn',           rank: 1, s: "NN", v: 'c:reading:ko-Latn',          o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang:initial',   rank: 2, s: "NN", v: 'c:reading:ko-Hang:initial',  o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang:medial',    rank: 2, s: "NN", v: 'c:reading:ko-Hang:medial',   o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Hang:final',     rank: 2, s: "NN", v: 'c:reading:ko-Hang:final',    o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn:initial',   rank: 2, s: "NN", v: 'c:reading:ko-Latn:initial',  o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn:medial',    rank: 2, s: "NN", v: 'c:reading:ko-Latn:medial',   o: "NN", }
-      { rowid: 't:mr:vb:V=c:reading:ko-Latn:final',     rank: 2, s: "NN", v: 'c:reading:ko-Latn:final',    o: "NN", }
-      { rowid: 't:mr:vb:V=c:shape:ids:shortest',        rank: 1, s: "NN", v: 'c:shape:ids:shortest',       o: "NN", }
-      { rowid: 't:mr:vb:V=c:shape:ids:shortest:ast',    rank: 2, s: "NN", v: 'c:shape:ids:shortest:ast',   o: "NN", }
-      { rowid: 't:mr:vb:V=c:shape:ids:shortest:error',  rank: 2, s: "NN", v: 'c:shape:ids:shortest:error', o: "NN", }
-      # { rowid: 't:mr:vb:V=c:shape:ids:has-operator',    rank: 2, s: "NN", v: 'c:shape:ids:has-operator',   o: "NN", }
-      # { rowid: 't:mr:vb:V=c:shape:ids:has-component',   rank: 2, s: "NN", v: 'c:shape:ids:has-component',  o: "NN", }
+      { rank: 2, s: "NN", v: 'v:testing:unused',             o: "NN", }
+      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:initial',     o: "NN", }
+      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:medial',      o: "NN", }
+      { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:final',       o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:zh-Latn-pinyin',   o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kan',         o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Hir',         o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kat',         o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Latn',        o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Hir+Latn',    o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ja-x-Kat+Latn',    o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ko-Hang',          o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:reading:ko-Latn',          o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:initial',  o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:medial',   o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Hang:final',    o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:initial',  o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:medial',   o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:reading:ko-Latn:final',    o: "NN", }
+      { rank: 1, s: "NN", v: 'v:c:shape:ids:shortest',       o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:shape:ids:shortest:ast',   o: "NN", }
+      { rank: 2, s: "NN", v: 'v:c:shape:ids:shortest:error', o: "NN", }
+      # { rank: 2, s: "NN", v: 'v:c:shape:ids:has-operator',   o: "NN", }
+      # { rank: 2, s: "NN", v: 'v:c:shape:ids:has-component',  o: "NN", }
       ]
     for row in rows
       @statements.insert_jzr_mirror_verb.run row
@@ -717,7 +716,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasource_formats: ->
-    debug 'Ωjzrsdb__13', '_on_open_populate_jzr_datasource_formats'
+    debug 'Ωjzrsdb__30', '_on_open_populate_jzr_datasource_formats'
     @statements.insert_jzr_datasource_format.run { format: 'tsv',       comment: 'NN', }
     @statements.insert_jzr_datasource_format.run { format: 'md:table',  comment: 'NN', }
     @statements.insert_jzr_datasource_format.run { format: 'csv',       comment: 'NN', }
@@ -728,7 +727,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
-    debug 'Ωjzrsdb__14', '_on_open_populate_jzr_datasources'
+    debug 'Ωjzrsdb__31', '_on_open_populate_jzr_datasources'
     { paths
       formats, } = get_paths_and_formats()
     # dskey = 'dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
@@ -756,19 +755,19 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lines: ->
-    debug 'Ωjzrsdb__15', '_on_open_populate_jzr_mirror_lines'
+    debug 'Ωjzrsdb__32', '_on_open_populate_jzr_mirror_lines'
     @statements.populate_jzr_mirror_lines.run()
     ;null
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_glyphrange: ->
-    debug 'Ωjzrsdb__16', '_on_open_populate_jzr_glyphrange'
+    debug 'Ωjzrsdb__33', '_on_open_populate_jzr_glyphrange'
     @statements.populate_jzr_glyphrange.run()
     ;null
 
   #---------------------------------------------------------------------------------------------------------
   trigger_on_before_insert: ( name, fields... ) ->
-    # debug 'Ωjzrsdb__17', { name, fields, }
+    # debug 'Ωjzrsdb__34', { name, fields, }
     @state.most_recent_inserted_row = { name, fields, }
     ;null
 
@@ -877,7 +876,7 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   triples_from_dict_x_ko_Hang_Latn: ( rowid_in, dskey, [ role, s, o, ] ) ->
     ref       = rowid_in
-    v         = "x:ko-Hang+Latn:#{role}"
+    v         = "v:x:ko-Hang+Latn:#{role}"
     o        ?= ''
     yield { rowid_out: @next_triple_rowid, ref, s, v, o, }
     @state.timeit_progress?()
@@ -886,7 +885,7 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   triples_from_c_reading_zh_Latn_pinyin: ( rowid_in, dskey, [ _, s, entry, ] ) ->
     ref       = rowid_in
-    v         = 'c:reading:zh-Latn-pinyin'
+    v         = 'v:c:reading:zh-Latn-pinyin'
     for reading from @host.language_services.extract_atonal_zh_readings entry
       yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
     @state.timeit_progress?()
@@ -896,11 +895,11 @@ class Jzr_db_adapter extends Dbric_std
   triples_from_c_reading_ja_x_Kan: ( rowid_in, dskey, [ _, s, entry, ] ) ->
     ref       = rowid_in
     if entry.startsWith 'ka:'
-      v_x_Kan   = 'c:reading:ja-x-Kat'
-      v_Latn    = 'c:reading:ja-x-Kat+Latn'
+      v_x_Kan   = 'v:c:reading:ja-x-Kat'
+      v_Latn    = 'v:c:reading:ja-x-Kat+Latn'
     else
-      v_x_Kan   = 'c:reading:ja-x-Hir'
-      v_Latn    = 'c:reading:ja-x-Hir+Latn'
+      v_x_Kan   = 'v:c:reading:ja-x-Hir'
+      v_Latn    = 'v:c:reading:ja-x-Hir+Latn'
     for reading from @host.language_services.extract_ja_readings entry
       yield { rowid_out: @next_triple_rowid, ref, s, v: v_x_Kan, o: reading, }
       # for transcription from @host.language_services.romanize_ja_kana reading
@@ -913,7 +912,7 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   triples_from_c_reading_ko_Hang: ( rowid_in, dskey, [ _, s, entry, ] ) ->
     ref       = rowid_in
-    v         = 'c:reading:ko-Hang'
+    v         = 'v:c:reading:ko-Hang'
     for reading from @host.language_services.extract_hg_readings entry
       yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
     @state.timeit_progress?()
@@ -926,17 +925,17 @@ class Jzr_db_adapter extends Dbric_std
     #   yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
     return null if ( not formula? ) or ( formula is '' )
     #.......................................................................................................
-    yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:shortest', o: formula, }
+    yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:shortest', o: formula, }
     #.......................................................................................................
     error = null
     try formula_ast = @host.language_services.parse_idlx formula catch error
-      o = JSON.stringify { ref: 'Ωjzrsdb__18', message: error.message, row: { rowid_in, dskey, s, formula, }, }
+      o = JSON.stringify { ref: 'Ωjzrsdb__35', message: error.message, row: { rowid_in, dskey, s, formula, }, }
       warn "error: #{o}"
-      yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:shortest:error', o, }
+      yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:shortest:error', o, }
     return null if error?
     # #.......................................................................................................
     # formula_json    = JSON.stringify formula_ast
-    # yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:shortest:ast', o: formula_json, }
+    # yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:shortest:ast', o: formula_json, }
     # #.......................................................................................................
     # { operators,
     #   components, } = @host.language_services.operators_and_components_from_idlx formula_ast
@@ -946,12 +945,12 @@ class Jzr_db_adapter extends Dbric_std
     # for operator in operators
     #   continue if seen_operators.has operator
     #   seen_operators.add operator
-    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:has-operator', o: operator, }
+    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:has-operator', o: operator, }
     # #.......................................................................................................
     # for component in components
     #   continue if seen_components.has component
     #   seen_components.add component
-    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'c:shape:ids:has-component', o: component, }
+    #   yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:has-component', o: component, }
     # #.......................................................................................................
     @state.timeit_progress?()
     ;null
@@ -986,7 +985,7 @@ class Datasource_field_parser
 
   #---------------------------------------------------------------------------------------------------------
   walk: ->
-    debug 'Ωjzrsdb__19', "walk_file_lines:", { format: @format, dskey: @dskey, }
+    debug 'Ωjzrsdb__36', "walk_file_lines:", { format: @format, dskey: @dskey, }
     #.......................................................................................................
     method_name = 'walk_' + @format.replace /[^a-z]/gv, '_'
     method      = @[ method_name ] ? @_walk_no_such_parser
@@ -995,7 +994,7 @@ class Datasource_field_parser
 
   #---------------------------------------------------------------------------------------------------------
   _walk_no_such_parser: ->
-    message = "Ωjzrsdb__20 no parser found for format #{rpr @format}"
+    message = "Ωjzrsdb__37 no parser found for format #{rpr @format}"
     warn message
     yield { line_nr: 0, lcode: 'E', line: message, jfields: null, }
     for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
@@ -1035,7 +1034,7 @@ class Datasource_field_parser
           jfields = ( field.trim()                          for field in jfields )
           jfields = ( ( field.replace /^`(.+)`$/gv, '$1' )  for field in jfields )
           jfields = JSON.stringify jfields
-          # debug 'Ωjzrsdb__21', jfields
+          # debug 'Ωjzrsdb__38', jfields
       yield { line_nr, lcode, line, jfields, }
     ;null
 
@@ -1071,10 +1070,10 @@ class datasource_format_parser
     is_cjk = switch is_cjk_txt
       when 'true'   then 1
       when 'false'  then 0
-      else throw new Error "Ωjzrsdb__22 expected 'true' or 'false', got #{rpr is_cjk_txt}"
+      else throw new Error "Ωjzrsdb__39 expected 'true' or 'false', got #{rpr is_cjk_txt}"
     #.......................................................................................................
     unless ( match = lo_hi_txt.match lo_hi_re )?
-      throw new Error "Ωjzrsdb__23 expected a range literal like '0x01a6..0x10ff', got #{rpr lo_hi_txt}"
+      throw new Error "Ωjzrsdb__40 expected a range literal like '0x01a6..0x10ff', got #{rpr lo_hi_txt}"
     lo  = parseInt match.groups.lo, 16
     hi  = parseInt match.groups.hi, 16
     #.......................................................................................................
@@ -1151,7 +1150,7 @@ class Language_services
     R.delete 'null'
     R.delete '@null'
     hangeul = [ R..., ].join ''
-    # debug 'Ωjzrsdb__24', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
+    # debug 'Ωjzrsdb__41', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
     return [ R..., ]
 
   #---------------------------------------------------------------------------------------------------------
@@ -1159,11 +1158,11 @@ class Language_services
     cfg = {}
     return @_TMP_kana.toRomaji entry, cfg
     # ### systematic name more like `..._ja_x_kan_latn()` ###
-    # help 'Ωdjkr__25', toHiragana  'ラーメン',       { convertLongVowelMark: false, }
-    # help 'Ωdjkr__26', toHiragana  'ラーメン',       { convertLongVowelMark: true, }
-    # help 'Ωdjkr__27', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
-    # help 'Ωdjkr__28', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
-    # help 'Ωdjkr__29', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
+    # help 'Ωdjkr__42', toHiragana  'ラーメン',       { convertLongVowelMark: false, }
+    # help 'Ωdjkr__43', toHiragana  'ラーメン',       { convertLongVowelMark: true, }
+    # help 'Ωdjkr__44', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
+    # help 'Ωdjkr__45', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
+    # help 'Ωdjkr__46', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
 
   #---------------------------------------------------------------------------------------------------------
   parse_idlx: ( formula ) -> IDLX.parse formula
@@ -1173,7 +1172,7 @@ class Language_services
     switch type = type_of formula
       when 'text'   then  formula_ast = @parse_idlx formula
       when 'list'   then  formula_ast =             formula
-      else throw new Error "Ωjzrsdb__30 expected a text or a list, got a #{type}"
+      else throw new Error "Ωjzrsdb__47 expected a text or a list, got a #{type}"
     operators   = []
     components  = []
     separate    = ( list ) ->
@@ -1221,18 +1220,18 @@ class Jizura
     if @dba.is_fresh
     ### TAINT move to Jzr_db_adapter together with try/catch ###
       try
-        @populate_meaning_mirror_triples()
+        @dba.statements.populate_jzr_mirror_triples.run()
       catch cause
         fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__31 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb__48 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
       try
-        @populate_hangeul_syllables()
+        @dba.statements.populate_jzr_lang_hangeul_syllables.run()
       catch cause
         fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__32 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb__49 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
     #.......................................................................................................
     ;undefined
@@ -1249,7 +1248,7 @@ class Jizura
           right join  jzr_mirror_verbs        as mv using ( v )
         group by v
         order by count desc, v;"""
-      echo ( grey 'Ωjzrsdb__35' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__50' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
@@ -1262,7 +1261,7 @@ class Jizura
           right join  jzr_mirror_verbs  as mv using ( v )
         group by v
         order by count desc, v;"""
-      echo ( grey 'Ωjzrsdb__36' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__51' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
@@ -1271,7 +1270,7 @@ class Jizura
         select dskey, count(*) as count from jzr_mirror_lines group by dskey union all
         select '*',   count(*) as count from jzr_mirror_lines
         order by count desc;"""
-      echo ( grey 'Ωjzrsdb__37' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__52' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       counts = Object.fromEntries ( [ dskey, { count, }, ] for { dskey, count, } in counts )
       console.table counts
@@ -1281,10 +1280,10 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     if ( faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all() ).length > 0
-      echo 'Ωjzrsdb__38', red reverse bold " found some faults: "
+      echo 'Ωjzrsdb__53', red reverse bold " found some faults: "
       console.table faulty_rows
     else
-      echo 'Ωjzrsdb__39', lime reverse bold " (no faults) "
+      echo 'Ωjzrsdb__54', lime reverse bold " (no faults) "
     #.......................................................................................................
     ;null
 
@@ -1307,16 +1306,16 @@ demo = ->
   # jzr._show_jzr_meta_uc_normalization_faults()
   jzr.show_counts()
   jzr.show_jzr_meta_faults()
-  # c:reading:ja-x-Hir
-  # c:reading:ja-x-Kat
+  # v:c:reading:ja-x-Hir
+  # v:c:reading:ja-x-Kat
   if false
     seen = new Set()
-    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Kat' order by o;"
+    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'v:c:reading:ja-x-Kat' order by o;"
       for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
         continue if seen.has part
         seen.add part
         echo part
-    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'c:reading:ja-x-Hir' order by o;"
+    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'v:c:reading:ja-x-Hir' order by o;"
       for part in ( reading.split /(.ー|.ゃ|.ゅ|.ょ|っ.|.)/v ) when part isnt ''
       # for part in ( reading.split /(.)/v ) when part isnt ''
         continue if seen.has part
@@ -1337,7 +1336,7 @@ demo_read_dump = ->
   path                            = PATH.resolve __dirname, '../jzr.dump.sql'
   jzr = new Jizura()
   jzr.dba.teardown { test: '*', }
-  debug 'Ωjzrsdb__40', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
+  debug 'Ωjzrsdb__55', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
   #.........................................................................................................
   jzr.show_counts()
   jzr.show_jzr_meta_faults()
