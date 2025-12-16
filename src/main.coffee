@@ -430,7 +430,16 @@ class Jzr_db_adapter extends Dbric_std
       order by s, v, o
       ;"""
 
-    #=======================================================================================================
+    # #=======================================================================================================
+    # SQL"""create table jzr_formulas (
+    #     rowid     text    unique  not null,
+    #     ref       text            not null,
+    #     glyph     text            not null,
+    #     formula   text            not null,
+
+    #   );"""
+
+    #.......................................................................................................
     SQL"""create table jzr_components (
         rowid     text    unique  not null,
         ref       text            not null,
