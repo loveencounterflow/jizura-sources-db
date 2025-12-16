@@ -9,10 +9,11 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.17.1",
+  "packageManager": "pnpm@10.26.0",
   "dependencies": {
     "better-sqlite3": "^12.4.6",
     "bricabrac-sfmodules": "^0.20.0",
+    "csv-stringify": "^6.6.0",
     "guy": "^14.2.0",
     "hangul-disassemble": "^0.5.2",
     "mojikura-idl": "^2.1.6",
