@@ -1417,19 +1417,23 @@ demo_show_all_tables = ->
 demo_csv_output = ->
   CSV   = require 'csv-stringify/sync'
   jzr   = new Jizura()
+  wout  = ( P... ) -> process.stdout.write P...; process.stdout.write '\n' ;null
+  werr  = ( P... ) -> process.stderr.write P...; process.stderr.write '\n' ;null
   query = process.argv[ 2 ] ? null
   if ( not query? ) or ( query is '' )
-    warn "Ωjzrsdb__37 no query given"
+    werr reverse red " Ωjzrsdb__37 no query given "
+    process.exit 111
     return null
   rows  = jzr.dba.get_all query
-  process.stdout.write CSV.stringify rows
+  debug 'Ωjzrsdb__28', rows.columns
+  wout CSV.stringify rows
   ;null
 
 
 #===========================================================================================================
 if module is require.main then do =>
   # demo_read_dump()
-  demo()
+  # demo()
   # demo_show_all_tables()
   demo_csv_output()
   ;null

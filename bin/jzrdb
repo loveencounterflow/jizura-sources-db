@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# set -euo pipefail
+# set -eo pipefail
+
+home="$(realpath "$(realpath "${BASH_SOURCE[0]}" | xargs dirname)"/..)"; cd "$home"
+
+#...........................................................................................................
+path_to_pspg=pspg
+
+#...........................................................................................................
+if command -v nodexh &>/dev/null; then
+  path_to_node=nodexh
+else
+  path_to_node=node
+fi
+
+#...........................................................................................................
+pipe_or_fail() {
+  tmp=$(mktemp) || return 1
+
+  # Split arguments at --
+  set -- "$@" --
+  prod=
+  cons=
+  # mode=prod
+
+  while [ "$#" -gt 0 ]; do
+    case $1 in
+      --)
+        # mode=cons
+        shift
+        break
+        ;;
+      *)
+        prod="$prod \"$1\""
+        shift
+        ;;
+    esac
+  done
+
+  while [ "$#" -gt 0 ]; do
+    cons="$cons \"$1\""
+    shift
+  done
+
+  # Run producer
+  if sh -c "$prod" >"$tmp"; then
+    sh -c "$cons" <"$tmp"
+    rc=$?
+  else
+    rc=1
+  fi
+
+  rm -f "$tmp"
+  return "$rc"
+}
+
+
+#...........................................................................................................
+pipe_or_fail "$path_to_node" ./lib/main.js "$@" -- "$path_to_pspg" -s6 --csv --csv-header=on --double-header
+
