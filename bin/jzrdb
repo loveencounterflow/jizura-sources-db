@@ -14,43 +14,42 @@ else
   path_to_node=node
 fi
 
-#...........................................................................................................
+#-----------------------------------------------------------------------------------------------------------
 pipe_or_fail() {
+  local tmp rc
   tmp=$(mktemp) || return 1
-
-  # Split arguments at --
-  set -- "$@" --
-  prod=
-  cons=
-  # mode=prod
-
-  while [ "$#" -gt 0 ]; do
-    case $1 in
-      --)
-        # mode=cons
-        shift
-        break
-        ;;
-      *)
-        prod="$prod \"$1\""
-        shift
-        ;;
-    esac
+  #.........................................................................................................
+  local -a prod=()
+  local -a cons=()
+  local mode=prod
+  #.........................................................................................................
+  for arg in "$@"; do
+    if [[ $arg == -- && $mode == prod ]]; then
+      mode=cons
+      continue
+    fi
+    if [[ $mode == prod ]]; then
+      prod+=("$arg")
+    else
+      cons+=("$arg")
+    fi
   done
-
-  while [ "$#" -gt 0 ]; do
-    cons="$cons \"$1\""
-    shift
-  done
-
-  # Run producer
-  if sh -c "$prod" >"$tmp"; then
-    sh -c "$cons" <"$tmp"
+  #.........................................................................................................
+  # sanity check
+  if ((${#prod[@]} == 0 || ${#cons[@]} == 0)); then
+    echo "pipe_or_fail: missing producer or consumer" >&2
+    rm -f "$tmp"
+    return 2
+  fi
+  #.........................................................................................................
+  # run producer
+  if "${prod[@]}" >"$tmp"; then
+    "${cons[@]}" <"$tmp"
     rc=$?
   else
-    rc=1
+    rc=$?
   fi
-
+  #.........................................................................................................
   rm -f "$tmp"
   return "$rc"
 }
@@ -58,4 +57,5 @@ pipe_or_fail() {
 
 #...........................................................................................................
 pipe_or_fail "$path_to_node" ./lib/main.js "$@" -- "$path_to_pspg" -s6 --csv --csv-header=on --double-header
+# "$path_to_node" ./lib/main.js "$@"
 

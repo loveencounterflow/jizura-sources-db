@@ -1417,15 +1417,17 @@ demo_show_all_tables = ->
 demo_csv_output = ->
   CSV   = require 'csv-stringify/sync'
   jzr   = new Jizura()
-  wout  = ( P... ) -> process.stdout.write P...; process.stdout.write '\n' ;null
-  werr  = ( P... ) -> process.stderr.write P...; process.stderr.write '\n' ;null
+  wout  = ( P... ) -> process.stdout.write P...;                            ;null
+  woutn = ( P... ) -> process.stdout.write P...; process.stdout.write '\n'  ;null
+  werr  = ( P... ) -> process.stderr.write P...;                            ;null
+  werrn = ( P... ) -> process.stderr.write P...; process.stderr.write '\n'  ;null
   query = process.argv[ 2 ] ? null
   if ( not query? ) or ( query is '' )
-    werr reverse red " Ωjzrsdb__37 no query given "
+    werrn reverse red " Ωjzrsdb__37 no query given "
     process.exit 111
     return null
   rows  = jzr.dba.get_all query
-  debug 'Ωjzrsdb__28', rows.columns
+  wout CSV.stringify [ ( column.name for column in jzr.dba.state.columns ), ]
   wout CSV.stringify rows
   ;null
 
