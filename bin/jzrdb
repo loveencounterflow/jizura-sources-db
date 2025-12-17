@@ -5,14 +5,22 @@
 home="$(realpath "$(realpath "${BASH_SOURCE[0]}" | xargs dirname)"/..)"; cd "$home"
 
 #...........................................................................................................
-path_to_pspg=pspg
+# select NodeJS executable:
+if command -v nodexh &>/dev/null; then
+  node_cmd=nodexh;
+else
+  node_cmd=node;
+  fi
 
 #...........................................................................................................
-if command -v nodexh &>/dev/null; then
-  path_to_node=nodexh
+# select pager:
+if command -v pspg &>/dev/null; then
+  pager_cmd=(pspg -s6 --csv --csv-header=on --double-header);
+elif command -v "${PAGER:-}" >/dev/null 2>&1; then
+    pager_cmd=("$PAGER")
 else
-  path_to_node=node
-fi
+  pager_cmd=(less -SRN#5);
+  fi
 
 #-----------------------------------------------------------------------------------------------------------
 pipe_or_fail() {
@@ -56,6 +64,5 @@ pipe_or_fail() {
 
 
 #...........................................................................................................
-pipe_or_fail "$path_to_node" ./lib/main.js "$@" -- "$path_to_pspg" -s6 --csv --csv-header=on --double-header
-# "$path_to_node" ./lib/main.js "$@"
+pipe_or_fail "$node_cmd" ./lib/main.js "$@" -- "${pager_cmd[@]}"
 
