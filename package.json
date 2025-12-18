@@ -13,9 +13,11 @@
   "dependencies": {
     "better-sqlite3": "^12.4.6",
     "bricabrac-sfmodules": "^0.20.0",
+    "cli-table3": "^0.6.5",
     "csv-stringify": "^6.6.0",
     "guy": "^14.2.0",
     "hangul-disassemble": "^0.5.2",
+    "mixa": "github:loveencounterflow/mixa#9712a4e5f79265d75b5be5ccd8a86bba3eb54739",
     "mojikura-idl": "^2.1.6",
     "wanakana": "^5.3.1"
   }
