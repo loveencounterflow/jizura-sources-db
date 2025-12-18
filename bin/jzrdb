@@ -2,10 +2,14 @@
 # set -euo pipefail
 # set -eo pipefail
 
+cwd=$(pwd)
 home="$(realpath "$(realpath "${BASH_SOURCE[0]}" | xargs dirname)"/..)"; cd "$home"
+source bin/_lxu-utils
+
 
 #...........................................................................................................
 # select NodeJS executable:
+# set +e; cmd=$( command -v nodexh|| command -v node|| enocmd 'node' ); set -e
 if command -v nodexh &>/dev/null; then
   node_cmd=nodexh;
 else
@@ -23,46 +27,18 @@ else
   fi
 
 #-----------------------------------------------------------------------------------------------------------
-pipe_or_fail() {
-  local tmp rc
-  tmp=$(mktemp) || return 1
-  #.........................................................................................................
-  local -a prod=()
-  local -a cons=()
-  local mode=prod
-  #.........................................................................................................
-  for arg in "$@"; do
-    if [[ $arg == -- && $mode == prod ]]; then
-      mode=cons
-      continue
-    fi
-    if [[ $mode == prod ]]; then
-      prod+=("$arg")
-    else
-      cons+=("$arg")
-    fi
-  done
-  #.........................................................................................................
-  # sanity check
-  if ((${#prod[@]} == 0 || ${#cons[@]} == 0)); then
-    echo "pipe_or_fail: missing producer or consumer" >&2
-    rm -f "$tmp"
-    return 2
-  fi
-  #.........................................................................................................
-  # run producer
-  if "${prod[@]}" >"$tmp"; then
-    "${cons[@]}" <"$tmp"
-    rc=$?
-  else
-    rc=$?
-  fi
-  #.........................................................................................................
-  rm -f "$tmp"
-  return "$rc"
-}
+echo "using $node_cmd"
+echo "using ${pager_cmd[*]}"
 
 
 #...........................................................................................................
-pipe_or_fail "$node_cmd" ./lib/main.js "$@" -- "${pager_cmd[@]}"
+### TAINT does setting `cwd` work?
+# paged output:
+CWD="$cwd" pipe_or_fail "$node_cmd" ./lib/cli.js "$@" -- "${pager_cmd[@]}"
+# unpaged output:
+# CWD="$cwd" "$node_cmd" ./lib/cli.js "$@"
+
+# thx to https://unix.stackexchange.com/a/129077/280204
+# cwd="$cwd" $cmd lib/cli.js "$@"
+# node lib/cli.js "$*"
 

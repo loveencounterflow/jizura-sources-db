@@ -1338,106 +1338,16 @@ class Jizura
     #.......................................................................................................
     ;null
 
-#===========================================================================================================
-###
-
-oooooooooo.   oooooooooooo ooo        ooooo   .oooooo.
-`888'   `Y8b  `888'     `8 `88.       .888'  d8P'  `Y8b
- 888      888  888          888b     d'888  888      888
- 888      888  888oooo8     8 Y88. .P  888  888      888
- 888      888  888    "     8  `888'   888  888      888
- 888     d88'  888       o  8    Y     888  `88b    d88'
-o888bood8P'   o888ooooood8 o8o        o888o  `Y8bood8P'
-
-                                                                                                         ###
-#===========================================================================================================
-demo = ->
-  jzr = new Jizura()
-  #.........................................................................................................
-  # jzr._show_jzr_meta_uc_normalization_faults()
-  jzr.show_counts()
-  jzr.show_jzr_meta_faults()
-  # v:c:reading:ja-x-Hir
-  # v:c:reading:ja-x-Kat
-  if false
-    seen = new Set()
-    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'v:c:reading:ja-x-Kat' order by o;"
-      for part in ( reading.split /(.ー|.ャ|.ュ|.ョ|ッ.|.)/v ) when part isnt ''
-        continue if seen.has part
-        seen.add part
-        echo part
-    for { reading, } from jzr.dba.walk SQL"select distinct( o ) as reading from jzr_triples where v = 'v:c:reading:ja-x-Hir' order by o;"
-      for part in ( reading.split /(.ー|.ゃ|.ゅ|.ょ|っ.|.)/v ) when part isnt ''
-      # for part in ( reading.split /(.)/v ) when part isnt ''
-        continue if seen.has part
-        seen.add part
-        echo part
-  #.........................................................................................................
-  ;null
-
-#-----------------------------------------------------------------------------------------------------------
-demo_read_dump = ->
-  { Benchmarker,          } = SFMODULES.unstable.require_benchmarking()
-  # { nameit,               } = SFMODULES.require_nameit()
-  benchmarker = new Benchmarker()
-  timeit = ( P... ) -> benchmarker.timeit P...
-  { Undumper,                   } = SFMODULES.require_sqlite_undumper()
-  { walk_lines_with_positions,  } = SFMODULES.unstable.require_fast_linereader()
-  { wc,                         } = SFMODULES.require_wc()
-  path                            = PATH.resolve __dirname, '../jzr.dump.sql'
-  jzr = new Jizura()
-  jzr.dba.teardown { test: '*', }
-  debug 'Ωjzrsdb__55', Undumper.undump { db: jzr.dba, path, mode: 'fast', }
-  #.........................................................................................................
-  jzr.show_counts()
-  jzr.show_jzr_meta_faults()
-  ;null
-
-#-----------------------------------------------------------------------------------------------------------
-demo_show_all_tables = ->
-  jzr = new Jizura()
-  relation_names = ( row.name for row from jzr.dba.walk jzr.dba.statements.std_get_relations )
-  relation_names = ( name for name in relation_names when not name.startsWith 'std_' )
-  relation_names = ( name for name in relation_names when not name.startsWith '_jzr_meta_' )
-  relation_names = ( name for name in relation_names when not name.startsWith 'jzr_meta_' )
-  #.........................................................................................................
-  for relation_name in relation_names
-    table = {}
-    row_count = ( jzr.dba.get_first SQL"select count(*) as count from #{relation_name};" ).count
-    statement = SQL"""select * from #{relation_name} order by random() limit 10;"""
-    count     = 0
-    for row from jzr.dba.walk statement
-      count++
-      table[ relation_name + " (#{count})" ] = row
-    echo reverse bold " #{relation_name} "
-    console.table table
-  ;null
-
-#-----------------------------------------------------------------------------------------------------------
-demo_csv_output = ->
-  CSV   = require 'csv-stringify/sync'
-  jzr   = new Jizura()
-  wout  = ( P... ) -> process.stdout.write P...;                            ;null
-  woutn = ( P... ) -> process.stdout.write P...; process.stdout.write '\n'  ;null
-  werr  = ( P... ) -> process.stderr.write P...;                            ;null
-  werrn = ( P... ) -> process.stderr.write P...; process.stderr.write '\n'  ;null
-  query = process.argv[ 2 ] ? null
-  if ( not query? ) or ( query is '' )
-    werrn reverse red " Ωjzrsdb__37 no query given "
-    process.exit 111
-    return null
-  rows  = jzr.dba.get_all query
-  wout CSV.stringify [ ( column.name for column in jzr.dba.state.columns ), ]
-  wout CSV.stringify rows
-  ;null
-
 
 #===========================================================================================================
-if module is require.main then do =>
-  # demo_read_dump()
-  # demo()
-  # demo_show_all_tables()
-  demo_csv_output()
-  ;null
-
+module.exports = do =>
+  internals = {
+    Jzr_db_adapter,
+    Datasource_field_parser,
+    datasource_format_parser,
+    Language_services,
+    get_paths_and_formats, }
+  return {
+    Jizura,
+    internals, }
 
