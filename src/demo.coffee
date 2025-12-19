@@ -60,7 +60,8 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
   from_bool,
   as_bool,              } = SFMODULES.unstable.require_dbric()
 { Jizura,               } = require './main'
-Table                     = require 'cli-table3'
+# Table                     = require 'cli-table3'
+Table                     = require '../../cli-table3'
 
 
 #===========================================================================================================
@@ -119,6 +120,72 @@ demo_read_dump = ->
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
+templates =
+  mytable:
+    horizontal_lines: false
+    # chars:
+      # 'top':            '═'
+      # 'top-mid':        '╤'
+      # 'top-left':       '╔'
+      # 'top-right':      '╗'
+      # 'bottom':         '═'
+      # 'bottom-mid':     '╧'
+      # 'bottom-left':    '╚'
+      # 'bottom-right':   '╝'
+      # 'left':           '║'
+      # 'left-mid':       '╟'
+      # 'right':          '║'
+      # 'right-mid':      '╢'
+    # colWidths:          [11, 5, 5]
+    # wordWrap:           true
+    # wrapOnWordBoundary: false
+
+    chars:
+      'top':            '─'
+      'top-mid':        '┬'
+      'top-left':       '┌'
+      'top-right':      '┐'
+      'bottom':         '─'
+      'bottom-mid':     '┴'
+      'bottom-left':    '└'
+      'bottom-right':   '┘'
+      'left':           '│'
+      'left-mid':       '├'
+      'mid':            '─'
+      'mid-mid':        '┼'
+      'right':          '│'
+      'right-mid':      '┤'
+      'middle':         '│'
+    # truncate:         '…'
+    # colWidths:        []
+    # rowHeights:       []
+    # colAligns:        []
+    # rowAligns:        []
+    style:
+      'padding-left':   1
+      'padding-right':  1
+      'head':           [ 'bold', 'brightYellow', 'bgBlue', ]
+      'border':         [ 'grey', ]
+      'compact':        false
+    head: []
+
+#===========================================================================================================
+class Mytable extends Table
+
+  #---------------------------------------------------------------------------------------------------------
+  constructor: ( cfg ) ->
+    cfg = { templates.mytable..., cfg..., }
+    super cfg
+    ;undefined
+
+  #---------------------------------------------------------------------------------------------------------
+  push: ( row ) ->
+    for cell, idx in row
+      # debug 'Ωjzrsdb___1', P
+      row[ idx ] = gold cell
+    return super row
+
+#-----------------------------------------------------------------------------------------------------------
 demo_show_all_tables = ->
   jzr = new Jizura()
   relation_names = ( row.name for row from jzr.dba.walk jzr.dba.statements.std_get_relations )
@@ -130,16 +197,17 @@ demo_show_all_tables = ->
     row_count   = ( jzr.dba.get_first SQL"select count(*) as count from #{relation_name};" ).count
     statement   = jzr.dba.prepare SQL"""select * from #{relation_name} order by random() limit 10;"""
     col_names   = ( column.name for column in jzr.dba.state.columns )
-    table       = new Table { head: [ '', col_names..., ], }
+    table       = new Mytable { head: [ '', col_names..., ], }
     count       = 0
     for row from jzr.dba.walk statement
       count++
-      debug 'Ωjzrsdb___2', row
-      debug 'Ωjzrsdb___3', col_names
-      debug 'Ωjzrsdb___4', ( row[ c ] for c in col_names )
+      # debug 'Ωjzrsdb___2', row
+      # debug 'Ωjzrsdb___3', col_names
+      # debug 'Ωjzrsdb___4', ( row[ c ] for c in col_names )
       table.push [ relation_name + " (#{count})", ( row[ c ] for c in col_names )..., ]
     echo reverse bold " #{relation_name} "
     echo table.toString()
+    return null # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
