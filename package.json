@@ -12,8 +12,7 @@
   "packageManager": "pnpm@10.26.0",
   "dependencies": {
     "better-sqlite3": "^12.4.6",
-    "bricabrac-sfmodules": "^0.20.0",
-    "cli-table3": "^0.6.5",
+    "bricabrac-sfmodules": "github:loveencounterflow/bricabrac-sfmodules#0a3315c",
     "csv-stringify": "^6.6.0",
     "guy": "^14.2.0",
     "hangul-disassemble": "^0.5.2",
