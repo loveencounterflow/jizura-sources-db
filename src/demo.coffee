@@ -31,7 +31,7 @@ GUY                       = require 'guy'
 # #-----------------------------------------------------------------------------------------------------------
 # Bsql3                     = require 'better-sqlite3'
 # #-----------------------------------------------------------------------------------------------------------
-SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
+SFMODULES                 = require 'bricabrac-sfmodules'
 # #...........................................................................................................
 # { Dbric,
 #   Dbric_std,
@@ -60,8 +60,7 @@ SFMODULES                 = require '../../hengist-NG/apps/bricabrac-sfmodules'
   from_bool,
   as_bool,              } = SFMODULES.unstable.require_dbric()
 { Jizura,               } = require './main'
-# Table                     = require 'cli-table3'
-Table                     = require '../../cli-table3'
+{ Table, }                = SFMODULES.require_cli_table3a()
 
 
 #===========================================================================================================
@@ -120,72 +119,6 @@ demo_read_dump = ->
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
-templates =
-  mytable:
-    horizontal_lines: false
-    # chars:
-      # 'top':            '═'
-      # 'top-mid':        '╤'
-      # 'top-left':       '╔'
-      # 'top-right':      '╗'
-      # 'bottom':         '═'
-      # 'bottom-mid':     '╧'
-      # 'bottom-left':    '╚'
-      # 'bottom-right':   '╝'
-      # 'left':           '║'
-      # 'left-mid':       '╟'
-      # 'right':          '║'
-      # 'right-mid':      '╢'
-    # colWidths:          [11, 5, 5]
-    # wordWrap:           true
-    # wrapOnWordBoundary: false
-
-    chars:
-      'top':            '─'
-      'top-mid':        '┬'
-      'top-left':       '┌'
-      'top-right':      '┐'
-      'bottom':         '─'
-      'bottom-mid':     '┴'
-      'bottom-left':    '└'
-      'bottom-right':   '┘'
-      'left':           '│'
-      'left-mid':       '├'
-      'mid':            '─'
-      'mid-mid':        '┼'
-      'right':          '│'
-      'right-mid':      '┤'
-      'middle':         '│'
-    # truncate:         '…'
-    # colWidths:        []
-    # rowHeights:       []
-    # colAligns:        []
-    # rowAligns:        []
-    style:
-      'padding-left':   1
-      'padding-right':  1
-      'head':           [ 'bold', 'brightYellow', 'bgBlue', ]
-      'border':         [ 'grey', ]
-      'compact':        false
-    head: []
-
-#===========================================================================================================
-class Mytable extends Table
-
-  #---------------------------------------------------------------------------------------------------------
-  constructor: ( cfg ) ->
-    cfg = { templates.mytable..., cfg..., }
-    super cfg
-    ;undefined
-
-  #---------------------------------------------------------------------------------------------------------
-  push: ( row ) ->
-    for cell, idx in row
-      # debug 'Ωjzrsdb___1', P
-      row[ idx ] = gold cell
-    return super row
-
-#-----------------------------------------------------------------------------------------------------------
 demo_show_all_tables = ->
   jzr = new Jizura()
   relation_names = ( row.name for row from jzr.dba.walk jzr.dba.statements.std_get_relations )
@@ -197,17 +130,17 @@ demo_show_all_tables = ->
     row_count   = ( jzr.dba.get_first SQL"select count(*) as count from #{relation_name};" ).count
     statement   = jzr.dba.prepare SQL"""select * from #{relation_name} order by random() limit 10;"""
     col_names   = ( column.name for column in jzr.dba.state.columns )
-    table       = new Mytable { head: [ '', col_names..., ], }
+    table       = new Table { caption: relation_name, head: [ '', col_names..., ], }
     count       = 0
     for row from jzr.dba.walk statement
       count++
-      # debug 'Ωjzrsdb___2', row
-      # debug 'Ωjzrsdb___3', col_names
-      # debug 'Ωjzrsdb___4', ( row[ c ] for c in col_names )
-      table.push [ relation_name + " (#{count})", ( row[ c ] for c in col_names )..., ]
-    echo reverse bold " #{relation_name} "
+      cells = []
+      for col_name, col_idx in col_names
+        cell = row[ col_name ]
+        # cell = color cell if ( color = col_colors[ col_idx ] )?
+        cells.push cell
+      table.push table_row = [ "(#{count})", cells..., ]
     echo table.toString()
-    return null # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
@@ -220,7 +153,7 @@ demo_csv_output = ->
   werrn = ( P... ) -> process.stderr.write P...; process.stderr.write '\n'  ;null
   query = process.argv[ 2 ] ? null
   if ( not query? ) or ( query is '' )
-    werrn reverse red " Ωjzrsdb___5 no query given "
+    werrn reverse red " Ωjzrsdb___8 no query given "
     process.exit 111
     return null
   rows  = jzr.dba.get_all query
@@ -242,12 +175,12 @@ if module is require.main then do =>
   # ;null
 
 
-  cfg =
-    head: ['TH 1 label', 'TH 2 label']
-    # colWidths: [ 10, 20, ]
-  table = new Table cfg
-  # table.push ['First value 1', 'Second value 2'], ['First value 3', 'Second value 4']
-  # table.push [ { a: 'A', b: 'B', c: 'C', } ]
-  table.push Array.from 'ABC'
-  echo table
-  echo table.toString()
+  # cfg =
+  #   head: Array.from 'abcdefghijklmno'
+  #   # colWidths: [ 10, 20, ]
+  # table = new Table cfg
+  # # table.push ['First value 1', 'Second value 2'], ['First value 3', 'Second value 4']
+  # # table.push [ { a: 'A', b: 'B', c: 'C', } ]
+  # table.push [ 'A', { f: 7, }, undefined, 423423423422122434, ]
+  # # echo table
+  # echo table.toString()
