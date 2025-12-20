@@ -28,6 +28,7 @@ GUY                       = require 'guy'
 # { isa
 #   validate }              = types
 MIXA                      = require 'mixa'
+{ Jizura,               } = require './main'
 
 
 #===========================================================================================================
@@ -52,6 +53,15 @@ MIXA                      = require 'mixa'
                 --split
                 --tempdir     -t
             """
+      #-----------------------------------------------------------------------------------------------------
+      'query':
+        description:  "run an SQL query"
+        # parameters:  [ 'query', ]
+        allow_extra: true
+        runner: ( d, query ) =>
+          { output_query_as_csv, } = require './demo'
+          output_query_as_csv "select * from std_generate_series( 1, 20, 3 );"
+          # output_query_as_csv query
       #-----------------------------------------------------------------------------------------------------
       'info':
         description:  "show info on configuration settings &c"
@@ -122,8 +132,8 @@ MIXA                      = require 'mixa'
 if module is require.main then do =>
   # await @cli()
   @cli()
-  cli_commands =
-    use_pspg: "Ω command: use-pspg Ω"
+  # cli_commands =
+  #   use_pspg: "Ω command: use-pspg Ω"
   # echo cli_commands.use_pspg
   # echo "Ωjsdbcli___1 helo"
   # echo "Ωjsdbcli___1 line 2"

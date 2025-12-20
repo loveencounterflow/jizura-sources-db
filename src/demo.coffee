@@ -61,6 +61,9 @@ SFMODULES                 = require 'bricabrac-sfmodules'
   as_bool,              } = SFMODULES.unstable.require_dbric()
 { Jizura,               } = require './main'
 { Table, }                = SFMODULES.require_cli_table3a()
+#-----------------------------------------------------------------------------------------------------------
+cli_commands =
+  use_pspg: "Ω command: use-pspg Ω"
 
 
 #===========================================================================================================
@@ -144,26 +147,27 @@ demo_show_all_tables = ->
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
-demo_csv_output = ->
+output_query_as_csv = ( query ) ->
   CSV   = require 'csv-stringify/sync'
   jzr   = new Jizura()
   wout  = ( P... ) -> process.stdout.write P...;                            ;null
   woutn = ( P... ) -> process.stdout.write P...; process.stdout.write '\n'  ;null
   werr  = ( P... ) -> process.stderr.write P...;                            ;null
   werrn = ( P... ) -> process.stderr.write P...; process.stderr.write '\n'  ;null
-  query = process.argv[ 2 ] ? null
+  # query = process.argv[ 2 ] ? null
   if ( not query? ) or ( query is '' )
     werrn reverse red " Ωjzrsdb___8 no query given "
     process.exit 111
     return null
   rows  = jzr.dba.get_all query
+  woutn cli_commands.use_pspg
   wout CSV.stringify [ ( column.name for column in jzr.dba.state.columns ), ]
   wout CSV.stringify rows
   ;null
 
 
 #===========================================================================================================
-module.exports = { demo_show_all_tables, }
+module.exports = { demo_show_all_tables, output_query_as_csv, }
 
 
 #===========================================================================================================
