@@ -10,7 +10,7 @@ GUY                       = require 'guy'
   whisper
   warn
   urge
-  help }                  = GUY.trm.get_loggers 'METTEUR/cli'
+  help }                  = GUY.trm.get_loggers 'jzr/cli'
 { rpr
   echo }                  = GUY.trm
 #...........................................................................................................
@@ -42,7 +42,7 @@ MIXA                      = require 'mixa'
       #-----------------------------------------------------------------------------------------------------
       'help':
         runner: ( d ) =>
-          debug '^690-1^', process.argv
+          debug 'Ωjsdbcli___1', process.argv
           echo lime """jzrdb: produce and show CJK compositional data"""
           echo blue """
             Usage:
@@ -57,20 +57,31 @@ MIXA                      = require 'mixa'
       'query':
         description:  "run an SQL query"
         # parameters:  [ 'query', ]
-        allow_extra: true
-        runner: ( d, query ) =>
+        flags:
+          'query':
+            alias:        'q'
+            type:         String
+            description:  "SQL query"
+            positional:   true
+        # allow_extra: true
+        # plus: { query: 'select 1 as a;' }
+        runner: ( d ) =>
+          # debug 'Ωjsdbcli___2', d
+          # debug 'Ωjsdbcli___3', d.verdict
+          debug 'Ωjsdbcli___4', d.verdict.parameters.query
           { output_query_as_csv, } = require './demo'
-          output_query_as_csv "select * from std_generate_series( 1, 20, 3 );"
+          output_query_as_csv d.verdict.parameters.query
           # output_query_as_csv query
       #-----------------------------------------------------------------------------------------------------
       'info':
         description:  "show info on configuration settings &c"
         runner: ( d ) =>
-          debug 'Ωjsdbcli___1', process.argv
-          debug 'Ωjsdbcli___2', "info"
+          #   # multiple:     'greedy'
+          debug 'Ωjsdbcli___5', process.argv
+          debug 'Ωjsdbcli___6', "info"
           { demo_show_all_tables, } = require './demo'
           demo_show_all_tables()
-          # debug 'Ωjsdbcli___3', cfg
+          # debug 'Ωjsdbcli___7', cfg
           # cfg             = types.create.mtr_impose_cfg d.verdict.parameters
           # # await GUY.temp.with_directory { keep: true, }, ({ path }) ->
           # ### TAINT `cfg` key/value duplication ###
@@ -135,5 +146,5 @@ if module is require.main then do =>
   # cli_commands =
   #   use_pspg: "Ω command: use-pspg Ω"
   # echo cli_commands.use_pspg
-  # echo "Ωjsdbcli___1 helo"
-  # echo "Ωjsdbcli___1 line 2"
+  # echo "Ωjsdbcli___8 helo"
+  # echo "Ωjsdbcli___9 line 2"
