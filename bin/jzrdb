@@ -33,6 +33,7 @@ echo "using ${pager_cmd[*]}"
 
 #...........................................................................................................
 ### TAINT does setting `cwd` work?
+#-----------------------------------------------------------------------------------------------------------
 # paged output:
 CWD="$cwd" pipe_or_fail "$node_cmd" ./lib/cli.js "$@" -- "${pager_cmd[@]}"
 # unpaged output:
@@ -41,4 +42,10 @@ CWD="$cwd" pipe_or_fail "$node_cmd" ./lib/cli.js "$@" -- "${pager_cmd[@]}"
 # thx to https://unix.stackexchange.com/a/129077/280204
 # cwd="$cwd" $cmd lib/cli.js "$@"
 # node lib/cli.js "$*"
+if has_pager_switch "$@"; then
+  "$node_cmd" ./lib/cli.js "$@" | "${pager_cmd[@]}"
+else
+  # unpaged output:
+  "$node_cmd" ./lib/cli.js "$@"
+  fi
 

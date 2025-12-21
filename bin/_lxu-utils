@@ -87,3 +87,14 @@ pipe_or_fail() {
   rm -f "$tmp"
   return "$rc"
 }
+
+#-----------------------------------------------------------------------------------------------------------
+has_pager_switch() {
+  for arg in "$@"; do
+    case "$arg" in
+      -p|--pager)
+        return 0
+        ;;
+    esac
+  done
+  return 1; }
