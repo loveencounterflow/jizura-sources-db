@@ -67,7 +67,7 @@ demo_source_identifiers = ->
   { expand_dictionary,      } = SFMODULES.require_dictionary_tools()
   { get_local_destinations, } = SFMODULES.require_get_local_destinations()
   for key, value of get_local_destinations()
-    debug 'Ωjzrsdb___3', key, value
+    debug 'Ωjzrsdb___1', key, value
   # can append line numbers to files as in:
   # 'ds:dict:meanings.1:L=13332'
   # 'ds:dict:ucd140.1:uhdidx:L=1234'
@@ -170,9 +170,9 @@ class Jzr_db_adapter extends Dbric_std
           ( @prepare SQL"select * from #{name} where false;" ).all()
         catch error
           messages.push "#{type} #{name}: #{error.message}"
-          warn 'Ωjzrsdb___4', error.message
+          warn 'Ωjzrsdb___2', error.message
       return null if messages.length is 0
-      throw new Error "Ωjzrsdb___5 EFFRI testing revealed errors: #{rpr messages}"
+      throw new Error "Ωjzrsdb___3 EFFRI testing revealed errors: #{rpr messages}"
       ;null
     #.......................................................................................................
     if @is_fresh
@@ -208,7 +208,7 @@ class Jzr_db_adapter extends Dbric_std
         urn     text      unique  not null,
         comment text              not null,
       primary key ( urn ),
-      constraint "Ωconstraint___6" check ( urn regexp '^[\\-\\+\\.:a-zA-Z0-9]+$' ) )
+      constraint "Ωconstraint___4" check ( urn regexp '^[\\-\\+\\.:a-zA-Z0-9]+$' ) )
       ;"""
 
     #.......................................................................................................
@@ -222,10 +222,10 @@ class Jzr_db_adapter extends Dbric_std
         -- hi_glyph  text            not null generated always as ( char( hi ) ) stored,
         name      text            not null,
       -- primary key ( rowid ),
-      constraint "Ωconstraint___7" check ( lo between 0x000000 and 0x10ffff ),
-      constraint "Ωconstraint___8" check ( hi between 0x000000 and 0x10ffff ),
-      constraint "Ωconstraint___9" check ( lo <= hi ),
-      constraint "Ωconstraint__10" check ( rowid regexp '^.*$' )
+      constraint "Ωconstraint___5" check ( lo between 0x000000 and 0x10ffff ),
+      constraint "Ωconstraint___6" check ( hi between 0x000000 and 0x10ffff ),
+      constraint "Ωconstraint___7" check ( lo <= hi ),
+      constraint "Ωconstraint___8" check ( rowid regexp '^.*$' )
       );"""
 
     #.......................................................................................................
@@ -262,8 +262,8 @@ class Jzr_db_adapter extends Dbric_std
         name        text            not null,
         glyphrange  text            not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__11" foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
-      constraint "Ωconstraint__12" check ( rowid regexp '^.*$' )
+      constraint "Ωconstraint___9" foreign key ( glyphrange ) references jzr_glyphranges ( rowid ),
+      constraint "Ωconstraint__10" check ( rowid regexp '^.*$' )
       );"""
 
     #.......................................................................................................
@@ -288,7 +288,7 @@ class Jzr_db_adapter extends Dbric_std
         format    text            not null,
         path      text            not null,
       primary key ( dskey ),
-      constraint "Ωconstraint__13" foreign key ( format ) references jzr_datasource_formats ( format )
+      constraint "Ωconstraint__11" foreign key ( format ) references jzr_datasource_formats ( format )
       );"""
     #.......................................................................................................
     SQL"""create trigger jzr_datasources_insert
@@ -305,8 +305,8 @@ class Jzr_db_adapter extends Dbric_std
         lcode     text    unique  not null,
         comment   text            not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__14" check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
-      constraint "Ωconstraint__15" check ( rowid = 't:mr:lc:V=' || lcode ) );"""
+      constraint "Ωconstraint__12" check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
+      constraint "Ωconstraint__13" check ( rowid = 't:mr:lc:V=' || lcode ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_lines (
@@ -321,7 +321,7 @@ class Jzr_db_adapter extends Dbric_std
       -- primary key ( rowid ),                           -- ### NOTE Experimental: no explicit PK, instead generated `rowid` column
       -- check ( rowid regexp '^t:mr:ln:ds=.+:L=\\d+$'),  -- ### NOTE no need to check as value is generated ###
       unique ( dskey, line_nr ),
-      constraint "Ωconstraint__16" foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
+      constraint "Ωconstraint__14" foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_verbs (
@@ -331,7 +331,7 @@ class Jzr_db_adapter extends Dbric_std
         o         text            not null,
       primary key ( v ),
       -- check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ),
-      constraint "Ωconstraint__17" check ( rank > 0 ) );"""
+      constraint "Ωconstraint__15" check ( rank > 0 ) );"""
     #.......................................................................................................
     SQL"""create trigger jzr_mirror_verbs_insert
       before insert on jzr_mirror_verbs
@@ -349,10 +349,10 @@ class Jzr_db_adapter extends Dbric_std
         v         text            not null,
         o         json            not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__18" check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
+      constraint "Ωconstraint__16" check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
       -- unique ( ref, s, v, o )
-      constraint "Ωconstraint__19" foreign key ( ref ) references jzr_mirror_lines ( rowid ),
-      constraint "Ωconstraint__20" foreign key ( v   ) references jzr_mirror_verbs ( v )
+      constraint "Ωconstraint__17" foreign key ( ref ) references jzr_mirror_lines ( rowid ),
+      constraint "Ωconstraint__18" foreign key ( v   ) references jzr_mirror_verbs ( v )
       );"""
 
     #.......................................................................................................
@@ -377,12 +377,11 @@ class Jzr_db_adapter extends Dbric_std
         medial_latn     text          not null,
         final_latn      text          not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__21" check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
+      constraint "Ωconstraint__19" check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
       -- unique ( ref, s, v, o )
-      -- constraint "Ωconstraint__22" foreign key ( ref ) references jzr_mirror_lines ( rowid )
-      -- constraint "Ωconstraint__23" foreign key ( syllable_hang ) references jzr_mirror_triples_base ( o ) )
+      -- constraint "Ωconstraint__20" foreign key ( ref ) references jzr_mirror_lines ( rowid )
+      -- constraint "Ωconstraint__21" foreign key ( syllable_hang ) references jzr_mirror_triples_base ( o ) )
       );"""
-
     #.......................................................................................................
     SQL"""create trigger jzr_lang_hang_syllables_register
       before insert on jzr_lang_hang_syllables
@@ -463,10 +462,10 @@ class Jzr_db_adapter extends Dbric_std
         glyph     text            not null,
         component text            not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__24" foreign key ( ref ) references jzr_mirror_triples_base ( rowid ),
-      constraint "Ωconstraint__25" check ( ( length( glyph     ) = 1 ) or ( glyph      regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
-      constraint "Ωconstraint__26" check ( ( length( component ) = 1 ) or ( component  regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
-      constraint "Ωconstraint__27" check ( rowid regexp '^.*$' )
+      constraint "Ωconstraint__22" foreign key ( ref ) references jzr_mirror_triples_base ( rowid ),
+      constraint "Ωconstraint__23" check ( ( length( glyph     ) = 1 ) or ( glyph      regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      constraint "Ωconstraint__24" check ( ( length( component ) = 1 ) or ( component  regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      constraint "Ωconstraint__25" check ( rowid regexp '^.*$' )
       );"""
 
 
@@ -722,7 +721,7 @@ class Jzr_db_adapter extends Dbric_std
                                                                                                          ###
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lcodes: ->
-    debug 'Ωjzrsdb__28', '_on_open_populate_jzr_mirror_lcodes'
+    debug 'Ωjzrsdb__26', '_on_open_populate_jzr_mirror_lcodes'
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=B', lcode: 'B', comment: 'blank line',    }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=C', lcode: 'C', comment: 'comment line',  }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=D', lcode: 'D', comment: 'data line',     }
@@ -737,7 +736,7 @@ class Jzr_db_adapter extends Dbric_std
       `v:c:` is for subjects that are CJK characters
       `v:x:` is used for unclassified subjects (possibly to be refined in the future)
     ###
-    debug 'Ωjzrsdb__29', '_on_open_populate_jzr_mirror_verbs'
+    debug 'Ωjzrsdb__27', '_on_open_populate_jzr_mirror_verbs'
     rows = [
       { rank: 2, s: "NN", v: 'v:testing:unused',                      o: "NN", }
       { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:initial',              o: "NN", }
@@ -771,7 +770,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasource_formats: ->
-    debug 'Ωjzrsdb__30', '_on_open_populate_jzr_datasource_formats'
+    debug 'Ωjzrsdb__28', '_on_open_populate_jzr_datasource_formats'
     @statements.insert_jzr_datasource_format.run { format: 'dsf:tsv',       comment: 'NN', }
     @statements.insert_jzr_datasource_format.run { format: 'dsf:md:table',  comment: 'NN', }
     @statements.insert_jzr_datasource_format.run { format: 'dsf:csv',       comment: 'NN', }
@@ -782,7 +781,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
-    debug 'Ωjzrsdb__31', '_on_open_populate_jzr_datasources'
+    debug 'Ωjzrsdb__29', '_on_open_populate_jzr_datasources'
     { paths
       formats, } = get_paths_and_formats()
     # dskey = 'ds:dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
@@ -810,7 +809,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lines: ->
-    debug 'Ωjzrsdb__32', '_on_open_populate_jzr_mirror_lines'
+    debug 'Ωjzrsdb__30', '_on_open_populate_jzr_mirror_lines'
     @statements.populate_jzr_mirror_lines.run()
     ;null
 
