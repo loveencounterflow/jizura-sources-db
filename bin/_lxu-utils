@@ -98,3 +98,37 @@ has_pager_switch() {
     esac
   done
   return 1; }
+
+# #...........................................................................................................
+# # echoes to stdout, not reliable
+# # see https://chatgpt.com/s/t_6947bb3c4e788191bbf6acecd22f8660
+# stream_to_pager_or_fail() {
+#   local pager_pid
+#   local line
+
+#   # Start pager, reading from stdin
+#   # "${cons[@]}" &
+#   "${pager_cmd[@]}" &
+#   pager_pid=$!
+
+#   # Ensure pager is cleaned up on exit or error
+#   trap 'kill "$pager_pid" 2>/dev/null; wait "$pager_pid" 2>/dev/null' EXIT
+
+#   # Stream input line by line
+#   while IFS= read -r line; do
+#     # Detect error condition (example: special marker)
+#     if [[ $line == ERROR:* ]]; then
+#       echo "error detected: $line" >&2
+#       kill "$pager_pid" 2>/dev/null
+#       wait "$pager_pid" 2>/dev/null
+#       trap - EXIT
+#       return 1
+#     fi
+
+#     printf '%s\n' "$line"
+#   done
+
+#   # Normal EOF
+#   wait "$pager_pid"
+#   trap - EXIT
+#   return 0; }
