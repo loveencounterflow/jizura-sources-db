@@ -106,38 +106,41 @@ get_paths_and_formats = ->
   paths.raw_github                    = PATH.join paths.jzrnds, 'bvfs/origin/https/raw.githubusercontent.com'
   kanjium                             = PATH.join paths.raw_github, 'mifunetoshiro/kanjium/8a0cdaa16d64a281a2048de2eee2ec5e3a440fa6'
   rutopio                             = PATH.join paths.raw_github, 'rutopio/Korean-Name-Hanja-Charset/12df1ba1b4dfaa095813e4ddfba424e816f94c53'
+  ucd1700                             = PATH.join paths.jzrnds, 'bvfs/origin/https/www.unicode.org/Public/17.0.0/ucd'
   #.........................................................................................................
   # paths[ 'ds:dict:ucd:v14.0:uhdidx'      ]   = PATH.join paths.jzrnds, 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  paths[ 'ds:dict:x:ko-Hang+Latn'        ]   = PATH.join paths.jzrnds, 'hangeul-transcriptions.tsv'
-  paths[ 'ds:dict:x:ja-Kan+Latn'         ]   = PATH.join paths.jzrnds, 'kana-transcriptions.tsv'
-  paths[ 'ds:dict:bcp47'                 ]   = PATH.join paths.jzrnds, 'BCP47-language-scripts-regions.tsv'
-  paths[ 'ds:dict:ja:kanjium'            ]   = PATH.join kanjium, 'data/source_files/kanjidict.txt'
-  paths[ 'ds:dict:ja:kanjium:aux'        ]   = PATH.join kanjium, 'data/source_files/0_README.txt'
-  paths[ 'ds:dict:ko:V=data-gov.csv'     ]   = PATH.join rutopio, 'data-gov.csv'
-  paths[ 'ds:dict:ko:V=data-gov.json'    ]   = PATH.join rutopio, 'data-gov.json'
-  paths[ 'ds:dict:ko:V=data-naver.csv'   ]   = PATH.join rutopio, 'data-naver.csv'
-  paths[ 'ds:dict:ko:V=data-naver.json'  ]   = PATH.join rutopio, 'data-naver.json'
-  paths[ 'ds:dict:ko:V=README.md'        ]   = PATH.join rutopio, 'README.md'
-  paths[ 'ds:dict:meanings'              ]   = PATH.join paths.mojikura, 'meaning/meanings.txt'
-  paths[ 'ds:shape:idsv2'                ]   = PATH.join paths.mojikura, 'shape/shape-breakdown-formula-v2.txt'
-  paths[ 'ds:shape:zhz5bf'               ]   = PATH.join paths.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
-  paths[ 'ds:ucdb:rsgs'                  ]   = PATH.join paths.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
+  paths[ 'ds:dict:x:ko-Hang+Latn'         ]  = PATH.join paths.jzrnds, 'hangeul-transcriptions.tsv'
+  paths[ 'ds:dict:x:ja-Kan+Latn'          ]  = PATH.join paths.jzrnds, 'kana-transcriptions.tsv'
+  paths[ 'ds:dict:bcp47'                  ]  = PATH.join paths.jzrnds, 'BCP47-language-scripts-regions.tsv'
+  paths[ 'ds:dict:ja:kanjium'             ]  = PATH.join kanjium, 'data/source_files/kanjidict.txt'
+  paths[ 'ds:dict:ja:kanjium:aux'         ]  = PATH.join kanjium, 'data/source_files/0_README.txt'
+  paths[ 'ds:dict:ko:V=data-gov.csv'      ]  = PATH.join rutopio, 'data-gov.csv'
+  paths[ 'ds:dict:ko:V=data-gov.json'     ]  = PATH.join rutopio, 'data-gov.json'
+  paths[ 'ds:dict:ko:V=data-naver.csv'    ]  = PATH.join rutopio, 'data-naver.csv'
+  paths[ 'ds:dict:ko:V=data-naver.json'   ]  = PATH.join rutopio, 'data-naver.json'
+  paths[ 'ds:dict:ko:V=README.md'         ]  = PATH.join rutopio, 'README.md'
+  paths[ 'ds:dict:meanings'               ]  = PATH.join paths.mojikura, 'meaning/meanings.txt'
+  paths[ 'ds:shape:idsv2'                 ]  = PATH.join paths.mojikura, 'shape/shape-breakdown-formula-v2.txt'
+  paths[ 'ds:shape:zhz5bf'                ]  = PATH.join paths.mojikura, 'shape/shape-strokeorder-zhaziwubifa.txt'
+  paths[ 'ds:ucdb:rsgs'                   ]  = PATH.join paths.mojikura, 'ucdb/cfg/rsgs-and-blocks.md'
+  paths[ 'ds:ucd:ucd'                     ]  = PATH.join ucd1700, 'UnicodeData.txt'
   #.........................................................................................................
   # formats[ 'ds:dict:ucd:v14.0:uhdidx'      ]   = , 'unicode.org-ucd-v14.0/Unihan_DictionaryIndices.txt'
-  formats[ 'ds:dict:x:ko-Hang+Latn'        ]   = 'dsf:tsv'
-  formats[ 'ds:dict:x:ja-Kan+Latn'         ]   = 'dsf:tsv'
-  formats[ 'ds:dict:bcp47'                 ]   = 'dsf:tsv'
-  formats[ 'ds:dict:ja:kanjium'            ]   = 'dsf:txt'
-  formats[ 'ds:dict:ja:kanjium:aux'        ]   = 'dsf:txt'
-  formats[ 'ds:dict:ko:V=data-gov.csv'     ]   = 'dsf:csv'
-  formats[ 'ds:dict:ko:V=data-gov.json'    ]   = 'dsf:json'
-  formats[ 'ds:dict:ko:V=data-naver.csv'   ]   = 'dsf:csv'
-  formats[ 'ds:dict:ko:V=data-naver.json'  ]   = 'dsf:json'
-  formats[ 'ds:dict:ko:V=README.md'        ]   = 'dsf:md'
-  formats[ 'ds:dict:meanings'              ]   = 'dsf:tsv'
-  formats[ 'ds:shape:idsv2'                ]   = 'dsf:tsv'
-  formats[ 'ds:shape:zhz5bf'               ]   = 'dsf:tsv'
-  formats[ 'ds:ucdb:rsgs'                  ]   = 'dsf:md:table'
+  formats[ 'ds:dict:x:ko-Hang+Latn'         ] = 'dsf:tsv'
+  formats[ 'ds:dict:x:ja-Kan+Latn'          ] = 'dsf:tsv'
+  formats[ 'ds:dict:bcp47'                  ] = 'dsf:tsv'
+  formats[ 'ds:dict:ja:kanjium'             ] = 'dsf:txt'
+  formats[ 'ds:dict:ja:kanjium:aux'         ] = 'dsf:txt'
+  formats[ 'ds:dict:ko:V=data-gov.csv'      ] = 'dsf:csv'
+  formats[ 'ds:dict:ko:V=data-gov.json'     ] = 'dsf:json'
+  formats[ 'ds:dict:ko:V=data-naver.csv'    ] = 'dsf:csv'
+  formats[ 'ds:dict:ko:V=data-naver.json'   ] = 'dsf:json'
+  formats[ 'ds:dict:ko:V=README.md'         ] = 'dsf:md'
+  formats[ 'ds:dict:meanings'               ] = 'dsf:tsv'
+  formats[ 'ds:shape:idsv2'                 ] = 'dsf:tsv'
+  formats[ 'ds:shape:zhz5bf'                ] = 'dsf:tsv'
+  formats[ 'ds:ucdb:rsgs'                   ] = 'dsf:md:table'
+  formats[ 'ds:ucd:ucd'                     ] = 'dsf:semicolons'
   return R
 
 
@@ -798,12 +801,13 @@ class Jzr_db_adapter extends Dbric_std
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasource_formats: ->
     debug 'Ωjzrsdb__28', '_on_open_populate_jzr_datasource_formats'
-    @statements.insert_jzr_datasource_format.run { format: 'dsf:tsv',       comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'dsf:md:table',  comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'dsf:csv',       comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'dsf:json',      comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'dsf:md',        comment: 'NN', }
-    @statements.insert_jzr_datasource_format.run { format: 'dsf:txt',       comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:tsv',         comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:md:table',    comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:csv',         comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:json',        comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:md',          comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:txt',         comment: 'NN', }
+    @statements.insert_jzr_datasource_format.run { format: 'dsf:semicolons',  comment: 'NN', }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -825,6 +829,7 @@ class Jzr_db_adapter extends Dbric_std
     dskey = 'ds:shape:idsv2';                @statements.insert_jzr_datasource.run { rowid: 't:ds:R=11', dskey, format: formats[ dskey ], path: paths[ dskey ], }
     dskey = 'ds:shape:zhz5bf';               @statements.insert_jzr_datasource.run { rowid: 't:ds:R=12', dskey, format: formats[ dskey ], path: paths[ dskey ], }
     dskey = 'ds:ucdb:rsgs';                  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=13', dskey, format: formats[ dskey ], path: paths[ dskey ], }
+    dskey = 'ds:ucd:ucd';                    @statements.insert_jzr_datasource.run { rowid: 't:ds:R=14', dskey, format: formats[ dskey ], path: paths[ dskey ], }
     ;null
 
   # #---------------------------------------------------------------------------------------------------------
@@ -953,6 +958,7 @@ class Jzr_db_adapter extends Dbric_std
             when ( entry.startsWith 'hi:' ) then yield from @triples_from_c_reading_ja_x_Kan        rowid_in, dskey, fields
             when ( entry.startsWith 'hg:' ) then yield from @triples_from_c_reading_ko_Hang         rowid_in, dskey, fields
           when 'ds:shape:idsv2'             then yield from @triples_from_shape_idsv2               rowid_in, dskey, fields
+          when 'ds:ucd:ucd'                 then yield from @triples_from_ucd_ucd                   rowid_in, dskey, fields
         ;null
 
     #-------------------------------------------------------------------------------------------------------
@@ -1067,6 +1073,15 @@ class Jzr_db_adapter extends Dbric_std
     @state.timeit_progress?()
     ;null
 
+  #---------------------------------------------------------------------------------------------------------
+  triples_from_ucd_ucd: ( rowid_in, dskey, [ _, s, entry, ] ) ->
+    ref       = rowid_in
+    v         = 'v:c:reading:ko-Hang'
+    for reading from @host.language_services.extract_hg_readings entry
+      yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
+    @state.timeit_progress?()
+    ;null
+
 
 #===========================================================================================================
 ###
@@ -1114,17 +1129,27 @@ class Datasource_field_parser
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  walk_dsf_tsv: ->
+  _walk_fields_with_separator: ({ comment_re = /^\s*#/v, splitter = '\t', }) ->
     for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
       line    = @host.language_services.normalize_text line
       jfields = null
       switch true
         when /^\s*$/v.test line then lcode = 'B'
-        when /^\s*#/v.test line then lcode = 'C'
+        when comment_re.test line then lcode = 'C'
         else
           lcode = 'D'
-          jfields   = JSON.stringify line.split '\t'
+          jfields   = JSON.stringify line.split splitter
       yield { line_nr, lcode, line, jfields, }
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  walk_dsf_tsv: ->
+    yield from @_walk_fields_with_separator { splitter: '\t', }
+    ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  walk_dsf_semicolons: ->
+    yield from @_walk_fields_with_separator { splitter: ';', }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
