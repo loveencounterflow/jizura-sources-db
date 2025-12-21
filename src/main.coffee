@@ -1354,3 +1354,9 @@ module.exports = do =>
     Jizura,
     internals, }
 
+#===========================================================================================================
+if module is require.main then do =>
+  jzr = new Jizura() # triggers rebuild of DB when necessary
+  ;null
+
+
