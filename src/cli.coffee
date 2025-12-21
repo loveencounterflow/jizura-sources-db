@@ -43,12 +43,18 @@ MIXA                      = require 'mixa'
           echo lime """jzrdb: produce and show CJK compositional data"""
           echo blue """
             Usage:
-              jzrdb $command [flags]
-                --input       -i
-                --overwrite   -y
-                --output      -o
-                --split
-                --tempdir     -t
+              jzrdb [meta] $command [flags] [argument]
+
+                meta:
+                  --pager / -p -- use pspg to page output
+
+                command:
+
+                  query -- send an SQL query
+                    --query / -q / positional argument -- the query (required)
+
+                  info -- show an overview of tables and views
+                    --rows / -n -- number of rows to show
             """
       #-----------------------------------------------------------------------------------------------------
       'query':
@@ -65,8 +71,15 @@ MIXA                      = require 'mixa'
       #-----------------------------------------------------------------------------------------------------
       'info':
         description:  "show info on configuration settings &c"
+        flags:
+          'rows':
+            alias:        'n'
+            type:         Number
+            description:  "number of rows"
         runner: ( d ) =>
           { demo_show_all_tables, } = require './demo'
+          { rows,                 } = d.verdict.parameters
+          demo_show_all_tables { rows, }
           return null
   #.........................................................................................................
   MIXA.run jobdefs, process.argv
