@@ -2,7 +2,7 @@
 set -euo pipefail
 # set -eo pipefail
 
-cwd=$(pwd)
+# cwd=$(pwd)
 home="$(realpath "$(realpath "${BASH_SOURCE[0]}" | xargs dirname)"/..)"; cd "$home"
 source bin/_lxu-utils
 
@@ -27,21 +27,11 @@ else
   fi
 
 #-----------------------------------------------------------------------------------------------------------
-echo "using $node_cmd"
-echo "using ${pager_cmd[*]}"
+# echo "using $node_cmd"
+# echo "using ${pager_cmd[*]}"
 
-
-#...........................................................................................................
-### TAINT does setting `cwd` work?
 #-----------------------------------------------------------------------------------------------------------
 # paged output:
-CWD="$cwd" pipe_or_fail "$node_cmd" ./lib/cli.js "$@" -- "${pager_cmd[@]}"
-# unpaged output:
-# CWD="$cwd" "$node_cmd" ./lib/cli.js "$@"
-
-# thx to https://unix.stackexchange.com/a/129077/280204
-# cwd="$cwd" $cmd lib/cli.js "$@"
-# node lib/cli.js "$*"
 if has_pager_switch "$@"; then
   "$node_cmd" ./lib/cli.js "$@" | "${pager_cmd[@]}"
 else
