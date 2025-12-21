@@ -14,6 +14,7 @@
     "better-sqlite3": "^12.4.6",
     "bricabrac-sfmodules": "github:loveencounterflow/bricabrac-sfmodules#0a3315c",
     "csv-stringify": "^6.6.0",
+    "effstring": "^1.4.0",
     "guy": "^14.2.0",
     "hangul-disassemble": "^0.5.2",
     "mixa": "github:loveencounterflow/mixa#9712a4e5f79265d75b5be5ccd8a86bba3eb54739",
