@@ -408,15 +408,15 @@ class Jzr_db_adapter extends Dbric_std
       select null, null, null, null, null where false
       ;"""
 
-    #.......................................................................................................
-    SQL"""create view jzr_all_triples as
-      select null as rowid, null as ref, null as s, null as v, null as o where false union all
-      -- ...................................................................................................
-      select * from jzr_mirror_triples_base union all
-      select * from jzr_lang_kr_readings_triples union all
-      -- ...................................................................................................
-      select null, null, null, null, null where false
-      ;"""
+    # #.......................................................................................................
+    # SQL"""create view jzr_all_triples as
+    #   select null as rowid, null as ref, null as s, null as v, null as o where false union all
+    #   -- ...................................................................................................
+    #   select * from jzr_mirror_triples_base union all
+    #   select * from jzr_lang_kr_readings_triples union all
+    #   -- ...................................................................................................
+    #   select null, null, null, null, null where false
+    #   ;"""
 
     #.......................................................................................................
     SQL"""create view jzr_triples as
