@@ -76,10 +76,4 @@ MIXA                      = require 'mixa'
 
 ############################################################################################################
 if module is require.main then do =>
-  # await @cli()
   @cli()
-  # cli_commands =
-  #   use_pspg: "Ω command: use-pspg Ω"
-  # echo cli_commands.use_pspg
-  # echo "Ωjsdbcli___8 helo"
-  # echo "Ωjsdbcli___9 line 2"
