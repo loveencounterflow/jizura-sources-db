@@ -26,35 +26,8 @@ GUY                       = require 'guy'
   bold
   reverse
   log     }               = GUY.trm
-# FS                        = require 'node:fs'
-# PATH                      = require 'node:path'
-# #-----------------------------------------------------------------------------------------------------------
-# Bsql3                     = require 'better-sqlite3'
-# #-----------------------------------------------------------------------------------------------------------
+#-----------------------------------------------------------------------------------------------------------
 SFMODULES                 = require 'bricabrac-sfmodules'
-# #...........................................................................................................
-# { Dbric,
-#   Dbric_std,
-#   SQL,
-#   from_bool,
-#   as_bool,              } = SFMODULES.unstable.require_dbric()
-# #...........................................................................................................
-# { lets,
-#   freeze,               } = SFMODULES.require_letsfreezethat_infra().simple
-# #...........................................................................................................
-# { Jetstream,
-#   Async_jetstream,      } = SFMODULES.require_jetstream()
-# #...........................................................................................................
-# { walk_lines_with_positions
-#                         } = SFMODULES.unstable.require_fast_linereader()
-# #...........................................................................................................
-# { Benchmarker,          } = SFMODULES.unstable.require_benchmarking()
-# benchmarker                   = new Benchmarker()
-# timeit                        = ( P... ) -> benchmarker.timeit P...
-# #...........................................................................................................
-# { set_getter,           } = SFMODULES.require_managed_property_tools()
-# { IDL, IDLX,            } = require 'mojikura-idl'
-# { type_of,              } = SFMODULES.unstable.require_type_of()
 #-----------------------------------------------------------------------------------------------------------
 { SQL,
   from_bool,
@@ -62,8 +35,8 @@ SFMODULES                 = require 'bricabrac-sfmodules'
 { Jizura,               } = require './main'
 { Table, }                = SFMODULES.require_cli_table3a()
 #-----------------------------------------------------------------------------------------------------------
-cli_commands =
-  use_pspg: "Ω command: use-pspg Ω"
+{ f,                    } = require 'effstring'
+
 
 
 #===========================================================================================================
@@ -122,20 +95,29 @@ demo_read_dump = ->
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
-demo_show_all_tables = ->
+demo_show_all_tables = ({ rows = 10, }={}) ->
   jzr = new Jizura()
-  relation_names = ( row.name for row from jzr.dba.walk jzr.dba.statements.std_get_relations )
-  relation_names = ( name for name in relation_names when not name.startsWith 'std_' )
-  relation_names = ( name for name in relation_names when not name.startsWith '_jzr_meta_' )
-  relation_names = ( name for name in relation_names when not name.startsWith 'jzr_meta_' )
+  relations = {}
+  for { name, type, } from jzr.dba.walk SQL"""
+    select name, type
+    from sqlite_schema
+    where type in ( 'table', 'view' )
+    -- order by name
+    ;"""
+    continue if name.startsWith 'std_'
+    continue if name.startsWith '_jzr_meta_'
+    continue if name.startsWith 'jzr_meta_'
+    relations[ name ] = type
   #.........................................................................................................
-  for relation_name in relation_names
+  for relation_name, relation_type of relations
     row_count   = ( jzr.dba.get_first SQL"select count(*) as count from #{relation_name};" ).count
-    statement   = jzr.dba.prepare SQL"""select * from #{relation_name} order by random() limit 10;"""
+    statement   = jzr.dba.prepare SQL"""select * from #{relation_name} order by random() limit $rows;"""
     col_names   = ( column.name for column in jzr.dba.state.columns )
-    table       = new Table { caption: relation_name, head: [ '', col_names..., ], }
+    caption     = f"#{relation_type} #{relation_name} (#{row_count}:,.0f; rows)"
+    table       = new Table { caption, head: [ '', col_names..., ], }
     count       = 0
-    for row from jzr.dba.walk statement
+    #.......................................................................................................
+    for row from jzr.dba.walk statement, { rows, }
       count++
       cells = []
       for col_name, col_idx in col_names
@@ -144,6 +126,7 @@ demo_show_all_tables = ->
         cells.push cell
       table.push table_row = [ "(#{count})", cells..., ]
     echo table.toString()
+  #.........................................................................................................
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
@@ -160,7 +143,7 @@ output_query_as_csv = ( query ) ->
     process.exit 111
     return null
   rows  = jzr.dba.get_all query
-  woutn cli_commands.use_pspg
+  # woutn cli_commands.use_pspg
   wout CSV.stringify [ ( column.name for column in jzr.dba.state.columns ), ]
   wout CSV.stringify rows
   ;null
