@@ -181,7 +181,8 @@ class Jzr_db_adapter extends Dbric_std
       @_on_open_populate_jzr_mirror_verbs()
       @_on_open_populate_jzr_mirror_lcodes()
       @_on_open_populate_jzr_mirror_lines()
-      @_on_open_populate_jzr_glyphrange()
+      @_on_open_populate_jzr_glyphranges()
+      @_on_open_populate_jzr_glyphs()
     #.......................................................................................................
     ;undefined
 
@@ -685,7 +686,7 @@ class Jzr_db_adapter extends Dbric_std
         ;"""
 
     #.......................................................................................................
-    populate_jzr_glyphrange: SQL"""
+    populate_jzr_glyphranges: SQL"""
       insert into jzr_glyphranges ( rsg, is_cjk, lo, hi, name )
       select
         -- 't:mr:ln:R=' || row_number() over ()          as rowid,
@@ -818,9 +819,10 @@ class Jzr_db_adapter extends Dbric_std
     ;null
 
   #---------------------------------------------------------------------------------------------------------
-  _on_open_populate_jzr_glyphrange: ->
-    debug 'Ωjzrsdb__33', '_on_open_populate_jzr_glyphrange'
-    @statements.populate_jzr_glyphrange.run()
+  _on_open_populate_jzr_glyphranges: ->
+    debug 'Ωjzrsdb__31', '_on_open_populate_jzr_glyphranges'
+    @statements.populate_jzr_glyphranges.run()
+    ;null
     ;null
 
   #---------------------------------------------------------------------------------------------------------
