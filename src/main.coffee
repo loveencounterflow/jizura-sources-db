@@ -219,8 +219,8 @@ class Jzr_db_adapter extends Dbric_std
         is_cjk    boolean         not null,
         lo        integer         not null,
         hi        integer         not null,
-        -- lo_glyph  text            not null generated always as ( char( lo ) ) stored,
-        -- hi_glyph  text            not null generated always as ( char( hi ) ) stored,
+        -- lo_glyph  text            not null generated always as ( jzr_chr_from_cid( lo ) ) stored,
+        -- hi_glyph  text            not null generated always as ( jzr_chr_from_cid( hi ) ) stored,
         name      text            not null,
       -- primary key ( rowid ),
       constraint "Ωconstraint___5" check ( lo between 0x000000 and 0x10ffff ),
@@ -230,32 +230,39 @@ class Jzr_db_adapter extends Dbric_std
       );"""
 
     #.......................................................................................................
-    SQL"""create view jzr_glyphs as
-      select
-          gr.rsg    as rsg,
-          gs.value  as cid,
-          char( gs.value )  as glyph
-        from jzr_glyphranges                        as gr
-        join std_generate_series( gr.lo, gr.hi, 1 ) as gs
-        ;"""
-
+    SQL"""create table jzr_glyphs (
+          cid     integer   not null,
+          rsg     text      not null,
+          cid_hex text      not null generated always as ( jzr_as_hex( cid ) ) stored,
+          glyph   text      not null,
+        -- primary key ( cid ) --,
+        foreign key ( rsg ) references jzr_glyphranges ( rsg )
+      );"""
     #.......................................................................................................
-    SQL"""create view jzr_cjk_glyphranges as
-      select
-          *
-        from jzr_glyphranges
-        where is_cjk
-        order by lo;"""
+    SQL"""create trigger jzr_glyphs_insert
+      before insert on jzr_glyphs
+      for each row begin
+        select jzr_trigger_on_before_insert( 'jzr_glyphs',
+          'cid:', new.cid, 'rsg:', new.rsg );
+        end;"""
 
-    #.......................................................................................................
-    SQL"""create view jzr_cjk_glyphs as
-      select
-          gr.rsg    as rsg,
-          gs.value  as cid,
-          char( gs.value )  as glyph
-        from jzr_cjk_glyphranges                    as gr
-        join std_generate_series( gr.lo, gr.hi, 1 ) as gs
-        ;"""
+    # #.......................................................................................................
+    # SQL"""create view jzr_cjk_glyphranges as
+    #   select
+    #       *
+    #     from jzr_glyphranges
+    #     where is_cjk
+    #     order by lo;"""
+
+    # #.......................................................................................................
+    # SQL"""create view jzr_cjk_glyphs as
+    #   select
+    #       gr.rsg    as rsg,
+    #       gs.value  as cid,
+    #       jzr_chr_from_cid( gs.value )  as glyph
+    #     from jzr_cjk_glyphranges                    as gr
+    #     join std_generate_series( gr.lo, gr.hi, 1 ) as gs
+    #     ;"""
 
     #.......................................................................................................
     SQL"""create table jzr_glyphsets (
@@ -706,6 +713,19 @@ class Jzr_db_adapter extends Dbric_std
       -- on conflict ( dskey, line_nr ) do update set line = excluded.line
       ;"""
 
+    #.......................................................................................................
+    populate_jzr_glyphs: SQL"""
+      insert into jzr_glyphs ( cid, glyph, rsg )
+      select
+          cg.cid    as cid,
+          cg.glyph  as glyph,
+          gr.rsg    as rsg
+        from jzr_glyphranges                                  as gr
+        join jzr_generate_cids_and_glyphs( gr.lo, gr.hi )     as cg
+        ;"""
+
+
+
   #=========================================================================================================
   ###
 
@@ -823,6 +843,16 @@ class Jzr_db_adapter extends Dbric_std
     debug 'Ωjzrsdb__31', '_on_open_populate_jzr_glyphranges'
     @statements.populate_jzr_glyphranges.run()
     ;null
+
+  #---------------------------------------------------------------------------------------------------------
+  _on_open_populate_jzr_glyphs: ->
+    debug 'Ωjzrsdb__32', '_on_open_populate_jzr_glyphs'
+    try
+      @statements.populate_jzr_glyphs.run()
+    catch cause
+      fields_rpr = rpr @state.most_recent_inserted_row
+      throw new Error "Ωjzrsdb__33 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        { cause, }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -867,6 +897,16 @@ class Jzr_db_adapter extends Dbric_std
         return from_bool false unless ( jfields = JSON.parse jfields_json )?
         return from_bool false unless ( type_of jfields ) is 'list'
         return from_bool jfields.some ( value ) -> /(^\s)|(\s$)/.test value
+
+    #-------------------------------------------------------------------------------------------------------
+    jzr_chr_from_cid:
+      deterministic:  true
+      call: ( cid ) -> glyph_converter.glyph_from_cid cid
+
+    #-------------------------------------------------------------------------------------------------------
+    jzr_as_hex:
+      deterministic:  true
+      call: ( cid ) -> "0x#{( cid.toString 16 ).padStart 4, 0}"
 
   #=========================================================================================================
   @table_functions:
@@ -924,6 +964,15 @@ class Jzr_db_adapter extends Dbric_std
       columns:      [ 'rsg', 'is_cjk', 'lo', 'hi', 'name', ]
       rows: ( dskey, line_nr, jfields ) ->
         yield datasource_format_parser.parse_ucdb_rsgs_glyphrange { dskey, line_nr, jfields, }
+        ;null
+
+    #-------------------------------------------------------------------------------------------------------
+    jzr_generate_cids_and_glyphs:
+      deterministic:  true
+      parameters:   [ 'lo', 'hi', ]
+      columns:      [ 'cid', 'glyph', ]
+      rows: ( lo, hi ) ->
+        yield from glyph_converter.generate_cids_and_glyphs lo, hi
         ;null
 
   #---------------------------------------------------------------------------------------------------------
@@ -1134,6 +1183,23 @@ class datasource_format_parser
     hi  = parseInt match.groups.hi, 16
     #.......................................................................................................
     return { rsg, is_cjk, lo, hi, name, }
+
+
+#===========================================================================================================
+class glyph_converter
+
+  #---------------------------------------------------------------------------------------------------------
+  @glyph_from_cid: ( cid ) ->
+    return null unless ( /^[\p{L}\p{S}\p{P}\p{M}\p{N}\p{Zs}\p{Co}]$/v.test R = String.fromCodePoint cid )
+    return R
+
+  #---------------------------------------------------------------------------------------------------------
+  @generate_cids_and_glyphs: ( lo, hi ) ->
+    for cid in [ lo .. hi ]
+      continue unless ( glyph = @glyph_from_cid cid )?
+      yield { cid, glyph, }
+    ;null
+
 
 
 #===========================================================================================================
