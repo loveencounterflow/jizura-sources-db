@@ -1459,4 +1459,32 @@ if module is require.main then do =>
   jzr = new Jizura() # triggers rebuild of DB when necessary
   ;null
 
-
+  SQL"""
+    with slo as ( select
+        jfields->>0 as lo_cid_hex,
+        jfields->>1 as lo_label
+      from jzr_mirror_lines
+      where true
+        and ( dskey = 'ds:ucd:ucd' )
+        and (
+          ( jfields->>1 = '<Private Use, First>' )
+          or ( jfields->>1 regexp '<[^>]+ First>'
+            and ( jfields->>2 = 'Lo' ) ) ) ),
+    shi as ( select
+        jfields->>0 as hi_cid_hex,
+        jfields->>1 as hi_label
+      from jzr_mirror_lines
+      where true
+        and ( dskey = 'ds:ucd:ucd' )
+        and (
+          ( jfields->>1 = '<Private Use, Last>' )
+          or ( jfields->>1 regexp '<[^>]+ Last>'
+            and ( jfields->>2 = 'Lo' ) ) ) )
+    select
+        lo_cid_hex,
+        hi_cid_hex,
+        lo_label,
+        hi_label
+      from slo
+      left join shi on ( shi.hi_label = substring( slo.lo_label, 1, length( slo.lo_label ) - 6 ) || 'Last>' )
+        ;"""
