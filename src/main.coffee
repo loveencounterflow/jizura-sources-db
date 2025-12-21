@@ -908,6 +908,11 @@ class Jzr_db_adapter extends Dbric_std
       deterministic:  true
       call: ( cid ) -> "0x#{( cid.toString 16 ).padStart 4, 0}"
 
+    # #-------------------------------------------------------------------------------------------------------
+    # jzr_is_cjk_glyph:
+    #   deterministic:  true
+    #   call: ( cid ) -> "0x#{( cid.toString 16 ).padStart 4, 0}"
+
   #=========================================================================================================
   @table_functions:
 
