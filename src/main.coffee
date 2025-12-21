@@ -231,11 +231,12 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     SQL"""create table jzr_glyphs (
-          cid     integer   not null,
-          rsg     text      not null,
-          cid_hex text      not null generated always as ( jzr_as_hex( cid ) ) stored,
-          glyph   text      not null,
-        -- primary key ( cid ) --,
+          cid     integer unique  not null,
+          rsg     text            not null,
+          cid_hex text    unique  not null generated always as ( jzr_as_hex( cid ) ) stored,
+          glyph   text    unique  not null,
+          is_cjk  boolean         not null, -- generated always as ( jzr_is_cjk_glyph( glyph ) ) stored,
+        primary key ( cid ),
         foreign key ( rsg ) references jzr_glyphranges ( rsg )
       );"""
     #.......................................................................................................
@@ -715,11 +716,12 @@ class Jzr_db_adapter extends Dbric_std
 
     #.......................................................................................................
     populate_jzr_glyphs: SQL"""
-      insert into jzr_glyphs ( cid, glyph, rsg )
+      insert into jzr_glyphs ( cid, glyph, rsg, is_cjk )
       select
           cg.cid    as cid,
           cg.glyph  as glyph,
-          gr.rsg    as rsg
+          gr.rsg    as rsg,
+          gr.is_cjk as is_cjk
         from jzr_glyphranges                                  as gr
         join jzr_generate_cids_and_glyphs( gr.lo, gr.hi )     as cg
         ;"""
