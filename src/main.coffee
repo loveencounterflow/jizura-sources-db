@@ -1410,7 +1410,8 @@ class Jizura
     @dba                = new Jzr_db_adapter @paths.db, { host: @, }
     #.......................................................................................................
     if @dba.is_fresh
-    ### TAINT move to Jzr_db_adapter together with try/catch ###
+      ### TAINT move to Jzr_db_adapter together with try/catch ###
+      debug 'Ωjzrsdb__49', 'populate_jzr_mirror_triples'
       try
         @dba.statements.populate_jzr_mirror_triples.run()
       catch cause
@@ -1419,6 +1420,7 @@ class Jizura
           { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
+      debug 'Ωjzrsdb__51', 'populate_jzr_lang_hangeul_syllables'
       try
         @dba.statements.populate_jzr_lang_hangeul_syllables.run()
       catch cause
