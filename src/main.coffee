@@ -695,8 +695,9 @@ class Jzr_db_adapter extends Dbric_std
             and ( ml.lcode = 'D' )
             -- and ( ml.dskey = 'ds:dict:meanings' )
             and ( ml.jfields is not null )
-            and ( ml.jfields->>'$[0]' not regexp '^@glyphs' )
-            -- and ( ml.field_3 regexp '^(?:py|hi|ka):' )
+            and ( ml.jfields->>0 not regexp '^@glyphs' )
+            and ( ml.dskey = $dskey )
+            and ( ml.jfields->>2 regexp $v_re )
         -- on conflict ( ref, s, v, o ) do nothing
         ;"""
 
@@ -1409,15 +1410,26 @@ class Jizura
     @language_services  = new Language_services()
     @dba                = new Jzr_db_adapter @paths.db, { host: @, }
     #.......................................................................................................
+    parameter_sets      = [
+      { dskey: 'ds:dict:x:ko-Hang+Latn',  v_re: '|',    }
+      { dskey: 'ds:dict:meanings',        v_re: '^py:', }
+      { dskey: 'ds:dict:meanings',        v_re: '^ka:', }
+      { dskey: 'ds:dict:meanings',        v_re: '^hi:', }
+      { dskey: 'ds:dict:meanings',        v_re: '^hg:', }
+      { dskey: 'ds:shape:idsv2',          v_re: '|',    }
+      { dskey: 'ds:ucd:ucd',              v_re: '|',    }
+      ]
+    #.......................................................................................................
     if @dba.is_fresh
       ### TAINT move to Jzr_db_adapter together with try/catch ###
-      debug 'Ωjzrsdb__49', 'populate_jzr_mirror_triples'
-      try
-        @dba.statements.populate_jzr_mirror_triples.run()
-      catch cause
-        fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__50 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
-          { cause, }
+      for parameters in parameter_sets
+        debug 'Ωjzrsdb__49', 'populate_jzr_mirror_triples', parameters
+        try
+          @dba.statements.populate_jzr_mirror_triples.run parameters
+        catch cause
+          fields_rpr = rpr @dba.state.most_recent_inserted_row
+          throw new Error "Ωjzrsdb__50 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+            { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
       debug 'Ωjzrsdb__51', 'populate_jzr_lang_hangeul_syllables'
