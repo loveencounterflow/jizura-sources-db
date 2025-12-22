@@ -1415,7 +1415,7 @@ class Jizura
         @dba.statements.populate_jzr_mirror_triples.run()
       catch cause
         fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__48 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb__50 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
@@ -1423,7 +1423,7 @@ class Jizura
         @dba.statements.populate_jzr_lang_hangeul_syllables.run()
       catch cause
         fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__50 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb__52 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
     #.......................................................................................................
     ;undefined
