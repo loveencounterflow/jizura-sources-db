@@ -1112,11 +1112,12 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   triples_from_ucd_ucd: ( rowid_in, dskey, [ _, s, entry, ] ) ->
-    ref       = rowid_in
-    v         = 'v:c:reading:ko-Hang'
-    for reading from @host.language_services.extract_hg_readings entry
-      yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
-    @state.timeit_progress?()
+    yield return null
+    # ref       = rowid_in
+    # v         = 'v:c:reading:ko-Hang'
+    # for reading from @host.language_services.extract_hg_readings entry
+    #   yield { rowid_out: @next_triple_rowid, ref, s, v, o: reading, }
+    # @state.timeit_progress?()
     ;null
 
 
