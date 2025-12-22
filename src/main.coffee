@@ -240,7 +240,7 @@ class Jzr_db_adapter extends Dbric_std
           glyph   text    unique  not null,
           is_cjk  boolean         not null, -- generated always as ( jzr_is_cjk_glyph( glyph ) ) stored,
         primary key ( cid ),
-        foreign key ( rsg ) references jzr_glyphranges ( rsg )
+        constraint "Ωconstraint___9" foreign key ( rsg ) references jzr_glyphranges ( rsg )
       );"""
     #.......................................................................................................
     SQL"""create trigger jzr_glyphs_insert
