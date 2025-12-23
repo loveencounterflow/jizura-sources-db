@@ -9,6 +9,7 @@
 - [Jizura Sources DB](#jizura-sources-db)
   - [Notes](#notes)
     - [Date Flow References](#date-flow-references)
+    - [Segmentation / Categorization of Unicode Glyphs](#segmentation--categorization-of-unicode-glyphs)
   - [To Do](#to-do)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -40,6 +41,24 @@
   * if the data originated from a non-digital or non-textual medium such as a book or an image, other ways
     to locate that data (e.g. page or pixel-based coordinates) may in the future be used.
 
+### Segmentation / Categorization of Unicode Glyphs
+
+* **A**: is it a CJK glyph? True for all of Hanzi / Kanji / Hanja / Chữ Nôm
+
+* related are Kana, Hangeul; also Tangut (which we ignore FTTB)
+
+* **B**: does the character deserve a listing in the Comprehensive CJK Catalogue (CCC), be it in the KWIC
+  index or in an additional table? True for all of **A**; in addition, CCC should list
+  * **B1**: characters needed for Ideographic Description Sequences (formulas) (IDS/IDL/IDC and extension
+    IDLX)
+
+* **C**: is it a glyph that partakes in the KWIC component index? IDCs do not, ordinary Kanji do, Kana
+  *might* be added (since at least Katakana are very similar and sometimes hardly distinguishable from
+  Kanji)
+
+* **D**: derived / secondary Sinographs such as circled Kanji
+
+* *Sinograph*
 
 
 ## To Do
