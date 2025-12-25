@@ -10,6 +10,7 @@
   - [Notes](#notes)
     - [Date Flow References](#date-flow-references)
     - [Segmentation / Categorization of Unicode Glyphs](#segmentation--categorization-of-unicode-glyphs)
+    - [Ranges / Integer Intervals](#ranges--integer-intervals)
   - [To Do](#to-do)
 
 <!-- END doctoc generated TOC please keep comment here to allow auto update -->
@@ -60,6 +61,30 @@
 
 * *Sinograph*
 
+### Ranges / Integer Intervals
+
+* An integer range 𝕀 is defined by its lowest element *lo* and its highest element *hi*.
+* The lowest element *lo* must be less than or equal to *hi*; thus,
+  * a range with exactly one element (a *singular range*) will have *lo* = *hi*, and
+  * empty ranges with no elements are not representable.
+* The first inserted range becomes the Universe 𝕌 (universe set, German  *Grundmenge*).
+* The boundaries of any ranges inserted or otherwise arrived at can not exceed the boundaries of 𝕌.
+* A *complete range set* 𝕌⋆ is an intrinsically ordered collection of *n* integer ranges { 𝕀₁, 𝕀₂, ..., 𝕀ₙ }
+  where *lo*<sub>𝕌</sub> = *lo*<sub>𝕀₁</sub> and *hi*<sub>𝕌</sub> = *hi*<sub>𝕀₁</sub>
+* At any point in time, a range
+
+```
+A
+[····[···][···]···········]
+···I·······················
+····I······················
+·····I·····················
+······I····················
+·······I···················
+········I··················
+·········I·················
+··········I················
+```
 
 ## To Do
 
