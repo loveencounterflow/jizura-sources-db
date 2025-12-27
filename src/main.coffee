@@ -1204,11 +1204,13 @@ class datasource_format_parser
 
   #---------------------------------------------------------------------------------------------------------
   @parse_ucdb_rsgs_glyphrange: ({ jfields, }) ->
-    [ iclabel,
+    [ dgroup,
+      iclabel,
       rsg,
       is_cjk_txt,
       lo_hi_txt,
       name,     ] = JSON.parse jfields
+    return null unless dgroup is '`dg:rsgs`'
     lo_hi_re      = /// ^ 0x (?<lo> [0-9a-f]{1,6} ) \s*\.\.\s* 0x (?<hi> [0-9a-f]{1,6} ) $ ///iv
     #.......................................................................................................
     is_cjk = switch is_cjk_txt
