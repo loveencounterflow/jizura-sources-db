@@ -982,7 +982,8 @@ class Jzr_db_adapter extends Dbric_std
       parameters:   [ 'dskey', 'line_nr', 'jfields', ]
       columns:      [ 'rsg', 'is_cjk', 'lo', 'hi', 'name', ]
       rows: ( dskey, line_nr, jfields ) ->
-        yield datasource_format_parser.parse_ucdb_rsgs_glyphrange { dskey, line_nr, jfields, }
+        glyphrange = datasource_format_parser.parse_ucdb_rsgs_glyphrange { dskey, line_nr, jfields, }
+        yield glyphrange if glyphrange?
         ;null
 
     #-------------------------------------------------------------------------------------------------------
