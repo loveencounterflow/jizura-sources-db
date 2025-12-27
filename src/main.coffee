@@ -300,7 +300,7 @@ class Jzr_db_adapter extends Dbric_std
         format    text            not null,
         path      text            not null,
       primary key ( dskey ),
-      constraint "Ωconstraint__12" foreign key ( format ) references jzr_datasource_formats ( format )
+      constraint "Ωconstraint__13" foreign key ( format ) references jzr_datasource_formats ( format )
       );"""
     #.......................................................................................................
     SQL"""create trigger jzr_datasources_insert
@@ -317,8 +317,8 @@ class Jzr_db_adapter extends Dbric_std
         lcode     text    unique  not null,
         comment   text            not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__13" check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
-      constraint "Ωconstraint__14" check ( rowid = 't:mr:lc:V=' || lcode ) );"""
+      constraint "Ωconstraint__14" check ( lcode regexp '^[a-zA-Z]+[a-zA-Z0-9]*$' ),
+      constraint "Ωconstraint__15" check ( rowid = 't:mr:lc:V=' || lcode ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_lines (
@@ -333,7 +333,7 @@ class Jzr_db_adapter extends Dbric_std
       -- primary key ( rowid ),                           -- ### NOTE Experimental: no explicit PK, instead generated `rowid` column
       -- check ( rowid regexp '^t:mr:ln:ds=.+:L=\\d+$'),  -- ### NOTE no need to check as value is generated ###
       unique ( dskey, line_nr ),
-      constraint "Ωconstraint__15" foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
+      constraint "Ωconstraint__16" foreign key ( lcode ) references jzr_mirror_lcodes ( lcode ) );"""
 
     #.......................................................................................................
     SQL"""create table jzr_mirror_verbs (
@@ -343,7 +343,7 @@ class Jzr_db_adapter extends Dbric_std
         o         text            not null,
       primary key ( v ),
       -- check ( rowid regexp '^t:mr:vb:V=[\\-:\\+\\p{L}]+$' ),
-      constraint "Ωconstraint__16" check ( rank > 0 ) );"""
+      constraint "Ωconstraint__17" check ( rank > 0 ) );"""
     #.......................................................................................................
     SQL"""create trigger jzr_mirror_verbs_insert
       before insert on jzr_mirror_verbs
@@ -361,10 +361,10 @@ class Jzr_db_adapter extends Dbric_std
         v         text            not null,
         o         json            not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__17" check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
+      constraint "Ωconstraint__18" check ( rowid regexp '^t:mr:3pl:R=\\d+$' ),
       -- unique ( ref, s, v, o )
-      constraint "Ωconstraint__18" foreign key ( ref ) references jzr_mirror_lines ( rowid ),
-      constraint "Ωconstraint__19" foreign key ( v   ) references jzr_mirror_verbs ( v )
+      constraint "Ωconstraint__19" foreign key ( ref ) references jzr_mirror_lines ( rowid ),
+      constraint "Ωconstraint__20" foreign key ( v   ) references jzr_mirror_verbs ( v )
       );"""
 
     #.......................................................................................................
@@ -389,10 +389,10 @@ class Jzr_db_adapter extends Dbric_std
         medial_latn     text          not null,
         final_latn      text          not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__20" check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
+      constraint "Ωconstraint__21" check ( rowid regexp '^t:lang:hang:syl:V=\\S+$' )
       -- unique ( ref, s, v, o )
-      -- constraint "Ωconstraint__21" foreign key ( ref ) references jzr_mirror_lines ( rowid )
-      -- constraint "Ωconstraint__22" foreign key ( syllable_hang ) references jzr_mirror_triples_base ( o ) )
+      -- constraint "Ωconstraint__22" foreign key ( ref ) references jzr_mirror_lines ( rowid )
+      -- constraint "Ωconstraint__23" foreign key ( syllable_hang ) references jzr_mirror_triples_base ( o ) )
       );"""
     #.......................................................................................................
     SQL"""create trigger jzr_lang_hang_syllables_register
@@ -474,10 +474,10 @@ class Jzr_db_adapter extends Dbric_std
         glyph     text            not null,
         component text            not null,
       primary key ( rowid ),
-      constraint "Ωconstraint__23" foreign key ( ref ) references jzr_mirror_triples_base ( rowid ),
-      constraint "Ωconstraint__24" check ( ( length( glyph     ) = 1 ) or ( glyph      regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
-      constraint "Ωconstraint__25" check ( ( length( component ) = 1 ) or ( component  regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
-      constraint "Ωconstraint__26" check ( rowid regexp '^.*$' )
+      constraint "Ωconstraint__24" foreign key ( ref ) references jzr_mirror_triples_base ( rowid ),
+      constraint "Ωconstraint__25" check ( ( length( glyph     ) = 1 ) or ( glyph      regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      constraint "Ωconstraint__26" check ( ( length( component ) = 1 ) or ( component  regexp '^&[\\-a-z0-9_]+#[0-9a-f]{4,6};$' ) ),
+      constraint "Ωconstraint__27" check ( rowid regexp '^.*$' )
       );"""
 
 
@@ -748,7 +748,7 @@ class Jzr_db_adapter extends Dbric_std
                                                                                                          ###
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lcodes: ->
-    debug 'Ωjzrsdb__27', '_on_open_populate_jzr_mirror_lcodes'
+    debug 'Ωjzrsdb__28', '_on_open_populate_jzr_mirror_lcodes'
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=B', lcode: 'B', comment: 'blank line',    }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=C', lcode: 'C', comment: 'comment line',  }
     @statements.insert_jzr_mirror_lcode.run { rowid: 't:mr:lc:V=D', lcode: 'D', comment: 'data line',     }
@@ -763,7 +763,7 @@ class Jzr_db_adapter extends Dbric_std
       `v:c:` is for subjects that are CJK characters
       `v:x:` is used for unclassified subjects (possibly to be refined in the future)
     ###
-    debug 'Ωjzrsdb__28', '_on_open_populate_jzr_mirror_verbs'
+    debug 'Ωjzrsdb__29', '_on_open_populate_jzr_mirror_verbs'
     rows = [
       { rank: 2, s: "NN", v: 'v:testing:unused',                      o: "NN", }
       { rank: 2, s: "NN", v: 'v:x:ko-Hang+Latn:initial',              o: "NN", }
@@ -801,7 +801,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasource_formats: ->
-    debug 'Ωjzrsdb__29', '_on_open_populate_jzr_datasource_formats'
+    debug 'Ωjzrsdb__30', '_on_open_populate_jzr_datasource_formats'
     @statements.insert_jzr_datasource_format.run { format: 'dsf:tsv',         comment: 'NN', }
     @statements.insert_jzr_datasource_format.run { format: 'dsf:md:table',    comment: 'NN', }
     @statements.insert_jzr_datasource_format.run { format: 'dsf:csv',         comment: 'NN', }
@@ -813,7 +813,7 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_datasources: ->
-    debug 'Ωjzrsdb__30', '_on_open_populate_jzr_datasources'
+    debug 'Ωjzrsdb__31', '_on_open_populate_jzr_datasources'
     { paths
       formats, } = get_paths_and_formats()
     # dskey = 'ds:dict:ucd:v14.0:uhdidx';  @statements.insert_jzr_datasource.run { rowid: 't:ds:R=2', dskey, format: formats[ dskey ], path: paths[ dskey ], }
@@ -842,30 +842,30 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_mirror_lines: ->
-    debug 'Ωjzrsdb__31', '_on_open_populate_jzr_mirror_lines'
+    debug 'Ωjzrsdb__32', '_on_open_populate_jzr_mirror_lines'
     @statements.populate_jzr_mirror_lines.run()
     ;null
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_glyphranges: ->
-    debug 'Ωjzrsdb__32', '_on_open_populate_jzr_glyphranges'
+    debug 'Ωjzrsdb__33', '_on_open_populate_jzr_glyphranges'
     @statements.populate_jzr_glyphranges.run()
     ;null
 
   #---------------------------------------------------------------------------------------------------------
   _on_open_populate_jzr_glyphs: ->
-    debug 'Ωjzrsdb__33', '_on_open_populate_jzr_glyphs'
+    debug 'Ωjzrsdb__34', '_on_open_populate_jzr_glyphs'
     try
       @statements.populate_jzr_glyphs.run()
     catch cause
       fields_rpr = rpr @state.most_recent_inserted_row
-      throw new Error "Ωjzrsdb__34 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+      throw new Error "Ωjzrsdb__35 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
         { cause, }
     ;null
 
   #---------------------------------------------------------------------------------------------------------
   trigger_on_before_insert: ( name, fields... ) ->
-    # debug 'Ωjzrsdb__35', { name, fields, }
+    # debug 'Ωjzrsdb__36', { name, fields, }
     @state.most_recent_inserted_row = { name, fields, }
     ;null
 
@@ -1050,7 +1050,7 @@ class Jzr_db_adapter extends Dbric_std
     #.......................................................................................................
     error = null
     try formula_ast = @host.language_services.parse_idlx formula catch error
-      o = JSON.stringify { ref: 'Ωjzrsdb__36', message: error.message, row: { rowid_in, dskey, s, formula, }, }
+      o = JSON.stringify { ref: 'Ωjzrsdb__37', message: error.message, row: { rowid_in, dskey, s, formula, }, }
       warn "error: #{o}"
       yield { rowid_out: @next_triple_rowid, ref, s, v: 'v:c:shape:ids:error', o, }
     return null if error?
@@ -1119,7 +1119,7 @@ class Datasource_field_parser
 
   #---------------------------------------------------------------------------------------------------------
   walk: ->
-    debug 'Ωjzrsdb__37', "Datasource_field_parser::walk:", { format: @format, dskey: @dskey, }
+    debug 'Ωjzrsdb__38', "Datasource_field_parser::walk:", { format: @format, dskey: @dskey, }
     #.......................................................................................................
     method_name = 'walk_' + @format.replace /[^a-z]/gv, '_'
     method      = @[ method_name ] ? @_walk_no_such_parser
@@ -1128,7 +1128,7 @@ class Datasource_field_parser
 
   #---------------------------------------------------------------------------------------------------------
   _walk_no_such_parser: ->
-    message = "Ωjzrsdb__38 no parser found for format #{rpr @format}"
+    message = "Ωjzrsdb__39 no parser found for format #{rpr @format}"
     warn message
     yield { line_nr: 0, lcode: 'E', line: message, jfields: null, }
     for { lnr: line_nr, line, eol, } from walk_lines_with_positions @path
@@ -1178,7 +1178,7 @@ class Datasource_field_parser
           jfields = ( field.trim()                          for field in jfields )
           jfields = ( ( field.replace /^`(.+)`$/gv, '$1' )  for field in jfields )
           jfields = JSON.stringify jfields
-          # debug 'Ωjzrsdb__39', jfields
+          # debug 'Ωjzrsdb__40', jfields
       yield { line_nr, lcode, line, jfields, }
     ;null
 
@@ -1214,10 +1214,10 @@ class datasource_format_parser
     is_cjk = switch is_cjk_txt
       when 'true'   then 1
       when 'false'  then 0
-      else throw new Error "Ωjzrsdb__40 expected 'true' or 'false', got #{rpr is_cjk_txt}"
+      else throw new Error "Ωjzrsdb__41 expected 'true' or 'false', got #{rpr is_cjk_txt}"
     #.......................................................................................................
     unless ( match = lo_hi_txt.match lo_hi_re )?
-      throw new Error "Ωjzrsdb__41 expected a range literal like '0x01a6..0x10ff', got #{rpr lo_hi_txt}"
+      throw new Error "Ωjzrsdb__42 expected a range literal like '0x01a6..0x10ff', got #{rpr lo_hi_txt}"
     lo  = parseInt match.groups.lo, 16
     hi  = parseInt match.groups.hi, 16
     #.......................................................................................................
@@ -1311,7 +1311,7 @@ class Language_services
     R.delete 'null'
     R.delete '@null'
     hangeul = [ R..., ].join ''
-    # debug 'Ωjzrsdb__42', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
+    # debug 'Ωjzrsdb__43', @_TMP_hangeul.disassemble hangeul, { flatten: false, }
     return [ R..., ]
 
   #---------------------------------------------------------------------------------------------------------
@@ -1319,11 +1319,11 @@ class Language_services
     cfg = {}
     return @_TMP_kana.toRomaji entry, cfg
     # ### systematic name more like `..._ja_x_kan_latn()` ###
-    # help 'Ωdjkr__43', toHiragana  'ラーメン',       { convertLongVowelMark: false, }
-    # help 'Ωdjkr__44', toHiragana  'ラーメン',       { convertLongVowelMark: true, }
-    # help 'Ωdjkr__45', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
-    # help 'Ωdjkr__46', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
-    # help 'Ωdjkr__47', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
+    # help 'Ωdjkr__44', toHiragana  'ラーメン',       { convertLongVowelMark: false, }
+    # help 'Ωdjkr__45', toHiragana  'ラーメン',       { convertLongVowelMark: true, }
+    # help 'Ωdjkr__46', toKana      'wanakana',   { customKanaMapping: { na: 'に', ka: 'Bana' }, }
+    # help 'Ωdjkr__47', toKana      'wanakana',   { customKanaMapping: { waka: '(和歌)', wa: '(和2)', ka: '(歌2)', na: '(名)', ka: '(Bana)', naka: '(中)', }, }
+    # help 'Ωdjkr__48', toRomaji    'つじぎり',     { customRomajiMapping: { じ: '(zi)', つ: '(tu)', り: '(li)', りょう: '(ryou)', りょ: '(ryo)' }, }
 
   #---------------------------------------------------------------------------------------------------------
   parse_idlx: ( formula ) -> IDLX.parse formula
@@ -1333,7 +1333,7 @@ class Language_services
     switch type = type_of formula
       when 'text'   then  formula_ast = @parse_idlx formula
       when 'list'   then  formula_ast =             formula
-      else throw new Error "Ωjzrsdb__48 expected a text or a list, got a #{type}"
+      else throw new Error "Ωjzrsdb__49 expected a text or a list, got a #{type}"
     operators   = []
     components  = []
     separate    = ( list ) ->
@@ -1391,21 +1391,21 @@ class Jizura
     if @dba.is_fresh
       ### TAINT move to Jzr_db_adapter together with try/catch ###
       for parameters in parameter_sets
-        debug 'Ωjzrsdb__49', 'populate_jzr_mirror_triples', parameters
+        debug 'Ωjzrsdb__50', 'populate_jzr_mirror_triples', parameters
         try
           @dba.statements.populate_jzr_mirror_triples.run parameters
         catch cause
           fields_rpr = rpr @dba.state.most_recent_inserted_row
-          throw new Error "Ωjzrsdb__50 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+          throw new Error "Ωjzrsdb__51 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
             { cause, }
       #.......................................................................................................
       ### TAINT move to Jzr_db_adapter together with try/catch ###
-      debug 'Ωjzrsdb__51', 'populate_jzr_lang_hangeul_syllables'
+      debug 'Ωjzrsdb__52', 'populate_jzr_lang_hangeul_syllables'
       try
         @dba.statements.populate_jzr_lang_hangeul_syllables.run()
       catch cause
         fields_rpr = rpr @dba.state.most_recent_inserted_row
-        throw new Error "Ωjzrsdb__52 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
+        throw new Error "Ωjzrsdb__53 when trying to insert this row: #{fields_rpr}, an error was thrown: #{cause.message}", \
           { cause, }
     #.......................................................................................................
     ;undefined
@@ -1422,7 +1422,7 @@ class Jizura
           right join  jzr_mirror_verbs        as mv using ( v )
         group by v
         order by count desc, v;"""
-      echo ( grey 'Ωjzrsdb__53' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__54' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
@@ -1435,7 +1435,7 @@ class Jizura
           right join  jzr_mirror_verbs  as mv using ( v )
         group by v
         order by count desc, v;"""
-      echo ( grey 'Ωjzrsdb__54' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__55' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       console.table counts
     #.......................................................................................................
@@ -1444,7 +1444,7 @@ class Jizura
         select dskey, count(*) as count from jzr_mirror_lines group by dskey union all
         select '*',   count(*) as count from jzr_mirror_lines
         order by count desc;"""
-      echo ( grey 'Ωjzrsdb__55' ), ( gold reverse bold query )
+      echo ( grey 'Ωjzrsdb__56' ), ( gold reverse bold query )
       counts = ( @dba.prepare query ).all()
       counts = Object.fromEntries ( [ dskey, { count, }, ] for { dskey, count, } in counts )
       console.table counts
@@ -1454,10 +1454,10 @@ class Jizura
   #---------------------------------------------------------------------------------------------------------
   show_jzr_meta_faults: ->
     if ( faulty_rows = ( @dba.prepare SQL"select * from jzr_meta_faults;" ).all() ).length > 0
-      echo 'Ωjzrsdb__56', red reverse bold " found some faults: "
+      echo 'Ωjzrsdb__57', red reverse bold " found some faults: "
       console.table faulty_rows
     else
-      echo 'Ωjzrsdb__57', lime reverse bold " (no faults) "
+      echo 'Ωjzrsdb__58', lime reverse bold " (no faults) "
     #.......................................................................................................
     ;null
 
