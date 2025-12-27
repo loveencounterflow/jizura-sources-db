@@ -283,7 +283,7 @@ class Jzr_db_adapter extends Dbric_std
         format    text    unique  not null,
         comment   text            not null,
       primary key ( format ),
-      check ( format regexp '^dsf:[\\-\\+\\.:a-zA-Z0-9]+$' )
+      constraint "Ωconstraint__12" check ( format regexp '^dsf:[\\-\\+\\.:a-zA-Z0-9]+$' )
       );"""
     #.......................................................................................................
     SQL"""create trigger jzr_datasource_formats_insert
