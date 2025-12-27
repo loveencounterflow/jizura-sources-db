@@ -889,19 +889,19 @@ class Jzr_db_adapter extends Dbric_std
       ### NOTE in the future this function could trigger creation of triggers on inserts ###
       deterministic:  true
       varargs:        true
-      call: ( name, fields... ) -> @trigger_on_before_insert name, fields...
+      value: ( name, fields... ) -> @trigger_on_before_insert name, fields...
 
     #-------------------------------------------------------------------------------------------------------
     ### NOTE moved to Dbric_std; consider to overwrite with version using `slevithan/regex` ###
     # regexp:
     #   overwrite:      true
     #   deterministic:  true
-    #   call: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
+    #   value: ( pattern, text ) -> if ( ( new RegExp pattern, 'v' ).test text ) then 1 else 0
 
     #-------------------------------------------------------------------------------------------------------
     jzr_has_peripheral_ws_in_jfield:
       deterministic:  true
-      call: ( jfields_json ) ->
+      value: ( jfields_json ) ->
         return from_bool false unless ( jfields = JSON.parse jfields_json )?
         return from_bool false unless ( type_of jfields ) is 'list'
         return from_bool jfields.some ( value ) -> /(^\s)|(\s$)/.test value
@@ -909,22 +909,22 @@ class Jzr_db_adapter extends Dbric_std
     #-------------------------------------------------------------------------------------------------------
     jzr_chr_from_cid:
       deterministic:  true
-      call: ( cid ) -> glyph_converter.glyph_from_cid cid
+      value: ( cid ) -> glyph_converter.glyph_from_cid cid
 
     #-------------------------------------------------------------------------------------------------------
     jzr_as_hex:
       deterministic:  true
-      call: ( cid ) -> "0x#{( cid.toString 16 ).padStart 4, 0}"
+      value: ( cid ) -> "0x#{( cid.toString 16 ).padStart 4, 0}"
 
     #-------------------------------------------------------------------------------------------------------
     jzr_integer_from_hex:
       deterministic:  true
-      call: ( cid_hex ) -> parseInt cid_hex, 16
+      value: ( cid_hex ) -> parseInt cid_hex, 16
 
     # #-------------------------------------------------------------------------------------------------------
     # jzr_is_cjk_glyph:
     #   deterministic:  true
-    #   call: ( cid ) -> "0x#{( cid.toString 16 ).padStart 4, 0}"
+    #   value: ( cid ) -> "0x#{( cid.toString 16 ).padStart 4, 0}"
 
   #=========================================================================================================
   @table_functions:
