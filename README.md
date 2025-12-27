@@ -63,19 +63,34 @@
 
 ### Ranges / Integer Intervals
 
-* An integer range 𝕀 is defined by its lowest element *lo* and its highest element *hi*.
-* The lowest element *lo* must be less than or equal to *hi*; thus,
-  * a range with exactly one element (a *singular range*) will have *lo* = *hi*, and
+* An integer range `ir` is defined by its lowest element `ir.lo` and its highest element `ir.hi` and an
+  associated set of user-defined properties `ir.data`.
+* The lowest element `ir.lo` must be less than or equal to `ir.hi`; thus,
+  * a range with exactly one element (a *singular range*) will have `ir.lo` = `ir.hi`, and
   * empty ranges with no elements are not representable.
-* The first inserted range becomes the Universe 𝕌 (universe set, German  *Grundmenge*).
-* The boundaries of any ranges inserted or otherwise arrived at can not exceed the boundaries of 𝕌.
-* A *complete range set* 𝕌⋆ is an intrinsically ordered collection of *n* integer ranges { 𝕀₁, 𝕀₂, ..., 𝕀ₙ }
-  where *lo*<sub>𝕌</sub> = *lo*<sub>𝕀₁</sub> and *hi*<sub>𝕌</sub> = *hi*<sub>𝕀₁</sub>
+  * It is always the case that all integers `i` for which `ir.lo <= i <= ir.hi` holds are elements of `ir`
+    and are invariably associated with the same set of user-defined properties.
+* The first inserted range becomes the universal range, `ur`.
+* The boundaries of any ranges inserted or otherwise arrived at can not exceed the boundaries of `ur`.
+* A *complete range set* is an intrinsically ordered collection of a universal range and *n* integer ranges
+  `[ ur, ir_1, ir_2, ..., ir_n, ]` where
 * At any point in time, a range
 
 ```
-A
-[····[···][···]···········]
+      [·························]
+    + ·····I·····················
+    —————————————————————————————
+    = [·························]
+      [···]I[···················]
+```
+
+```
+[·························]
+[···]
+     [···]
+          [···]
+               [··········]
+[···][···][···][··········]
 ···I·······················
 ····I······················
 ·····I·····················
