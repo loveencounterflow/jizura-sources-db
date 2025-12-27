@@ -63,6 +63,7 @@
 
 ### Ranges / Integer Intervals
 
+<!--
 * An integer range `ir` is defined by its lowest element `ir.lo` and its highest element `ir.hi` and an
   associated set of user-defined properties `ir.data`.
 * The lowest element `ir.lo` must be less than or equal to `ir.hi`; thus,
@@ -74,32 +75,28 @@
 * The boundaries of any ranges inserted or otherwise arrived at can not exceed the boundaries of `ur`.
 * A *complete range set* is an intrinsically ordered collection of a universal range and *n* integer ranges
   `[ ur, ir_1, ir_2, ..., ir_n, ]` where
-* At any point in time, a range
+-->
 
-```
-      [·························]
-    + ·····I·····················
-    —————————————————————————————
-    = [·························]
-      [···]I[···················]
-```
+* **Bounds**: the `lo` and `hi` points of a **Run**
+* **Run**: a span of consecutive integers `i` defined by two numbers `lo` and `hi` such that `lo <= hi`
+  and `lo <= i <= hi`; empty ranges are not representable, while for single-integer ranges `lo == i == hi`
+  holds
+<!-- * **Rangeset** -->
+<!-- * **Rangegroup** -->
+* **Scatter**: a set of **Run**s that is associated with a shared set of data. For example, the Unicode
+  codepoints that are Latin letters that are representable with a single UTF-8 byte is commonly seen in the
+  regular expression `/[A-Za-z]/` which in our model can be represented as a scatter `[ (0x41,0x5a),
+  (0x61,0x7a), ]` (i.e. `[ ('A','Z'), ('a','z'), ]`).
+  * The canonical ordering of a scatter is by ascending `lo` bounds, then by ascending `hi` bounds for runs
+    that share `lo` points.
+  * A normalized (a.k.a. 'simplified') scatter has no overlapping and no directly adjacent runs and is
+    sorted by ascending bounds; thus, `[ (3,7), (0,5), ]` and `[ (0,5), (6,7), ]` both get normalized to `[
+    (0,7), ]`, but `[ (0,5), (7,7), ]` is already normal as it is ordered and there's a gap `(6,6)` between
+    its two runs.
+  * A crucial functionality of our model is the ability to build non-normalized scatters which can at some
+    later point get normalized to a lesser or greater degree depending on their associated data.
+* **Exclusion** / **Gap** / **Hole**
 
-```
-[·························]
-[···]
-     [···]
-          [···]
-               [··········]
-[···][···][···][··········]
-···I·······················
-····I······················
-·····I·····················
-······I····················
-·······I···················
-········I··················
-·········I·················
-··········I················
-```
 
 ## To Do
 
