@@ -1363,7 +1363,8 @@ class Jizura
     { paths, }          = get_paths_and_formats()
     @paths              = paths
     @language_services  = new Language_services()
-    @dba                = new Jzr_db_adapter @paths.db, { host: @, }
+    ### TAINT use `Jzr_db_adapter.rebuild()` when issues solved ###
+    @dba                = new Jzr_db_adapter @paths.db, { host: @, rebuild: true, }
     #.......................................................................................................
     parameter_sets      = [
       { dskey: 'ds:dict:x:ko-Hang+Latn',  v_re: '|',    }
