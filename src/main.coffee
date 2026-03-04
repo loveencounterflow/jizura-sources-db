@@ -62,6 +62,8 @@ timeit                        = ( P... ) -> benchmarker.timeit P...
 { set_getter,           } = SFMODULES.require_managed_property_tools()
 { IDL, IDLX,            } = require 'mojikura-idl'
 { type_of,              } = SFMODULES.unstable.require_type_of()
+{ jzr_hoard_plugin,     } = require './jzr-hoard-plugin'
+{ nfa,                  } = require 'normalize-function-arguments'
 
 
 #===========================================================================================================
@@ -157,6 +159,10 @@ class Jzr_db_adapter extends Dbric_std
 
   #---------------------------------------------------------------------------------------------------------
   @prefix:    'jzr'
+  @plugins: [
+    jzr_hoard_plugin
+    ]
+
   #---------------------------------------------------------------------------------------------------------
   @rebuild: -> throw new Error "Ωjzrsdb___2 use `new Jzr_db_adapter path, { rebuild: true, }` instead"
 
