@@ -160,7 +160,7 @@ class Jzr_db_adapter extends Dbric_std
     @host   = host
     @state  = { triple_count: 0, most_recent_inserted_row: null }
     #.......................................................................................................
-    if @is_fresh
+    if @cfg.rebuild
       @_on_open_populate_jzr_datasource_formats()
       @_on_open_populate_jzr_datasources()
       @_on_open_populate_jzr_mirror_verbs()
@@ -1359,7 +1359,7 @@ class Jizura
       { dskey: 'ds:ucd:ucd',              v_re: '|',    }
       ]
     #.......................................................................................................
-    if @dba.is_fresh
+    if @dba.cfg.rebuild
       ### TAINT move to Jzr_db_adapter together with try/catch ###
       for parameters in parameter_sets
         debug 'Ωjzrsdb__50', 'populate_jzr_mirror_triples', parameters
