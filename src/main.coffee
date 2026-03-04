@@ -591,12 +591,6 @@ class Jzr_db_adapter extends Dbric_std
   @statements:
 
     #.......................................................................................................
-    insert_jzr_glyphrange: SQL"""
-      insert into jzr_glyphranges ( rsg, is_cjk, lo, hi, name ) values ( $rsg, $is_cjk, $lo, $hi, $name )
-        -- on conflict ( dskey ) do update set path = excluded.path
-        ;"""
-
-    #.......................................................................................................
     insert_jzr_datasource_format: SQL"""
       insert into jzr_datasource_formats ( format, comment ) values ( $format, $comment )
         -- on conflict ( dskey ) do update set path = excluded.path
