@@ -154,30 +154,11 @@ class Jzr_db_adapter extends Dbric_std
   @prefix:    'jzr'
 
   #---------------------------------------------------------------------------------------------------------
-  constructor: ( db_path, cfg = {} ) ->
-    ### TAINT need more clarity about when statements, build, initialize... is performed ###
     { host, } = cfg
     cfg       = lets cfg, ( cfg ) -> delete cfg.host
     #.......................................................................................................
-    super db_path, cfg
-    #.......................................................................................................
     @host   = host
     @state  = { triple_count: 0, most_recent_inserted_row: null }
-    #.......................................................................................................
-    do =>
-      ### TAINT this is not well placed ###
-      ### NOTE execute a Gaps-and-Islands ESSFRI to improve structural integrity assurance: ###
-      # ( @prepare SQL"select * from _jzr_meta_uc_normalization_faults where false;" ).get()
-      messages = []
-      for { name, type, } from @statements.std_get_relations.iterate()
-        try
-          ( @prepare SQL"select * from #{name} where false;" ).all()
-        catch error
-          messages.push "#{type} #{name}: #{error.message}"
-          warn 'Ωjzrsdb___2', error.message
-      return null if messages.length is 0
-      throw new Error "Ωjzrsdb___3 EFFRI testing revealed errors: #{rpr messages}"
-      ;null
     #.......................................................................................................
     if @is_fresh
       @_on_open_populate_jzr_datasource_formats()
