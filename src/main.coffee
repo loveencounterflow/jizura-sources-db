@@ -41,6 +41,10 @@ SFMODULES                 = require '../../bricabrac-sfmodules'
 { Dbric,
   Dbric_std,
   SQL,
+  IDN,
+  LIT,
+  VEC,
+  esql,
   from_bool,
   as_bool,              } = SFMODULES.unstable.require_dbric()
 #...........................................................................................................
