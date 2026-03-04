@@ -9,7 +9,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "packageManager": "pnpm@10.26.0",
+  "packageManager": "pnpm@10.30.3",
   "dependencies": {
     "better-sqlite3": "^12.4.6",
     "bricabrac-sfmodules": "github:loveencounterflow/bricabrac-sfmodules#0a3315c",
@@ -19,6 +19,7 @@
     "hangul-disassemble": "^0.5.2",
     "mixa": "github:loveencounterflow/mixa#9712a4e5f79265d75b5be5ccd8a86bba3eb54739",
     "mojikura-idl": "^2.1.6",
+    "normalize-function-arguments": "^0.2.1",
     "wanakana": "^5.3.1"
   }
 }

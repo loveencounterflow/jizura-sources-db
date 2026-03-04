@@ -32,6 +32,9 @@ importers:
       mojikura-idl:
         specifier: ^2.1.6
         version: 2.1.6(acorn-loose@8.5.2)(acorn-walk@8.3.4)(acorn@8.15.0)(astring@1.9.0)(chokidar@3.6.0)(dayjs@1.11.19)(tmp@0.2.5)
+      normalize-function-arguments:
+        specifier: ^0.2.1
+        version: 0.2.1
       wanakana:
         specifier: ^5.3.1
         version: 5.3.1
@@ -109,6 +112,9 @@ packages:
   braces@3.0.3:
     resolution: {integrity: sha512-yQbXgO/OSZVD2IsiLlro+7Hf6Q18EJrKSEsdoMzKePKXct3gvD8oLcOQdIzGupr5Fj+EDe8gO/lxc1BzfMpxvA==}
     engines: {node: '>=8'}
+
+  bricabrac-sfmodules@0.18.0:
+    resolution: {integrity: sha512-rajGfQDa9hlEubD5ctV1D88UJN5d/xb4Cd2xDzYsqlzWeGVqV3mkQyAcA5S+mh7eK+jqt/i5+4xmwjjD32jq5A==}
 
   bricabrac-sfmodules@https://codeload.github.com/loveencounterflow/bricabrac-sfmodules/tar.gz/0a3315c:
     resolution: {tarball: https://codeload.github.com/loveencounterflow/bricabrac-sfmodules/tar.gz/0a3315c}
@@ -398,8 +404,11 @@ packages:
   normalize-function-arguments@0.0.11:
     resolution: {integrity: sha512-0YF49+WVwATNqQqzl42tAb3dwb4a++grXqIOnvF9H/Tf+xhRZ14pSVbyCHlznaMk4lRfxFTkNUKgZJZ7Wa4ADw==}
 
-  normalize-function-arguments@0.2.0:
-    resolution: {integrity: sha512-iICxJ8rWBffB807XWlqvvIgjlL2vvf3M+6pPkPQ/t8++1NKH0fbKvqEZuEx1z3fV+DrwK0n/TBzvljymT7tEow==}
+  normalize-function-arguments@0.1.0:
+    resolution: {integrity: sha512-ske8wWMhYLNV9rhnJKENJ4NEKzmIMzrX39UZpt5aVRsEBlK0ea3o046NtdC8yPbODaU6I3sQggTIPVw6zlBNhA==}
+
+  normalize-function-arguments@0.2.1:
+    resolution: {integrity: sha512-fWMZKdLG9bA6RJB2o8QEDFB9p8GbycGBRzhgh5VwhiflCO/5RevbkILVpuRFdof9Rt0z9D+dvR6KsO+ezQVyOA==}
 
   normalize-package-data@8.0.0:
     resolution: {integrity: sha512-RWk+PI433eESQ7ounYxIp67CYuVsS1uYSonX3kA6ps/3LWfjVQa/ptEg6Y3T6uAMq1mWpX9PQ+qx+QaHpsc7gQ==}
@@ -678,12 +687,17 @@ snapshots:
     dependencies:
       fill-range: 7.1.1
 
+  bricabrac-sfmodules@0.18.0:
+    dependencies:
+      env-paths: 3.0.0
+      normalize-function-arguments: 0.1.0
+
   bricabrac-sfmodules@https://codeload.github.com/loveencounterflow/bricabrac-sfmodules/tar.gz/0a3315c(interlex@0.13.1):
     dependencies:
       cli-table3: https://codeload.github.com/loveencounterflow/cli-table3/tar.gz/82fc220
       env-paths: 3.0.0
       interlex: 0.13.1
-      normalize-function-arguments: 0.2.0
+      normalize-function-arguments: 0.2.1
 
   buffer@5.7.1:
     dependencies:
@@ -992,8 +1006,13 @@ snapshots:
     dependencies:
       loupe: 3.2.1
 
-  normalize-function-arguments@0.2.0:
+  normalize-function-arguments@0.1.0:
     dependencies:
+      loupe: 3.2.1
+
+  normalize-function-arguments@0.2.1:
+    dependencies:
+      bricabrac-sfmodules: 0.18.0
       loupe: 3.2.1
 
   normalize-package-data@8.0.0:
