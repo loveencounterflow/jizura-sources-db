@@ -56,6 +56,7 @@ MIXA                      = require 'mixa'
                 command:
 
                   query -- send an SQL query
+                    --table / -t output as formatted CLI table (CSV otherwise)
                     --query / -q / positional argument -- the query (required)
 
                   info -- show an overview of tables and views
@@ -65,6 +66,11 @@ MIXA                      = require 'mixa'
       'query':
         description:  "run an SQL query"
         flags:
+          'table':
+            alias:        't'
+            type:         Boolean
+            description:  "tabular format"
+            positional:   false
           'query':
             alias:        'q'
             type:         String
@@ -73,8 +79,10 @@ MIXA                      = require 'mixa'
         runner: ( d ) =>
           ### TAINT bug in MIXA hides meta flags ###
           rebuild                   = ( '--rebuild' in process.argv ) or ( '-r' in process.argv )
-          { output_query_as_csv,  } = require './demo'
-          output_query_as_csv d.verdict.parameters.query
+          { output_query_as_table,
+            output_query_as_csv,  } = require './demo'
+          if d.verdict.parameters.table then  output_query_as_table d.verdict.parameters.query
+          else                                output_query_as_csv   d.verdict.parameters.query
       #-----------------------------------------------------------------------------------------------------
       'info':
         description:  "show info on configuration settings &c"

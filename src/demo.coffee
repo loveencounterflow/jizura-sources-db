@@ -133,6 +133,12 @@ demo_show_all_tables = ({ rebuild = false, rows = 10, }={}) ->
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
+output_query_as_table = ( query ) ->
+  jzr   = new Jizura()
+  jzr.dba.tbl_echo_as_text query
+  ;null
+
+#-----------------------------------------------------------------------------------------------------------
 output_query_as_csv = ( query ) ->
   CSV   = require 'csv-stringify/sync'
   jzr   = new Jizura()
@@ -168,7 +174,7 @@ demo_show_tofu_characters = ->
 
 
 #===========================================================================================================
-module.exports = { demo_show_all_tables, output_query_as_csv, }
+module.exports = { demo_show_all_tables, output_query_as_table, output_query_as_csv, }
 
 
 #===========================================================================================================
