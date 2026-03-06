@@ -1359,12 +1359,16 @@ class Language_services
 class Jizura
 
   #---------------------------------------------------------------------------------------------------------
-  constructor: ->
+  _constructor_nfa: nfa { template: { rebuild: false, }, }, ( rebuild, cfg ) -> freeze cfg
+
+  #---------------------------------------------------------------------------------------------------------
+  constructor: ( P... ) ->
+    @cfg                = @_constructor_nfa P...
     { paths, }          = get_paths_and_formats()
     @paths              = paths
     @language_services  = new Language_services()
     ### TAINT use `Jzr_db_adapter.rebuild()` when issues solved ###
-    @dba                = new Jzr_db_adapter @paths.db, { host: @, rebuild: true, }
+    @dba                = new Jzr_db_adapter @paths.db, { host: @, rebuild: @cfg.rebuild, }
     #.......................................................................................................
     parameter_sets      = [
       { dskey: 'ds:dict:x:ko-Hang+Latn',  v_re: '|',    }

@@ -35,6 +35,10 @@ MIXA                      = require 'mixa'
         alias:        'p'
         type:         Boolean
         description:  "use pager"
+      'rebuild':
+        alias:        'r'
+        type:         Boolean
+        description:  "rebuild before command"
     commands:
       #-----------------------------------------------------------------------------------------------------
       'help':
@@ -47,6 +51,7 @@ MIXA                      = require 'mixa'
 
                 meta:
                   --pager / -p -- use pspg to page output
+                  --rebuild / -r -- rebuild DB before executing command
 
                 command:
 
@@ -66,7 +71,9 @@ MIXA                      = require 'mixa'
             description:  "SQL query"
             positional:   true
         runner: ( d ) =>
-          { output_query_as_csv, } = require './demo'
+          ### TAINT bug in MIXA hides meta flags ###
+          rebuild                   = ( '--rebuild' in process.argv ) or ( '-r' in process.argv )
+          { output_query_as_csv,  } = require './demo'
           output_query_as_csv d.verdict.parameters.query
       #-----------------------------------------------------------------------------------------------------
       'info':
@@ -77,9 +84,11 @@ MIXA                      = require 'mixa'
             type:         Number
             description:  "number of rows"
         runner: ( d ) =>
+          ### TAINT bug in MIXA hides meta flags ###
+          rebuild                   = ( '--rebuild' in process.argv ) or ( '-r' in process.argv )
           { demo_show_all_tables, } = require './demo'
           { rows,                 } = d.verdict.parameters
-          demo_show_all_tables { rows, }
+          demo_show_all_tables { rebuild, rows, }
           return null
   #.........................................................................................................
   MIXA.run jobdefs, process.argv

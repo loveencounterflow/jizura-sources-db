@@ -95,8 +95,8 @@ demo_read_dump = ->
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
-demo_show_all_tables = ({ rows = 10, }={}) ->
-  jzr = new Jizura()
+demo_show_all_tables = ({ rebuild = false, rows = 10, }={}) ->
+  jzr = new Jizura { rebuild, }
   relations = {}
   for { name, type, } from jzr.dba.walk SQL"""
     select name, type
