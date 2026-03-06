@@ -30,6 +30,9 @@ GUY                       = require 'guy'
 SFMODULES                 = require '../../bricabrac-sfmodules'
 #-----------------------------------------------------------------------------------------------------------
 { SQL,
+  IDN,
+  LIT,
+  VEC,
   from_bool,
   as_bool,              } = SFMODULES.unstable.require_dbric()
 { Jizura,               } = require './main'
@@ -139,13 +142,28 @@ output_query_as_csv = ( query ) ->
   werrn = ( P... ) -> process.stderr.write P...; process.stderr.write '\n'  ;null
   # query = process.argv[ 2 ] ? null
   if ( not query? ) or ( query is '' )
-    werrn reverse red " Ωjzrsdb___8 no query given "
+    werrn reverse red " Ωjzrsdb___2 no query given "
     process.exit 111
     return null
   rows  = jzr.dba.get_all query
   # woutn cli_commands.use_pspg
   wout CSV.stringify [ ( column.name for column in jzr.dba.state.columns ), ]
   wout CSV.stringify rows
+  ;null
+
+#-----------------------------------------------------------------------------------------------------------
+demo_show_tofu_characters = ->
+  jzr   = new Jizura { rebuild: false, }
+  chrs  = """
+    𤬓⿱𨎞𢚾𪈎𤹉𪆅𦭘𥣈
+    """
+  chrs      = [ ( new Set ( Array.from chrs.replace /\s+/, '' ).sort() )..., ]
+  debug 'Ωjzrsdb___1', chrs
+  cids      = ( chr.codePointAt 0 for chr in chrs )
+  statement = SQL"select * from jzr_triples where s in #{VEC chrs};"
+  jzr.dba.tbl_echo_as_text statement
+  jzr.dba.tbl_echo_as_text SQL"select * from jzr_glyphranges;"
+  jzr.dba.tbl_echo_as_text SQL"select * from jzr_glyphranges where $cid between lo and hi;", { cid: cids[ 0 ], }
   ;null
 
 
@@ -157,7 +175,8 @@ module.exports = { demo_show_all_tables, output_query_as_csv, }
 if module is require.main then do =>
   # demo_read_dump()
   # demo()
-  demo_show_all_tables()
+  # demo_show_all_tables()
+  demo_show_tofu_characters()
   # demo_csv_output()
   # ;null
 
