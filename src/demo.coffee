@@ -133,15 +133,15 @@ demo_show_all_tables = ({ rebuild = false, rows = 10, }={}) ->
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
-output_query_as_table = ( query ) ->
-  jzr   = new Jizura()
+output_query_as_table = ( query, { rebuild = false, }={} ) ->
+  jzr   = new Jizura { rebuild, }
   jzr.dba.tbl_echo_as_text query
   ;null
 
 #-----------------------------------------------------------------------------------------------------------
-output_query_as_csv = ( query ) ->
+output_query_as_csv = ( query, { rebuild = false, }={} ) ->
   CSV   = require 'csv-stringify/sync'
-  jzr   = new Jizura()
+  jzr   = new Jizura { rebuild, }
   wout  = ( P... ) -> process.stdout.write P...;                            ;null
   woutn = ( P... ) -> process.stdout.write P...; process.stdout.write '\n'  ;null
   werr  = ( P... ) -> process.stderr.write P...;                            ;null
